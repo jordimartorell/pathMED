@@ -160,7 +160,7 @@ GetML <- function(exp.data,
     train.data <- train.data[ifelse(is.na(train.data$group),F,T),]
     #var.type=ifelse(is.character(train.data$group[1]),"cat","num")
 
-    result.ML <- neastkfoldML(data=train.data,
+    result.ML <- .neastkfoldML(data=train.data,
                             var.type=var.type,
                             algorithms=algorithms,
                             outerfolds=outerfolds,
@@ -178,14 +178,13 @@ GetML <- function(exp.data,
 }
 
 
-#-------------------------------------------------------------------- MLmethod()
+#-------------------------------------------------------------------- .MLmethod()
 ## Prepare parameters for tuning the different methods
 #@ algorithms: algoritms for ML (glm,lm,lda,xgbTree,rf,knn,svmLinear,svmRadial,nnet,nb,lars,rpart). "all" = all algorithms are used
 #@ var.type: type of outcome to predict (categorical (cat) or numerical (num))
 #@ training: train data
 #@ add: additional model list (supported by caret) in format: add=list(modelName = caretModelSpec(method="modelName", tuneGrid=(.parameters="values")))
-## INTERNA
-MLmethod <- function(algorithms,
+.MLmethod <- function(algorithms,
                    var.type,
                    training,
                    add=NULL){
@@ -227,7 +226,7 @@ MLmethod <- function(algorithms,
 }
 
 
-#---------------------------------------------------------------- neastkfoldML()
+#---------------------------------------------------------------- .neastkfoldML()
 ## ## Get performance results for different algorithms
 #@ data: matrix with features in columns and samples in rows. Column of group is required (outcome to predict)
 #@ algorithms: algoritms for ML (glm,lm,lda,xgbTree,rf,knn,svmLinear,svmRadial,nnet,nb,lars,rpart). "all" = all algorithms are used
@@ -238,9 +237,7 @@ MLmethod <- function(algorithms,
 #@ var.type: type of outcome to predict (categorical (cat) or numerical (num))
 #@ feature.filter: method to reduce number of features (none,fcbf)
 #@ prior: rank best model based on AUC (AUC), the mean of AUC and the balanced accuracy (BAUC), the balanced accuracy (BA) or manual (Manual)
-## INTERNA
-
-neastkfoldML <- function(data,
+.neastkfoldML <- function(data,
                        algorithms,
                        outerfolds,
                        kfold,
@@ -280,7 +277,7 @@ neastkfoldML <- function(data,
     switch(feature.filter,
            "fcbf"={
              cat("\nSelecting features by fcbf")
-             training <- fast.cor.FS(training, thresh=0.0025)
+             training <- .fastCorFS(training, thresh=0.0025)
              testing <- testing[, colnames(training)]
            },
            "none"={
@@ -291,7 +288,7 @@ neastkfoldML <- function(data,
     if(var.type=="cat"){ ## Categorical outcome
 
       ## Get ML-methods
-      method.list <- MLmethod(algorithms=algorithms, var.type=var.type, training=training)
+      method.list <- .MLmethod(algorithms=algorithms, var.type=var.type, training=training)
 
       model_list <- caretList(
         group~., data=training,
@@ -325,7 +322,7 @@ neastkfoldML <- function(data,
     }else { ## numerical outcome
 
       ## Get ML-methods
-      method.list <- MLmethod(algorithms=algorithms, var.type=var.type, training=training)
+      method.list <- .MLmethod(algorithms=algorithms, var.type=var.type, training=training)
 
       model_list <- caretList(
         group~., data=training,
@@ -425,7 +422,7 @@ neastkfoldML <- function(data,
     ## Feature selection
     switch(feature.filter,
            "fcbf"={
-             data.f <- fast.cor.FS(data, thresh=0.0025)
+             data.f <- .fastCorFS(data, thresh=0.0025)
            },
            "none"={
              data.f <- data
@@ -474,7 +471,7 @@ neastkfoldML <- function(data,
     ## Feature selection
     switch(feature.filter,
            "fcbf"={
-             data.f <- fast.cor.FS(data, thresh=0.0025)
+             data.f <- .fastCorFS(data, thresh=0.0025)
            },
            "none"={
              data.f <- data
@@ -492,12 +489,11 @@ neastkfoldML <- function(data,
 }
 
 
-#----------------------------------------------------------------- fast.cor.FS()
+#----------------------------------------------------------------- .fastCorFS()
 ## Function to remove co-linear features
 #@ data: matrix with features in columns and samples in rows. Column of group is required (outcome to predict)
 #@ thresh: SU threshold
-## INTERNA
-fast.cor.FS <- function(data,
+.fastCorFS <- function(data,
                       thresh=0.0025){
   stopifnot('group' %in% colnames(data))
   check.packages("FCBF")
