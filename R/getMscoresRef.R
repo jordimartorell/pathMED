@@ -14,8 +14,8 @@
 #' for each dataset. The second one is the geneset used for the analysis and
 #' the third one is the input gene expression data.
 #'
-#' @author Daniel Toro-Domínguez, \email{daniel.toro@@genyo.es}
-#' @author Jordi Martorell-Marugán, \email{jordi.martorell@@genyo.es}
+#' @author Daniel Toro-Dominguez, \email{daniel.toro@@genyo.es}
+#' @author Jordi Martorell-Marugan, \email{jordi.martorell@@genyo.es}
 #'
 #' @seealso \code{\link{diseasePaths}}
 #'
@@ -26,11 +26,10 @@
 #'  . Briefings in Bioinformatics. 23(5)
 #'
 #' @examples
-#' \dontrun{
-#' DATA<-readRDS(file = paste0(getwd(),sep="","/data/datasets.rds"))
+#' data(pathMED)
+#' \donttest{
+#' refMscore <- getMscoresRef(data=refData, genesets="tmod")
 #' }
-#' DATA.Mscore <- GetMscoresReferencet(genesets=genesets, data=DATA)
-#' head(DATA.Mscore)
 #' @export
 getMscoresRef <- function(data,
                           genesets = "reactome",
@@ -64,5 +63,5 @@ getMscoresRef <- function(data,
         return(res)
     })
 
-    return(list(data.Mscore, path.list, data))
+    return(list(mscores=data.Mscore, genesets=path.list, expression=data))
 }

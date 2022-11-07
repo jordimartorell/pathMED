@@ -1,0 +1,180 @@
+---
+title: "Scoring Personalized Molecular Portraits"
+author:
+- name: Jordi Martorell-Marugán
+  affiliation:
+  - Department of Statistics and Operational Research. University of Granada
+  - GENYO, Centre for Genomics and Oncological Research
+  email: jordi.martorell@genyo.es
+- name: Daniel Toro-Domínguez
+  affiliation:
+  - GENYO, Centre for Genomics and Oncological Research
+  email: daniel.toro@genyo.es
+- name: Pedro Carmona-Sáez
+  affiliation:
+  - Department of Statistics and Operational Research. University of Granada
+  - GENYO, Centre for Genomics and Oncological Research
+  email: pcarmona@ugr.es
+package: pathMED
+date: "`r BiocStyle::doc_date()`"
+abstract: >
+  mCSEA (methylathed CpGs Set Enrichment Analysis) searches Differentially
+  Methylated Regions (DMRs) between conditions using methylation data from 
+  Illumina's 450k or EPIC microarrays. The evaluated DMRs are predefined 
+  regions (promoters, gene bodies, CpG Islands and user-defined regions).
+  This package contains functions to rank the CpG probes, to apply a 
+  GSEA analysis for DMRs identification, to plot the results and to integrate 
+  them with expression data.
+output:
+  BiocStyle::pdf_document:
+  # pdf_document:
+  #   template: NULL
+
+vignette: >
+  %\VignetteIndexEntry{Predefined DMRs identification with mCSEA package}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+references:
+- id: toroDominguez2022
+  title: "Scoring personalized molecular portraits identify Systemic Lupus 
+  Erythematosus subtypes and predict individualized drug responses, 
+  symptomatology and disease progression"
+  author:
+  - family: Toro-Domínguez
+    given: D
+  - family: Martorell-Marugán
+    given: J
+  - family: Martínez-Bueno
+    given: M
+  - family: López-Domínguez
+    given: R
+  - family: Carnero-Montoro
+    given: E
+  - family: Barturen
+    given: G
+  - family: Goldman
+    given: D
+  - family: Petri
+    given: M
+  - family: Carmona-Sáez
+    given: P
+  - family: Alarcón-Riquelme
+    given: ME
+  container-title: Briefings in Bioinformatics
+  issued:
+    year: 2022
+  volume: 23
+  issue: 5
+---
+
+# Introduction
+This package contain the functions used in the previous work where personalized 
+scoring was used to predict the drug response, symptoms and progression of 
+Systemic Lupus Erythematosus patients from gene expression data 
+@toroDominguez2022.
+
+# Step 1: Prepare the reference data
+
+## 1.1. Calculate the M-scores
+
+The firs step is to... 
+
+```{r, message = FALSE, results='hide', warning=FALSE}
+library(pathMED)
+data(pathMED)
+```
+
+We loaded to our R environment **refData**, **refMscore**, **exampleData** and 
+**exampleMetadata** objects. **refData** 
+is a list with 4 datasets extracted from...
+For each dataset, there is a gene expression matrix for the patients ("Disease")
+and another one for the healthy controls ("Healthy"). You should prepare an
+object with the same structure with as many datasets as possible.
+
+**phenoTest** is a dataframe with the explanatory variable and covariates 
+associated to the samples. When you load your own data, the structure of 
+your objects should be similar.
+
+```{r, warning=FALSE}
+ls(refData)
+ls(refData$dataset1)
+head(refData$dataset1$Disease)
+```
+
+_getMscoresRef()_ function uses this object as input and calculates the 
+M-scores for each gene set of the specified database. By default, Reactome
+is the used database, but the **genesets** parameter can be modified to use 
+KEGG ("kegg"), transcriptional modules ("tmod") or Gene Ontology ("gobp", 
+"gomf", "gocc"). Furthermore, is "custom" is selected, any geneset with the 
+proper format can be introduced to the **customGeneset** parameter. It should 
+be a named list with the genes of each gene set. If you are running the script 
+with a multi-core processor, use the **cores** parameter to specify the number 
+of workers to be used (most of the pathMED functions include this parameter).
+
+```{r, eval=FALSE, warning=FALSE}
+refMscore <- getMscoresRef(data=refData,
+                           genesets="tmod",
+                           cores=4)
+```
+
+## 1.2. Filter gene sets
+
+It is necessary to find the gene sets that are more relevant for the studied 
+phenotype. With the **diseasePaths** function, you can perform such selection 
+specifying the percentage of samples that in which the pathways should be 
+statistically significant (**perc_samples** parameter) and the minimum number
+of datasets that must pass this threshold (**min_datasets** parameter).
+
+```{r, warning=FALSE}
+relevantPaths <- diseasePaths(MRef=refMscore,
+                       min_datasets=3,
+                       perc_samples=10)
+```
+
+# Step 2: Calculate the M-scores
+
+Once the reference data is ready, you can calculate the M-scores for your case 
+samples, which is a necessary step to construct the machine learning predictors.
+**getMscores()** function takes as input an expression matrix with the cases 
+samples, an optional expression matrix with healthy controls and the output of 
+the **diseasePaths** function. If no healthy controls are provided, the M-scores
+are calculated using the *k* most similar samples of the reference data. *k* 
+may be specified with the **nk** parameter. The output is a matrix with the 
+M-score of each gene set (rows) and sample (columns).
+
+```{r, warning=FALSE}
+MScoresExample <- GetMscores(genesets = relevantPaths,
+                            Patient = exampleData,
+                            Healthy = NULL,
+                            nk = 5)
+MScoresExample[1:5, 1:5]
+```
+
+# Step 3: Make predictors
+
+**getML()** function fits and tests several machine learning algorithms in 
+order to find which one has the best performance predicting the specified 
+variable (**var2predict** parameter). The input objects are the M-scores matrix 
+calculated in the step 2 (**expData**), and a data frame with the metadata of 
+the samples (**metadata**). One or several algorithms may be selected with the 
+**algorithms** parameter (see the function help).
+
+```{r, warning=FALSE}
+fit.model <- getML(expData=MScoresExample,
+                 metadata=exampleMetadata,
+                 var2predict="Response",
+                 algorithms="svmLinear",
+                 outerfolds=10,
+                 splitProp=0.8,
+                 innerfolds=10,
+                 innerRepeats=10,
+                 featureFilter = "none",
+                 prior="BAUC")
+```
+
+# Session info
+```{r sessionInfo, echo=FALSE}
+sessionInfo()
+```
+
+# References

@@ -1,6 +1,4 @@
 
-## PATIENT Y HEALTHY AHORA SON PATHS, CAMBIA PARA QUE SEAN MATRICES
-
 #' Calculate M-scores for a dataset
 #'
 #' Subtitle
@@ -17,10 +15,10 @@
 #' associated to each region are generated. In addition, this list also contains
 #' the input methData, pheno and platform objects
 #'
-#' @author Daniel Toro-Domínguez, \email{daniel.toro@@genyo.es}
-#' @author Jordi Martorell-Marugán, \email{jordi.martorell@@genyo.es}
+#' @author Daniel Toro-Dominguez, \email{daniel.toro@@genyo.es}
+#' @author Jordi Martorell-Marugan, \email{jordi.martorell@@genyo.es}
 #'
-#' @seealso \code{\link{diseasePaths}}
+#' @seealso \code{\link{diseasePaths}}, \code{\link{getML}}
 #'
 #' @references Toro-Domínguez, D. et al (2022). \emph{Scoring personalized
 #' molecular portraits identify Systemic Lupus Erythematosus subtypes and
@@ -29,11 +27,13 @@
 #'  . Briefings in Bioinformatics. 23(5)
 #'
 #' @examples
-#' \dontrun{
-#' DATA<-readRDS(file = paste0(getwd(),sep="","/data/datasets.rds"))
+#' data(pathMED)
+#' \donttest{
+#' refMscore <- getMscoresRef(data=refData, genesets="tmod")
 #' }
-#' DATA.Mscore <- GetMscoresReferencet(genesets=genesets, data=DATA)
-#' head(DATA.Mscore)
+#' relevantPaths <- diseasePaths(MRef=refMscore, min_datasets=3,
+#' MScoresExample <- GetMscores(genesets = relevantPaths, Patient = exampleData,
+#' Healthy = NULL, nk = 5)
 #' @export
 GetMscores <- function(Patient,
                        Healthy=NULL,
@@ -41,6 +41,9 @@ GetMscores <- function(Patient,
                        nk=5,
                        cores = 1){
 
+    if (is.null(Healthy) & is.null(nk)) {
+        stop("If Healthy=NULL, nk must be defined")
+    }
 
     path.list <- genesets[[1]]
     Reference <- genesets[[2]]
@@ -68,7 +71,7 @@ GetMscores <- function(Patient,
                     "healthy samples as reference")
             res <- BiocParallel::bplapply(path.list, function(x) {
                 .getMscorePath(x, Patient=Patient, Healthy=Healthy)
-            }, BPPARAM=BiocParallel::MulticoreParam(workers = cores))
+            }, BPPARAM=BiocParallel::MulticoreParam(workers=cores))
             res <- as.data.frame(do.call("rbind",res)); colnames(res)<-"Mscores"
         }
 
@@ -110,26 +113,6 @@ GetMscores <- function(Patient,
             })
             res <- do.call("cbind", res)
             colnames(res) <- colnames(Patient)
-
-            # res <- data.frame(matrix(nrow=length(path.list),
-            #                          ncol=ncol(Patient)))
-            # colnames(res) =  colnames(Patient)
-            # rownames(res) <- names(path.list)
-            #
-            # res <- apply(Patient, 2, function(pat) {
-            #     # utils::setTxtProgressBar(pb,i)
-            #     names(pat) <- rownames(Patient)
-            #     res.i <- BiocParallel::bplapply(.getMscorePath(path.list,
-            #                                                  Healthy=Healthy,
-            #                                                  Patient=pat),
-            #                                   BPPARAM = MulticoreParam(workers = cores))
-            #
-            #     res.i <- as.data.frame(do.call("rbind", res.i))
-            #     colnames(res.i) <- colnames(Patient)[i]
-            #     return(res.i)
-            # })
-
-
         }
     }
     return(res)

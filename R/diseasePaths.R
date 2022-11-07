@@ -11,10 +11,10 @@
 #'
 #' @return A list with the selected pathways
 #'
-#' @author Daniel Toro-Domínguez, \email{daniel.toro@@genyo.es}
-#' @author Jordi Martorell-Marugán, \email{jordi.martorell@@genyo.es}
+#' @author Daniel Toro-Dominguez, \email{daniel.toro@@genyo.es}
+#' @author Jordi Martorell-Marugan, \email{jordi.martorell@@genyo.es}
 #'
-#' @seealso \code{\link{getMscoresRef}}
+#' @seealso \code{\link{getMscoresRef}}, \code{\link{getMscores}}
 #'
 #' @references Toro-Domínguez, D. et al (2022). \emph{Scoring personalized
 #' molecular portraits identify Systemic Lupus Erythematosus subtypes and
@@ -23,11 +23,12 @@
 #'  . Briefings in Bioinformatics. 23(5)
 #'
 #' @examples
-#' \dontrun{
-#' DATA<-readRDS(file = paste0(getwd(),sep="","/data/datasets.rds"))
+#' data(pathMED)
+#' \donttest{
+#' refMscore <- getMscoresRef(data=refData, genesets="tmod")
 #' }
-#' DATA.Mscore <- GetMscoresReferencet(genesets=genesets, data=DATA)
-#' head(DATA.Mscore)
+#' relevantPaths <- diseasePaths(MRef=refMscore, min_datasets=3,
+#' perc_samples=10)
 #' @export
 diseasePaths <- function(MRef,
                          min_datasets=round(length(MRef[[1]]) * 0.34),
@@ -58,8 +59,8 @@ diseasePaths <- function(MRef,
 
     # Build the expression reference
     reference <- .MReference(expr.list=expr.list,
-                          mscore.list = MScores,
+                          mscore.list=MScores,
                           geneset.list=genesets)
 
-    return(list(genesets, reference))
+    return(list(genesets=genesets, reference=reference))
 }
