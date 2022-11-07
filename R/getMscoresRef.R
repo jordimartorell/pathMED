@@ -26,7 +26,8 @@
 #'  . Briefings in Bioinformatics. 23(5)
 #'
 #' @examples
-#' data(pathMED)
+#' library(pathMED)
+#' data(refData)
 #' \donttest{
 #' refMscore <- getMscoresRef(data=refData, genesets="tmod")
 #' }
@@ -53,7 +54,7 @@ getMscoresRef <- function(data,
                                             Healthy=Healthy,
                                             Patient=pat,
                                             BPPARAM=
-                                                BiocParallel::MulticoreParam(
+                                                BiocParallel::SnowParam(
                                                 workers = cores))
             res.i <- as.data.frame(do.call("rbind", res.i))
             return(res.i)

@@ -6,6 +6,30 @@ Author: Daniel Toro-Domínguez, Jordi Martorell-Marugán
 Maintainer: Jordi Martorell-Marugán <jordi.martorell@genyo.es>
 Description: More about what it does (maybe more than one line)
     Use four spaces when indenting paragraphs within the Description.
+Depends: R (>= 3.5)
+Suggests: Biobase,
+        BiocGenerics,
+        BiocStyle,
+        knitr,
+        rmarkdown,
+        RUnit,
+        utils
+Imports: 
+    ada,
+    BiocParallel,
+    caret,
+    caretEnsemble,
+    FCBF,
+    import,
+    klaR,
+    mboost,
+    MLeval,
+    pbapply,
+    randomForest,
+    stats,
+    stringi,
+    xgboost
+VignetteBuilder: knitr
 License: GPL-2
 Encoding: UTF-8
 LazyData: true

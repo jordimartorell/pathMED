@@ -29,16 +29,15 @@
 #' @author Daniel Toro-Dominguez, \email{daniel.toro@@genyo.es}
 #' @author Jordi Martorell-Marugan, \email{jordi.martorell@@genyo.es}
 #'
-#' @seealso \code{\link{getMscores}}
-#'
 #' @import caret
 #' @import caretEnsemble
 #' @import xgboost
-#' @import randomforest
+#' @import randomForest
 #' @import klaR
 #' @import ada
 #' @import mboost
 #' @import import
+#' @import stats
 #'
 #' @references Toro-Domínguez, D. et al (2022). \emph{Scoring personalized
 #' molecular portraits identify Systemic Lupus Erythematosus subtypes and
@@ -47,8 +46,18 @@
 #'  . Briefings in Bioinformatics. 23(5)
 #'
 #' @examples
-#' data(pathMED)
+#' library(pathMED)
+#' data(exampleRefMScore, exampleMetadata)
 #' \donttest{
+#' relevantPaths <- diseasePaths(MRef=exampleRefMScore,
+#' min_datasets=3,
+#' perc_samples=10)
+#'
+#' MScoresExample <- GetMscores(genesets = relevantPaths,
+#' Patient = exampleData,
+#' Healthy = NULL,
+#' nk = 5)
+#'
 #' fit.model <- getML(expData=MScoresExample,
 #' metadata=exampleMetadata,
 #' var2predict="Response",
@@ -128,7 +137,7 @@ getML <- function(expData,
 
         invisible(switch(featureFilter,
                          "fcbf"={
-                             training <- fast.cor.FS(training, thresh=0.0025)
+                             training <- .fast.cor.FS(training, thresh=0.0025)
                              testing <- testing[,colnames(training)]},
                          "none"={}
         ))
@@ -143,7 +152,7 @@ getML <- function(expData,
         for(model in modelResults){
             if(outcomeClass=="character"){ ## Categorical outcome
                 classLabels <- levels(as.factor(training$group))
-                predTest <- predict(model, newdata=testing,
+                predTest <- stats::predict(model, newdata=testing,
                                     type="prob")[,classLabels]
                 x <- as.factor(colnames(predTest)[apply(predTest, 1,
                                                         which.max)])
@@ -153,7 +162,7 @@ getML <- function(expData,
                 predTest <- data.frame(predTest,"obs"=y)
 
             } else{ ## Numeric outcome
-                predTest <- predict(model, newdata=testing)
+                predTest <- stats::predict(model, newdata=testing)
                 predTest <- data.frame("pred"=as.numeric(predTest),
                                      "obs"=as.numeric(testing$group))
             }
@@ -167,7 +176,7 @@ getML <- function(expData,
             cm <- NULL
         }
         return(list(models=modelResults, preds=predictionTable, cm=cm))
-    }, BPPARAM=BiocParallel::MulticoreParam(workers = cores, progressbar=TRUE))
+    }, BPPARAM=BiocParallel::SnowParam(workers = cores, progressbar=TRUE))
 
     ## 3. Best algorithm selection (model prioritization)
     stats <- as.data.frame(do.call("cbind",
@@ -231,7 +240,7 @@ getML <- function(expData,
 
     invisible(switch(featureFilter,
                      "fcbf"={
-                         expData <- fast.cor.FS(expData, thresh=0.0025)},
+                         expData <- .fast.cor.FS(expData, thresh=0.0025)},
                      "none"={}
     ))
 

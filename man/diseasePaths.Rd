@@ -17,10 +17,10 @@ diseasePaths(
 \item{min_datasets}{number of datasets that each pathway must meet the
 perc_samples threshold}
 
-\item{perc_samples:}{minimun percentage of samples in a dataset in which a
+\item{perc_samples}{minimun percentage of samples in a dataset in which a
 pathway must be significant}
 
-\item{Pcutoff:}{P-value cutoff for significance}
+\item{Pcutoff}{P-value cutoff for significance}
 }
 \value{
 A list with the selected pathways
@@ -29,7 +29,8 @@ A list with the selected pathways
 Subtitle
 }
 \examples{
-data(pathMED)
+library(pathMED)
+data(refData, refMscore)
 \donttest{
 refMscore <- getMscoresRef(data=refData, genesets="tmod")
 }
@@ -44,7 +45,7 @@ disease progression}
  . Briefings in Bioinformatics. 23(5)
 }
 \seealso{
-\code{\link{getMscoresRef}}, \code{\link{getMscores}}
+\code{\link{getMscoresRef}}
 }
 \author{
 Daniel Toro-Dominguez, \email{daniel.toro@genyo.es}

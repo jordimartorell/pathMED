@@ -27,11 +27,13 @@
 #'  . Briefings in Bioinformatics. 23(5)
 #'
 #' @examples
-#' data(pathMED)
+#' library(pathMED)
+#' data(refData, exampleRefMScore, exampleData)
 #' \donttest{
-#' refMscore <- getMscoresRef(data=refData, genesets="tmod")
+#' exampleRefMScore <- getMscoresRef(data=refData, genesets="tmod")
 #' }
-#' relevantPaths <- diseasePaths(MRef=refMscore, min_datasets=3,
+#' relevantPaths <- diseasePaths(MRef=exampleRefMScore, min_datasets=3,
+#' perc_samples=10)
 #' MScoresExample <- GetMscores(genesets = relevantPaths, Patient = exampleData,
 #' Healthy = NULL, nk = 5)
 #' @export
@@ -71,7 +73,7 @@ GetMscores <- function(Patient,
                     "healthy samples as reference")
             res <- BiocParallel::bplapply(path.list, function(x) {
                 .getMscorePath(x, Patient=Patient, Healthy=Healthy)
-            }, BPPARAM=BiocParallel::MulticoreParam(workers=cores))
+            }, BPPARAM=BiocParallel::SnowParam(workers=cores))
             res <- as.data.frame(do.call("rbind",res)); colnames(res)<-"Mscores"
         }
 
@@ -106,7 +108,7 @@ GetMscores <- function(Patient,
                                                 Healthy=Healthy,
                                                 Patient=pat,
                                                 BPPARAM=
-                                                BiocParallel::MulticoreParam(
+                                                BiocParallel::SnowParam(
                                                     workers = cores))
                 res.i <- as.data.frame(do.call("rbind", res.i))
                 return(res.i)

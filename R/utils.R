@@ -12,13 +12,14 @@
     tmpPat <- Patient[genes.path]
 
     # Zscore by path
-    sel <- ifelse(apply(tmpRef, 1, sd) == 0, FALSE, TRUE)
+    sel <- ifelse(apply(tmpRef, 1, stats::sd) == 0, FALSE, TRUE)
 
     if(sum(sel) > 2){ # only in modules with more than two genes
         tmpRef <- tmpRef[sel,]
         tmpPat <- tmpPat[sel]
 
-        Zscore.genes <- (tmpPat-apply(tmpRef, 1, mean))/apply(tmpRef, 1, sd)
+        Zscore.genes <- (tmpPat-apply(tmpRef, 1, mean))/apply(tmpRef, 1,
+                                                              stats::sd)
         path.mscore <- mean(Zscore.genes, na.rm=TRUE)
     }
   }
@@ -39,7 +40,7 @@
   patient <- .normSamples(patient[intersect(names(patient), rownames(Ref.norm))])
 
   distances <- apply(Ref.norm, 2, function(x) {
-    dist(rbind(patient, x))
+    stats::dist(rbind(patient, x))
   })
   names(distances) <- colnames(Ref.norm)
 
@@ -54,7 +55,7 @@
 ## Normalize quantitative values (expression, mscores) of a patient by z-score
 #@ x: Numeric vector of expression from a sample
 .normSamples <- function(x){
-  x <- (x-(mean(x,na.rm=TRUE)))/sd(x,na.rm=TRUE)
+  x <- (x-(mean(x,na.rm=TRUE)))/stats::sd(x,na.rm=TRUE)
   return(x)
 }
 
@@ -157,4 +158,20 @@
   return(methodList)
 }
 
+## Function to remove co-linear features
+#@ data: matrix with features in columns and samples in rows. Column of group is required (outcome to predict)
+#@ thresh: SU threshold
+.fast.cor.FS<-function(data,
+                      thresh=0.0025){
+    stopifnot('group' %in% colnames(data))
 
+    y <- as.factor(data$group)
+    x <- subset(data, select = -c(group))
+    dis <- FCBF::discretize_exprs(t(x))
+
+    fcbf.res <- FCBF::fcbf(dis, y, verbose=T, thresh)
+    xx <- x[,fcbf.res$index]
+    xx <- as.data.frame(cbind(group=y, xx))
+
+    return(xx)
+}

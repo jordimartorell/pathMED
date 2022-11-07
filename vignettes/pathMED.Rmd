@@ -26,12 +26,9 @@ abstract: >
   GSEA analysis for DMRs identification, to plot the results and to integrate 
   them with expression data.
 output:
-  BiocStyle::pdf_document:
-  # pdf_document:
-  #   template: NULL
-
+  BiocStyle::html_document
 vignette: >
-  %\VignetteIndexEntry{Predefined DMRs identification with mCSEA package}
+  %\VignetteIndexEntry{Scoring Personalized Molecular Portraits}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 references:
@@ -81,10 +78,10 @@ The firs step is to...
 
 ```{r, message = FALSE, results='hide', warning=FALSE}
 library(pathMED)
-data(pathMED)
+data(refData, exampleRefMScore, exampleData, exampleMetadata)
 ```
 
-We loaded to our R environment **refData**, **refMscore**, **exampleData** and 
+We loaded to our R environment **refData**, **exampleRefMScore**, **exampleData** and 
 **exampleMetadata** objects. **refData** 
 is a list with 4 datasets extracted from...
 For each dataset, there is a gene expression matrix for the patients ("Disease")
@@ -126,7 +123,7 @@ statistically significant (**perc_samples** parameter) and the minimum number
 of datasets that must pass this threshold (**min_datasets** parameter).
 
 ```{r, warning=FALSE}
-relevantPaths <- diseasePaths(MRef=refMscore,
+relevantPaths <- diseasePaths(MRef=exampleRefMScore,
                        min_datasets=3,
                        perc_samples=10)
 ```
@@ -159,7 +156,7 @@ calculated in the step 2 (**expData**), and a data frame with the metadata of
 the samples (**metadata**). One or several algorithms may be selected with the 
 **algorithms** parameter (see the function help).
 
-```{r, warning=FALSE}
+```{r, warning=FALSE, eval=FALSE}
 fit.model <- getML(expData=MScoresExample,
                  metadata=exampleMetadata,
                  var2predict="Response",

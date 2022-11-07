@@ -5,16 +5,16 @@
 #' @param MRef output from the getMscoresRef function
 #' @param min_datasets number of datasets that each pathway must meet the
 #' perc_samples threshold
-#' @param perc_samples: minimun percentage of samples in a dataset in which a
+#' @param perc_samples minimun percentage of samples in a dataset in which a
 #' pathway must be significant
-#' @param Pcutoff: P-value cutoff for significance
+#' @param Pcutoff P-value cutoff for significance
 #'
 #' @return A list with the selected pathways
 #'
 #' @author Daniel Toro-Dominguez, \email{daniel.toro@@genyo.es}
 #' @author Jordi Martorell-Marugan, \email{jordi.martorell@@genyo.es}
 #'
-#' @seealso \code{\link{getMscoresRef}}, \code{\link{getMscores}}
+#' @seealso \code{\link{getMscoresRef}}
 #'
 #' @references Toro-Domínguez, D. et al (2022). \emph{Scoring personalized
 #' molecular portraits identify Systemic Lupus Erythematosus subtypes and
@@ -23,7 +23,8 @@
 #'  . Briefings in Bioinformatics. 23(5)
 #'
 #' @examples
-#' data(pathMED)
+#' library(pathMED)
+#' data(refData, refMscore)
 #' \donttest{
 #' refMscore <- getMscoresRef(data=refData, genesets="tmod")
 #' }
@@ -42,7 +43,8 @@ diseasePaths <- function(MRef,
         apply(dat, 1, function(x) {
             values <- as.numeric(x[!is.na(x)])
             values <- (length(values[abs(values) >=
-                                        abs(qnorm(Pcutoff))])/length(x))*100
+                                        abs(stats::qnorm(Pcutoff))])/
+                           length(x))*100
             return(values)
         })
     })

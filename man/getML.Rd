@@ -60,8 +60,18 @@ for AUC plots
 Retrieve best model for a specific outcome
 }
 \examples{
-data(pathMED)
+library(pathMED)
+data(exampleRefMScore, exampleMetadata)
 \donttest{
+relevantPaths <- diseasePaths(MRef=exampleRefMScore,
+min_datasets=3,
+perc_samples=10)
+
+MScoresExample <- GetMscores(genesets = relevantPaths,
+Patient = exampleData,
+Healthy = NULL,
+nk = 5)
+
 fit.model <- getML(expData=MScoresExample,
 metadata=exampleMetadata,
 var2predict="Response",
@@ -81,9 +91,6 @@ molecular portraits identify Systemic Lupus Erythematosus subtypes and
 predict individualized drug responses, symptomatology and
 disease progression}
  . Briefings in Bioinformatics. 23(5)
-}
-\seealso{
-\code{\link{getMscores}}
 }
 \author{
 Daniel Toro-Dominguez, \email{daniel.toro@genyo.es}
