@@ -37,7 +37,7 @@
 #' @import ada
 #' @import mboost
 #' @import import
-#' @import stats
+#' @import kernlab
 #'
 #' @references Toro-Domínguez, D. et al (2022). \emph{Scoring personalized
 #' molecular portraits identify Systemic Lupus Erythematosus subtypes and
@@ -46,7 +46,6 @@
 #'  . Briefings in Bioinformatics. 23(5)
 #'
 #' @examples
-#' library(pathMED)
 #' data(exampleRefMScore, exampleMetadata)
 #' \donttest{
 #' relevantPaths <- diseasePaths(MRef=exampleRefMScore,
@@ -88,11 +87,6 @@ getML <- function(expData,
         stop("var2predict must be a column of metadata")
     }
 
-    # invisible(lapply(c(,'mlbench','nnet',
-    #                    '','pROC','ROCR',, 'plyr','rpart','pROC','brnn',
-    #                    'elasticnet','','',''),require,
-    #                  character.only = TRUE))
-
     ## 1. Formatting data input
     samples <- intersect(rownames(metadata), colnames(expData))
 
@@ -104,25 +98,27 @@ getML <- function(expData,
     metadata <- metadata[samples,]
 
     expData <- data.frame('group'=metadata[,var2predict],
-                        as.data.frame(t(expData)))
-    colnames(expData) <- stringi::stri_replace_all_regex(colnames(expData),
-                                              pattern = c('/',' ','-'),
-                                              replacement = c('.','.','.'),
-                                              vectorize=FALSE)
+                          as.data.frame(t(expData)))
+    colnames(expData) <- stringi::stri_replace_all_regex(
+        colnames(expData),
+        pattern = c('/',' ','-'),
+        replacement = c('.','.','.'),
+        vectorize=FALSE)
     expData <- expData[!is.na(expData$group),]
     outcomeClass <- class(expData$group)
-    if (outcomeClass != "character"){
+    if (!methods::is(expData$group, "character")){
         prior <- "Corr"
-        }
+    }
 
     ## Get algorithm variables
     methodList <- .methodsML(algorithms=algorithms, add=NULL,
-                            outcomeClass=outcomeClass, training=expData)
+                             outcomeClass=outcomeClass, training=expData)
 
 
     ## 2. Outerfolds
-    outerSplits <- unname(sapply(seq_len(outerfolds), function(x){
-        createDataPartition(y=expData$group, p=splitProp, list=TRUE)}))
+    outerSplits <- unname(vapply(seq_len(outerfolds), function(x){
+        createDataPartition(y=expData$group, p=splitProp, list=TRUE)},
+        list(seq_len(outerfolds))))
 
     resOuter <- BiocParallel::bplapply(outerSplits, function(x){
         training <- expData[as.numeric(unlist(x)),]
@@ -153,7 +149,7 @@ getML <- function(expData,
             if(outcomeClass=="character"){ ## Categorical outcome
                 classLabels <- levels(as.factor(training$group))
                 predTest <- stats::predict(model, newdata=testing,
-                                    type="prob")[,classLabels]
+                                           type="prob")[,classLabels]
                 x <- as.factor(colnames(predTest)[apply(predTest, 1,
                                                         which.max)])
                 y <- as.factor(testing$group)
@@ -164,9 +160,10 @@ getML <- function(expData,
             } else{ ## Numeric outcome
                 predTest <- stats::predict(model, newdata=testing)
                 predTest <- data.frame("pred"=as.numeric(predTest),
-                                     "obs"=as.numeric(testing$group))
+                                       "obs"=as.numeric(testing$group))
             }
-            predictionTable <- append(predictionTable, list(na.omit(predTest)))
+            predictionTable <- append(predictionTable,
+                                      list(stats::na.omit(predTest)))
         }
 
         names(predictionTable) <- names(modelResults)
@@ -180,28 +177,28 @@ getML <- function(expData,
 
     ## 3. Best algorithm selection (model prioritization)
     stats <- as.data.frame(do.call("cbind",
-                                 lapply(names(methodList),
-                                        function(mod){
-        if(outcomeClass=="character"){
-            cm.mod <- do.call("cbind", lapply(resOuter,function(x){
-                c(x$cm[[mod]]$overall["Accuracy"], x$cm[[mod]]$byClass)
-            }))
+                                   lapply(names(methodList),
+      function(mod){
+          if(outcomeClass=="character"){
+              cm.mod <- do.call("cbind", lapply(resOuter,function(x){
+                  c(x$cm[[mod]]$overall["Accuracy"], x$cm[[mod]]$byClass)
+              }))
 
-            allpreds <- do.call("rbind", lapply(resOuter,
-                                                function(x){x$preds[[mod]]}))
-            AUC <- invisible(MLeval::evalm(allpreds))$stdres[[1]]["AUC-ROC",
-                                                                  "Score"]
-            statsTmp <- c(AUC, apply(cm.mod, 1, mean))
-            names(statsTmp)[1] <- "AUC"
-            return(statsTmp)
+              allpreds <- do.call("rbind", lapply(resOuter,
+                                                  function(x){x$preds[[mod]]}))
+              AUC <- invisible(MLeval::evalm(allpreds))$stdres[[1]]["AUC-ROC",
+                                                                    "Score"]
+              statsTmp <- c(AUC, apply(cm.mod, 1, mean))
+              names(statsTmp)[1] <- "AUC"
+              return(statsTmp)
 
-        } else{
-            allpreds <- do.call("rbind", lapply(resOuter,
-                                                function(x){x$preds[[mod]]}))
-            statsTmp <- cor(allpreds$pred, allpreds$obs)
+          } else{
+              allpreds <- do.call("rbind", lapply(resOuter,
+                                                  function(x){x$preds[[mod]]}))
+              statsTmp <- stats::cor(allpreds$pred, allpreds$obs)
 
-        }
-    })))
+          }
+      })))
 
     colnames(stats) <- names(methodList)
 
@@ -210,17 +207,18 @@ getML <- function(expData,
                "AUC"={stats <- stats[,order(stats["AUC",],decreasing=TRUE)]},
                "BAUC"={
                    ord <- apply(stats[c("AUC","Balanced Accuracy"),], 2 ,sum)
-                   stats <- stats[,order(ord,decreasing = T)]},
+                   stats <- stats[,order(ord,decreasing=TRUE)]},
                "Manual"={
                    print(stats)
                    sel <- as.character(readline("Select algorithm > "))
                    stats <- stats[,c(sel,setdiff(colnames(stats),sel))]},
-               "BA"={stats <- stats[,order(as.numeric(stats["Balanced Accuracy",]),
-                                         decreasing=TRUE)]},
+               "BA"={stats <- stats[,order(as.numeric(
+                   stats["Balanced Accuracy",]),
+                   decreasing=TRUE)]},
                "Corr"={
                    rownames(stats) <- "Correlation"
                    stats <- stats[,order(as.numeric(stats["Correlation",]),
-                                       decreasing=TRUE)]})
+                                         decreasing=TRUE)]})
     }
 
     ## 4. Build model with all data, best algorithm and best parameters
@@ -230,7 +228,7 @@ getML <- function(expData,
 
     bestTune <- data.frame(lapply(seq_len(ncol(parameters)), function(x){
         tmpValues <- data.frame(parameters[,x])
-        if(class(tmpValues[,1])!="numeric"){
+        if(!methods::is(tmpValues[,1], "numeric")){
             tmpValues <- names(table(tmpValues))[order(table(tmpValues))][1]
         }else{
             tmpValues <- apply(tmpValues, 2, mean)
@@ -245,17 +243,17 @@ getML <- function(expData,
     ))
 
     my_control <- trainControl(method="repeatedcv", number=innerfolds,
-                             savePredictions="final", repeats=innerRepeats,
-                             classProbs=ifelse(outcomeClass=="character",
-                                               TRUE, FALSE))
+                               savePredictions="final", repeats=innerRepeats,
+                               classProbs=ifelse(outcomeClass=="character",
+                                                 TRUE, FALSE))
 
     fit.model <- train(group~.,data=expData, method=colnames(stats)[1],
-                     tuneGrid=bestTune, trControl=my_control)
+                       tuneGrid=bestTune, trControl=my_control)
     auc <- NULL
     if(outcomeClass=="character"){
         allpreds <- do.call("rbind",
-                          lapply(resOuter,
-                                 function(x){x$preds[[colnames(stats)[1]]]}))
+                            lapply(resOuter,
+                                   function(x){x$preds[[colnames(stats)[1]]]}))
         auc <- MLeval::evalm(allpreds)
     }
     return(list(model=fit.model, stats=stats, bestTune=bestTune, auc=auc))

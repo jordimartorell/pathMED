@@ -29,12 +29,11 @@ A list with the selected pathways
 Subtitle
 }
 \examples{
-library(pathMED)
-data(refData, refMscore)
+data(refData, exampleRefMScore)
 \donttest{
-refMscore <- getMscoresRef(data=refData, genesets="tmod")
+exampleRefMScore <- getMscoresRef(data=refData, genesets="tmod")
 }
-relevantPaths <- diseasePaths(MRef=refMscore, min_datasets=3,
+relevantPaths <- diseasePaths(MRef=exampleRefMScore, min_datasets=3,
 perc_samples=10)
 }
 \references{

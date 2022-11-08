@@ -60,7 +60,6 @@ for AUC plots
 Retrieve best model for a specific outcome
 }
 \examples{
-library(pathMED)
 data(exampleRefMScore, exampleMetadata)
 \donttest{
 relevantPaths <- diseasePaths(MRef=exampleRefMScore,

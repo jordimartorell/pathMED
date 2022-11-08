@@ -27,7 +27,6 @@ the third one is the input gene expression data.
 Retrieve Mscore for a list of datasets
 }
 \examples{
-library(pathMED)
 data(refData)
 \donttest{
 refMscore <- getMscoresRef(data=refData, genesets="tmod")

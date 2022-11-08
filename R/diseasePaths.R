@@ -23,7 +23,6 @@
 #'  . Briefings in Bioinformatics. 23(5)
 #'
 #' @examples
-#' library(pathMED)
 #' data(refData, exampleRefMScore)
 #' \donttest{
 #' exampleRefMScore <- getMscoresRef(data=refData, genesets="tmod")
@@ -43,7 +42,7 @@ diseasePaths <- function(MRef,
         apply(dat, 1, function(x) {
             values <- as.numeric(x[!is.na(x)])
             values <- (length(values[abs(values) >=
-                                        abs(stats::qnorm(Pcutoff))])/
+                                         abs(stats::qnorm(Pcutoff))])/
                            length(x))*100
             return(values)
         })
@@ -61,8 +60,8 @@ diseasePaths <- function(MRef,
 
     # Build the expression reference
     reference <- .MReference(expr.list=expr.list,
-                          mscore.list=MScores,
-                          geneset.list=genesets)
+                             mscore.list=MScores,
+                             geneset.list=genesets)
 
     return(list(genesets=genesets, reference=reference))
 }

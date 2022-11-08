@@ -1,5 +1,5 @@
 citEntry(entry="ARTICLE",
-    author = as.person(c("Daniel Toro-Domínguez", "Jordi Martorell-Marugán", "et al.")),
+    author = as.person(c("Daniel Toro-Dominguez", "Jordi Martorell-Marugan", "et al.")),
     title = "Scoring personalized molecular portraits identify Systemic Lupus
   Erythematosus subtypes and predict individualized drug responses,
   symptomatology and disease progression",
@@ -8,7 +8,7 @@ citEntry(entry="ARTICLE",
     publisher = "OXFORD ACADEMIC",
     URL = "https://academic.oup.com/bib/article/23/5/bbac332/6659743",
     journal = "Briefings in Bioinformatics",
-    textVersion = paste("Daniel Toro-Domínguez, Jordi Martorell-Marugán, M..",
+    textVersion = paste("Daniel Toro-Dominguez, Jordi Martorell-Marugan, M..",
                         "Scoring personalized molecular portraits identify Systemic Lupus
   Erythematosus subtypes and predict individualized drug responses,
   symptomatology and disease progression",

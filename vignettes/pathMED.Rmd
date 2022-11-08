@@ -81,8 +81,8 @@ library(pathMED)
 data(refData, exampleRefMScore, exampleData, exampleMetadata)
 ```
 
-We loaded to our R environment **refData**, **exampleRefMScore**, **exampleData** and 
-**exampleMetadata** objects. **refData** 
+We loaded to our R environment **refData**, **exampleRefMScore**, 
+**exampleData** and **exampleMetadata** objects. **refData** 
 is a list with 4 datasets extracted from...
 For each dataset, there is a gene expression matrix for the patients ("Disease")
 and another one for the healthy controls ("Healthy"). You should prepare an

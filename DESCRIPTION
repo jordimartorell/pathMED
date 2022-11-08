@@ -2,11 +2,10 @@ Package: pathMED
 Type: Package
 Title: Scoring Personalized Molecular Portraits
 Version: 0.1.0
-Author: Daniel Toro-Domínguez, Jordi Martorell-Marugán
-Maintainer: Jordi Martorell-Marugán <jordi.martorell@genyo.es>
+Authors@R:  person("Jordi", "Martorell-Marugán", email="jmartorellm@gmail.com", role=c("cre", "aut"), comment = c(ORCID = "0000-0002-5186-0735"))
 Description: More about what it does (maybe more than one line)
     Use four spaces when indenting paragraphs within the Description.
-Depends: R (>= 3.5)
+Depends: R (>= 4.1.0)
 Suggests: Biobase,
         BiocGenerics,
         BiocStyle,
@@ -21,6 +20,7 @@ Imports:
     caretEnsemble,
     FCBF,
     import,
+    kernlab,
     klaR,
     mboost,
     MLeval,
@@ -30,7 +30,11 @@ Imports:
     stringi,
     xgboost
 VignetteBuilder: knitr
+biocViews: Pathways,
+           Classification,
+           FeatureExtraction,
+           Transcriptomics
 License: GPL-2
 Encoding: UTF-8
-LazyData: true
+LazyData: false
 RoxygenNote: 7.1.2

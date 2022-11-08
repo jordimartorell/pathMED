@@ -1,4 +1,3 @@
-
 #' Calculate M-scores for a dataset
 #'
 #' Subtitle
@@ -27,7 +26,6 @@
 #'  . Briefings in Bioinformatics. 23(5)
 #'
 #' @examples
-#' library(pathMED)
 #' data(refData, exampleRefMScore, exampleData)
 #' \donttest{
 #' exampleRefMScore <- getMscoresRef(data=refData, genesets="tmod")
@@ -62,9 +60,10 @@ GetMscores <- function(Patient,
             Patient <- Patient[genes]
 
             res <- .getNearSample(patient=Patient,
-                                Ref.norm=Reference$Reference.normalized[genes,],
-                                Ref.mscore=Reference$Reference.mscore,
-                                k=nk)
+                                  Ref.norm=Reference$Reference.normalized[
+                                        genes,],
+                                  Ref.mscore=Reference$Reference.mscore,
+                                  k=nk)
             res <- as.data.frame(res)
             colnames(res)<-"Mscores"
 
@@ -84,7 +83,7 @@ GetMscores <- function(Patient,
                     ncol(Patient), " patients")
 
             genes <- intersect(rownames(Patient),
-                             rownames(Reference$Reference.normalized))
+                               rownames(Reference$Reference.normalized))
             Patient <- Patient[genes,]
 
             Mscores <- pbapply::pbapply(Patient, 2, function(x) {
@@ -108,8 +107,8 @@ GetMscores <- function(Patient,
                                                 Healthy=Healthy,
                                                 Patient=pat,
                                                 BPPARAM=
-                                                BiocParallel::SnowParam(
-                                                    workers = cores))
+                                                    BiocParallel::SnowParam(
+                                                        workers = cores))
                 res.i <- as.data.frame(do.call("rbind", res.i))
                 return(res.i)
             })

@@ -28,7 +28,6 @@ the input methData, pheno and platform objects
 Subtitle
 }
 \examples{
-library(pathMED)
 data(refData, exampleRefMScore, exampleData)
 \donttest{
 exampleRefMScore <- getMscoresRef(data=refData, genesets="tmod")
