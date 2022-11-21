@@ -35,7 +35,7 @@
 #' MScoresExample <- GetMscores(genesets = relevantPaths, Patient = exampleData,
 #' Healthy = NULL, nk = 5)
 #' @export
-GetMscores <- function(Patient,
+getMscores <- function(Patient,
                        Healthy=NULL,
                        genesets,
                        nk=5,

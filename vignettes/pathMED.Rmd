@@ -140,7 +140,7 @@ may be specified with the **nk** parameter. The output is a matrix with the
 M-score of each gene set (rows) and sample (columns).
 
 ```{r, warning=FALSE}
-MScoresExample <- GetMscores(genesets = relevantPaths,
+MScoresExample <- getMscores(genesets = relevantPaths,
                             Patient = exampleData,
                             Healthy = NULL,
                             nk = 5)

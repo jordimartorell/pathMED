@@ -42,11 +42,16 @@ getMscoresRef <- function(data,
         path.list <- genesetsData[[genesets]]
     }
 
-    data.Mscore <- pbapply::pblapply(data, function (dataset) {
+    lengthData <- length(data)
+
+    data.Mscore <- lapply(seq_len(lengthData), function (i) {
+        dataset <- data[[i]]
         Patient <- dataset[[1]]
         Healthy <- dataset[[2]]
 
-        res <- apply(Patient, 2, function(pat) {
+        message("Running dataset ", i, " of ", lengthData)
+
+        res <- pbapply::pbapply(Patient, 2, function(pat) {
             names(pat) <- rownames(Patient)
             res.i <- BiocParallel::bplapply(path.list,
                                             .getMscorePath,
