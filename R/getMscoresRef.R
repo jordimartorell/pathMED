@@ -27,9 +27,7 @@
 #'
 #' @examples
 #' data(refData)
-#' \donttest{
 #' refMscore <- getMscoresRef(data=refData, genesets="tmod")
-#' }
 #' @export
 getMscoresRef <- function(data,
                           genesets = "reactome",
@@ -50,7 +48,6 @@ getMscoresRef <- function(data,
         Healthy <- as.matrix(dataset[[2]])
         Healthy <- Healthy[ifelse(apply(Healthy, 1, stats::sd) == 0, FALSE,
                                   TRUE),]
-
 
         message("Running dataset ", i, " of ", lengthData)
         res <- BiocParallel::bplapply(Patient, function(pat, geneNames,

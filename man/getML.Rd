@@ -60,8 +60,9 @@ for AUC plots
 Retrieve best model for a specific outcome
 }
 \examples{
-data(exampleRefMScore, exampleMetadata)
+data(refData, exampleData, exampleMetadata)
 \donttest{
+exampleRefMScore <- getMscoresRef(data=refData, genesets="tmod")
 relevantPaths <- diseasePaths(MRef=exampleRefMScore,
 min_datasets=3,
 perc_samples=10)

@@ -28,9 +28,7 @@ Retrieve Mscore for a list of datasets
 }
 \examples{
 data(refData)
-\donttest{
 refMscore <- getMscoresRef(data=refData, genesets="tmod")
-}
 }
 \references{
 Toro-Domínguez, D. et al (2022). \emph{Scoring personalized

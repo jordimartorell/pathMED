@@ -77,6 +77,7 @@
     common.genes <- Reduce(intersect, all.genes)
 
     ## Reference gene-expression
+    names(expr.list) <- NULL
     Reference <- lapply(expr.list, function(x) {return(x[[1]][common.genes,])})
     Reference <- do.call(cbind, Reference)
     Reference.normalized<-apply(Reference, 2, .normSamples)

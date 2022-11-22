@@ -26,10 +26,8 @@
 #'  . Briefings in Bioinformatics. 23(5)
 #'
 #' @examples
-#' data(refData, exampleRefMScore, exampleData)
-#' \donttest{
+#' data(refData, exampleData)
 #' exampleRefMScore <- getMscoresRef(data=refData, genesets="tmod")
-#' }
 #' relevantPaths <- diseasePaths(MRef=exampleRefMScore, min_datasets=3,
 #' perc_samples=10)
 #' MScoresExample <- GetMscores(genesets = relevantPaths, Patient = exampleData,
@@ -87,6 +85,7 @@ getMscores <- function(Patient,
             Patient <- Patient[genes,]
 
             Mscores <- pbapply::pbapply(Patient, 2, function(x) {
+                names(x) <- genes
                 .getNearSample(patient=x,
                                Ref.norm=Reference$Reference.normalized[genes,],
                                Ref.mscore=Reference$Reference.mscore,

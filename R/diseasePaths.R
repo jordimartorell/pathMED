@@ -23,10 +23,8 @@
 #'  . Briefings in Bioinformatics. 23(5)
 #'
 #' @examples
-#' data(refData, exampleRefMScore)
-#' \donttest{
+#' data(refData)
 #' exampleRefMScore <- getMscoresRef(data=refData, genesets="tmod")
-#' }
 #' relevantPaths <- diseasePaths(MRef=exampleRefMScore, min_datasets=3,
 #' perc_samples=10)
 #' @export
