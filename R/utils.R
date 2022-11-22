@@ -13,20 +13,14 @@
         tmpPat <- Patient[genes.path]
 
         # Zscore by path
-        sel <- ifelse(apply(tmpRef, 1, stats::sd) == 0, FALSE, TRUE)
+        Zscore.genes <- (tmpPat-rowMeans(tmpRef))/matrixStats::rowSds(tmpRef)
+        path.mscore <- mean(Zscore.genes, na.rm=TRUE)
 
-        if(sum(sel) > 2){ # only in modules with more than two genes
-            tmpRef <- tmpRef[sel,]
-            tmpPat <- tmpPat[sel]
-
-            Zscore.genes <- (tmpPat-apply(tmpRef, 1, mean))/apply(tmpRef, 1,
-                                                                  stats::sd)
-            path.mscore <- mean(Zscore.genes, na.rm=TRUE)
-        }
     }
     names(path.mscore) <- names(path)
     return(path.mscore)
 }
+
 
 
 ## Impute m-score for a patient from gene expression based on a gene expression
