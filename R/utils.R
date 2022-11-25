@@ -13,7 +13,7 @@
         tmpPat <- Patient[genes.path]
 
         # Zscore by path
-        Zscore.genes <- (tmpPat-rowMeans(tmpRef))/matrixStats::rowSds(tmpRef)
+        Zscore.genes <- (tmpPat-tmpRef[,1])/tmpRef[,2]
         path.mscore <- mean(Zscore.genes, na.rm=TRUE)
 
     }

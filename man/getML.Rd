@@ -67,7 +67,7 @@ relevantPaths <- diseasePaths(MRef=exampleRefMScore,
 min_datasets=3,
 perc_samples=10)
 
-MScoresExample <- GetMscores(genesets = relevantPaths,
+MScoresExample <- getMscores(genesets = relevantPaths,
 Patient = exampleData,
 Healthy = NULL,
 nk = 5)

@@ -48,7 +48,9 @@ getMscoresRef <- function(data,
         Healthy <- as.matrix(dataset[[2]])
         Healthy <- Healthy[ifelse(apply(Healthy, 1, stats::sd) == 0, FALSE,
                                   TRUE),]
-
+        H <- data.frame(rowMeans(Healthy),
+                      matrixStats::rowSds(Healthy))
+        rownames(H) <- rownames(Healthy)
         message("Running dataset ", i, " of ", lengthData)
         res <- BiocParallel::bplapply(Patient, function(pat, geneNames,
                                                         path.list, Healthy) {
@@ -60,10 +62,10 @@ getMscoresRef <- function(data,
             res.i <- as.data.frame(do.call("rbind", res.i))
             return(res.i)
         },
-        geneNames = rownames(Patient),
-        path.list = path.list,
-        Healthy=Healthy,
-        BPPARAM=BiocParallel::SnowParam(workers = cores, progressbar=TRUE))
+        geneNames=rownames(Patient),
+        path.list=path.list,
+        Healthy=H,
+        BPPARAM=BiocParallel::SnowParam(workers=cores, progressbar=TRUE))
 
         res <- do.call("cbind", res)
         colnames(res) <- colnames(Patient)

@@ -32,7 +32,7 @@ data(refData, exampleData)
 exampleRefMScore <- getMscoresRef(data=refData, genesets="tmod")
 relevantPaths <- diseasePaths(MRef=exampleRefMScore, min_datasets=3,
 perc_samples=10)
-MScoresExample <- GetMscores(genesets = relevantPaths, Patient = exampleData,
+MScoresExample <- getMscores(genesets = relevantPaths, Patient = exampleData,
 Healthy = NULL, nk = 5)
 }
 \references{

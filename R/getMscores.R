@@ -30,7 +30,7 @@
 #' exampleRefMScore <- getMscoresRef(data=refData, genesets="tmod")
 #' relevantPaths <- diseasePaths(MRef=exampleRefMScore, min_datasets=3,
 #' perc_samples=10)
-#' MScoresExample <- GetMscores(genesets = relevantPaths, Patient = exampleData,
+#' MScoresExample <- getMscores(genesets = relevantPaths, Patient = exampleData,
 #' Healthy = NULL, nk = 5)
 #' @export
 getMscores <- function(Patient,
@@ -68,10 +68,13 @@ getMscores <- function(Patient,
         } else {
             message("Healthy samples supplied, calculating M-scores using ",
                     "healthy samples as reference")
-            res <- BiocParallel::bplapply(path.list, function(x) {
-                .getMscorePath(x, Patient=Patient, Healthy=Healthy)
-            }, BPPARAM=BiocParallel::SnowParam(workers=cores))
-            res <- as.data.frame(do.call("rbind",res)); colnames(res)<-"Mscores"
+            H <- data.frame(rowMeans(Healthy),
+                          matrixStats::rowSds(Healthy))
+            res <- lapply(path.list, function(x) {
+                .getMscorePath(x, Patient=Patient, Healthy=H)
+            })
+            res <- as.data.frame(do.call("rbind", res))
+            colnames(res) <- "Mscores"
         }
 
     } else { ## Several patients
@@ -98,7 +101,8 @@ getMscores <- function(Patient,
             message("Healthy samples supplied. Calculating M-scores using ",
                     "healthy samples as reference for ", ncol(Patient),
                     " patients")
-
+            H <- data.frame(rowMeans(Healthy),
+                          matrixStats::rowSds(Healthy))
             res <- BiocParallel::bplapply(Patient, function(pat, geneNames,
                                                             path.list, Healthy) {
                 names(pat) <- geneNames
@@ -109,9 +113,9 @@ getMscores <- function(Patient,
                 res.i <- as.data.frame(do.call("rbind", res.i))
                 return(res.i)
             },
-            geneNames = rownames(Patient),
-            path.list = path.list,
-            Healthy=Healthy,
+            geneNames=rownames(Patient),
+            path.list=path.list,
+            Healthy=H,
             BPPARAM=BiocParallel::SnowParam(workers = cores, progressbar=TRUE))
             res <- do.call("cbind", res)
             colnames(res) <- colnames(Patient)
