@@ -99,18 +99,20 @@ getMscores <- function(Patient,
                     "healthy samples as reference for ", ncol(Patient),
                     " patients")
 
-            res <- pbapply::pbapply(Patient, 2, function(pat) {
-                names(pat) <- rownames(Patient)
-                res.i <- BiocParallel::bplapply(path.list,
-                                                .getMscorePath,
-                                                Healthy=Healthy,
-                                                Patient=pat,
-                                                BPPARAM=
-                                                    BiocParallel::SnowParam(
-                                                        workers = cores))
+            res <- BiocParallel::bplapply(Patient, function(pat, geneNames,
+                                                            path.list, Healthy) {
+                names(pat) <- geneNames
+                res.i <- lapply(path.list,
+                                .getMscorePath,
+                                Healthy=Healthy,
+                                Patient=pat)
                 res.i <- as.data.frame(do.call("rbind", res.i))
                 return(res.i)
-            })
+            },
+            geneNames = rownames(Patient),
+            path.list = path.list,
+            Healthy=Healthy,
+            BPPARAM=BiocParallel::SnowParam(workers = cores, progressbar=TRUE))
             res <- do.call("cbind", res)
             colnames(res) <- colnames(Patient)
         }
