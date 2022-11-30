@@ -48,6 +48,7 @@ getMscoresRef <- function(data,
         Healthy <- as.matrix(dataset[[2]])
         Healthy <- Healthy[ifelse(apply(Healthy, 1, stats::sd) == 0, FALSE,
                                   TRUE),]
+        Healthy <- Healthy[!is.na(rownames(Healthy)),]
         H <- data.frame(rowMeans(Healthy),
                       matrixStats::rowSds(Healthy))
         rownames(H) <- rownames(Healthy)
