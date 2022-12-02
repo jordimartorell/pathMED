@@ -139,9 +139,9 @@ getML <- function(expData,
                          "none"={}
         ))
 
-        modelResults <- caretList(group~., data=training,
-                                  trControl=my_control,
-                                  tuneList=methodList)
+        modelResults <- suppressMessages(caretList(group~., data=training,
+                                                   trControl=my_control,
+                                                   tuneList=methodList))
 
         ## Get model stats for outerfolds
         predictionTable <- list()
@@ -187,8 +187,8 @@ getML <- function(expData,
 
               allpreds <- do.call("rbind", lapply(resOuter,
                                                   function(x){x$preds[[mod]]}))
-              AUC <- invisible(MLeval::evalm(allpreds))$stdres[[1]]["AUC-ROC",
-                                                                    "Score"]
+              AUC <- invisible(MLeval::evalm(allpreds, silent=TRUE))$stdres[[
+                  1]]["AUC-ROC", "Score"]
               statsTmp <- c(AUC, apply(cm.mod, 1, mean))
               names(statsTmp)[1] <- "AUC"
               return(statsTmp)
@@ -255,7 +255,7 @@ getML <- function(expData,
         allpreds <- do.call("rbind",
                             lapply(resOuter,
                                    function(x){x$preds[[colnames(stats)[1]]]}))
-        auc <- MLeval::evalm(allpreds)
+        auc <- MLeval::evalm(allpreds, silent=TRUE)
     }
     return(list(model=fit.model, stats=stats, bestTune=bestTune, auc=auc))
 }
