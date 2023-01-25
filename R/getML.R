@@ -2,24 +2,26 @@
 #'
 #' Retrieve best model for a specific outcome
 #'
-#' @param expData expression/mscore matrix. Samples in columns and features in
-#' rows
+#' @param expData Feature matrix. Samples in columns and features in
+#' rows. expData must be a numerical matrix
 #' @param metadata dataframe with information for each sample. Samples in rows
 #' and variables in columns
 #' @param algorithms 'glm','lm','lda','xgbTree','rf','knn','svmLinear','nnet',
-#' 'svmRadial','nb','lars','rpart' or 'all' (all algorithms are used)
+#' 'svmRadial','nb','lars','rpart', 'gamboost', 'ada', 'brnn', 'enet' or 'all'
+#' (all algorithms are used)
 #' @param add additional model list (supported by caret) in format:
 #' add=list(modelName = caretModelSpec(method='modelName',
 #' tuneGrid=(.parameters='values')))
 #' @param var2predict character with the column name of the @metadata to predict
-#' @param outerfolds number of external folds in which exp.data is divided
-#' @param splitProp proportion of samples used as train for the outerfolds (0-1)
-#' @param innerfolds number of internal folds (for parameter tuning)
-#' @param innerRepeats number of repetitions of the parameter tuning process
+#' @param subsamples number of sub-samples in which exp.data is divided
+#' @param splitProp proportion of samples used as train for the subsamples (0-1)
+#' @param foldsCV number of internal folds (for parameter tuning)
+#' @param repeatsCV number of repetitions of the parameter tuning process
+#' @param positiveClass outcome vaue that must be considered as positive class
+#' (for categoric outcomes)
 #' @param featureFilter method to reduce number of features (none,fcbf)
 #' @param prior rank best model based on AUC (AUC), the mean of AUC and the
 #' balanced accuracy (BAUC), the balanced accuracy (BA) or manual (Manual)
-#' @param cores Number of cores to be used.
 #'
 #' @return A list with four elements. The first one is the model. The second one
 #' is a table with different metrics obtained. The third one is a list with the
@@ -62,10 +64,10 @@
 #' metadata=exampleMetadata,
 #' var2predict="Response",
 #' algorithms="svmLinear",
-#' outerfolds=10,
+#' subsamples=5,
 #' splitProp=0.8,
-#' innerfolds=10,
-#' innerRepeats=10,
+#' foldsCV=10,
+#' repeatsCV=10,
 #' featureFilter = "none",
 #' prior="BAUC")
 #' }
@@ -76,13 +78,13 @@ getML <- function(expData,
                   algorithms='all',
                   add=NULL,
                   var2predict,
-                  outerfolds=4,
+                  subsamples=4,
                   splitProp=0.75,
-                  innerfolds=10,
-                  innerRepeats=5,
+                  foldsCV=10,
+                  repeatsCV=5,
+                  positiveClass=NULL,
                   featureFilter='none',
-                  prior='AUC',
-                  cores=1){
+                  prior='AUC'){
 
     if (!var2predict %in% colnames(metadata)) {
         stop("var2predict must be a column of metadata")
@@ -110,27 +112,40 @@ getML <- function(expData,
     if (!methods::is(expData$group, "character")){
         prior <- "Corr"
     }
+    if(is.null(positiveClass)){
+        positiveClass<- levels(metadata$group)[1]
+    }
 
     ## Get algorithm variables
     methodList <- .methodsML(algorithms=algorithms, add=NULL,
-                             outcomeClass=outcomeClass, training=expData)
+                            outcomeClass=outcomeClass, training=expData)
 
+    if (length(methodList) < 1) {
+        stop(paste0('Selected algorithms do not work with ', outcomeClass,
+                    ' outcome variables.'))
+    }
+    removedAlg<-algorithms[!algorithms %in% names(methodList)]
+    if (length(removedAlg) > 0 & algorithms != 'all') {
+        warning(paste0('Algorithms : ', paste(removedAlg, collapse=", "),
+                       ' have been removed. Not suitable for ', outcomeClass,
+                       ' outcome variables.'))
+    }
 
-    ## 2. Outerfolds
-    outerSplits <- unname(vapply(seq_len(outerfolds), function(x){
+    ## 2. Subsamples
+    sampleSets <- unname(vapply(seq_len(subsamples), function(x){
         createDataPartition(y=expData$group, p=splitProp, list=TRUE)},
-        list(seq_len(outerfolds))))
+        list(seq_len(subsamples))))
 
-    resOuter <- BiocParallel::bplapply(outerSplits, function(x){
+    resultNested <- pbapply::pblapply(sampleSets, function(x){
         training <- expData[as.numeric(unlist(x)),]
         testing <- expData[-as.numeric(unlist(x)),]
-        my_control <- trainControl(method="repeatedcv", number=innerfolds,
+        my_control <- trainControl(method="repeatedcv", number=foldsCV,
                                    savePredictions="final",
-                                   repeats=innerRepeats,
+                                   repeats=repeatsCV,
                                    classProbs=ifelse(outcomeClass=="character",
                                                      TRUE, FALSE),
                                    index=createResample(training$group,
-                                                        innerfolds))
+                                                        foldsCV))
 
         invisible(switch(featureFilter,
                          "fcbf"={
@@ -139,11 +154,10 @@ getML <- function(expData,
                          "none"={}
         ))
 
-        modelResults <- suppressMessages(caretList(group~., data=training,
-                                                   trControl=my_control,
-                                                   tuneList=methodList))
-
-        ## Get model stats for outerfolds
+        modelResults <- .removeOutText(caretList(group~., data=training,
+                                                 trControl=my_control,
+                                                 tuneList=methodList))
+        ## Get model stats for subsamples
         predictionTable <- list()
         cm <- list()
         for(model in modelResults){
@@ -154,7 +168,7 @@ getML <- function(expData,
                 x <- as.factor(colnames(predTest)[apply(predTest, 1,
                                                         which.max)])
                 y <- as.factor(testing$group)
-                cmModel <- confusionMatrix(x,y)
+                cmModel <- confusionMatrix(x,y,positive = positiveClass)
                 cm <- append(cm,list(cmModel))
                 predTest <- data.frame(predTest,"obs"=y)
 
@@ -174,18 +188,18 @@ getML <- function(expData,
             cm <- NULL
         }
         return(list(models=modelResults, preds=predictionTable, cm=cm))
-    }, BPPARAM=BiocParallel::SnowParam(workers = cores, progressbar=TRUE))
+    })
 
     ## 3. Best algorithm selection (model prioritization)
     stats <- as.data.frame(do.call("cbind",
                                    lapply(names(methodList),
-      function(mod){
+                                          function(mod){
           if(outcomeClass=="character"){
-              cm.mod <- do.call("cbind", lapply(resOuter,function(x){
+              cm.mod <- do.call("cbind", lapply(resultNested,function(x){
                   c(x$cm[[mod]]$overall["Accuracy"], x$cm[[mod]]$byClass)
               }))
 
-              allpreds <- do.call("rbind", lapply(resOuter,
+              allpreds <- do.call("rbind", lapply(resultNested,
                                                   function(x){x$preds[[mod]]}))
               AUC <- invisible(MLeval::evalm(allpreds, silent=TRUE))$stdres[[
                   1]]["AUC-ROC", "Score"]
@@ -193,13 +207,15 @@ getML <- function(expData,
               names(statsTmp)[1] <- "AUC"
               return(statsTmp)
 
-          } else{
-              allpreds <- do.call("rbind", lapply(resOuter,
-                                                  function(x){x$preds[[mod]]}))
-              statsTmp <- stats::cor(allpreds$pred, allpreds$obs)
+              } else{
+                  allpreds <- do.call("rbind", lapply(resultNested,
+                                                      function(x){
+                                                          x$preds[[mod]]}))
+                  statsTmp <- stats::cor(allpreds$pred, allpreds$obs)
 
+              }
           }
-      })))
+          )))
 
     colnames(stats) <- names(methodList)
 
@@ -223,7 +239,7 @@ getML <- function(expData,
     }
 
     ## 4. Build model with all data, best algorithm and best parameters
-    parameters <- do.call("rbind", lapply(resOuter, function(x){
+    parameters <- do.call("rbind", lapply(resultNested, function(x){
         x$models[[colnames(stats)[1]]]$bestTune
     }))
 
@@ -243,21 +259,22 @@ getML <- function(expData,
                      "none"={}
     ))
 
-    my_control <- trainControl(method="repeatedcv", number=innerfolds,
-                               savePredictions="final", repeats=innerRepeats,
+    my_control <- trainControl(method="repeatedcv", number=foldsCV,
+                               savePredictions="final", repeats=repeatsCV,
                                classProbs=ifelse(outcomeClass=="character",
                                                  TRUE, FALSE))
 
-    fit.model <- train(group~.,data=expData, method=colnames(stats)[1],
-                       tuneGrid=bestTune, trControl=my_control)
+    fit.model <- .removeOutText(train(group~.,data=expData,
+                                      method=colnames(stats)[1],
+                                      tuneGrid=bestTune, trControl=my_control))
+
     auc <- NULL
     if(outcomeClass=="character"){
         allpreds <- do.call("rbind",
-                            lapply(resOuter,
+                            lapply(resultNested,
                                    function(x){x$preds[[colnames(stats)[1]]]}))
         auc <- MLeval::evalm(allpreds, silent=TRUE)
     }
     return(list(model=fit.model, stats=stats, bestTune=bestTune, auc=auc))
 }
-
 

@@ -182,3 +182,13 @@
 
     return(xx)
 }
+
+## Function to remove messages and cat text from a function output
+.removeOutText <- function(...){
+    tmpf <- tempfile()
+    sink(tmpf)
+    on.exit({sink()
+        file.remove(tmpf)})
+    out <- suppressMessages(eval(...))
+    out
+}
