@@ -108,7 +108,7 @@ be a named list with the genes of each gene set. If you are running the script
 with a multi-core processor, use the **cores** parameter to specify the number 
 of workers to be used (most of the pathMED functions include this parameter).
 
-```{r, eval=FALSE, warning=FALSE}
+```{r, eval=TRUE, warning=FALSE}
 refMscore <- getMscoresRef(data=refData,
                            genesets="tmod",
                            cores=1)

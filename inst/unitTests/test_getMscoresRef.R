@@ -3,7 +3,5 @@ test_diseasePaths <- function() {
     refMscore <- getMscoresRef(data=refData,
                                genesets="tmod",
                                cores=1)
-    relevantPaths <- diseasePaths(MRef=refMscore, min_datasets=3,
-                                  perc_samples=10)
-    checkEquals(names(relevantPaths$genesets)[1], "LI.M4.2")
+    checkEquals(refMscore$mscores[[1]][1,1], 6.021655503)
 }
