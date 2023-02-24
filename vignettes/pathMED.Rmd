@@ -3,7 +3,6 @@ title: "Scoring Personalized Molecular Portraits"
 author:
 - name: Jordi Martorell-Marugán
   affiliation:
-  - Department of Statistics and Operational Research. University of Granada
   - GENYO, Centre for Genomics and Oncological Research
   email: jordi.martorell@genyo.es
 - name: Daniel Toro-Domínguez
@@ -18,13 +17,13 @@ author:
 package: pathMED
 date: "`r BiocStyle::doc_date()`"
 abstract: >
-  mCSEA (methylathed CpGs Set Enrichment Analysis) searches Differentially
-  Methylated Regions (DMRs) between conditions using methylation data from 
-  Illumina's 450k or EPIC microarrays. The evaluated DMRs are predefined 
-  regions (promoters, gene bodies, CpG Islands and user-defined regions).
-  This package contains functions to rank the CpG probes, to apply a 
-  GSEA analysis for DMRs identification, to plot the results and to integrate 
-  them with expression data.
+  pathMED uses gene expression data from reference studies to predict phenotypes
+  in new datasets (e.g., disease status or response to treatments) at the 
+  individual sample level. The 
+  workflow is to calculate M-scores (i.e., pathways activities) from both 
+  reference and new data. Then, several machine learning methods are evaluated 
+  in order to select the best method and to tune hyperparameters. Performance 
+  metrics and a ready-to-use model for other datasets are returned.
 output:
   BiocStyle::html_document
 vignette: >
@@ -65,16 +64,20 @@ references:
 ---
 
 # Introduction
-This package contain the functions used in the previous work where personalized 
-scoring was used to predict the drug response, symptoms and progression of 
+This package contains the functions used in a previous work that used  
+personalized scoring to predict the drug response, symptoms and progression of 
 Systemic Lupus Erythematosus patients from gene expression data 
 @toroDominguez2022.
 
 # Step 1: Prepare the reference data
 
-## 1.1. Calculate the M-scores
+## 1.1. Calculate the M-scores for reference data
 
-The firs step is to... 
+The firs step is to calculate M-scores for the reference datasets. M-scores 
+measure the level of disturbance of molecular pathways between patients and 
+healthy controls. This approach permits to compare the obtained results with 
+the M-scores from new data, even when the measured genes do not completely
+overlap.
 
 ```{r, message = FALSE, results='hide', warning=FALSE}
 library(pathMED)
@@ -83,14 +86,12 @@ data(refData, exampleData, exampleMetadata)
 
 We loaded to our R environment **refData**, 
 **exampleData** and **exampleMetadata** objects. **refData** 
-is a list with 4 datasets extracted from...
-For each dataset, there is a gene expression matrix for the patients ("Disease")
-and another one for the healthy controls ("Healthy"). You should prepare an
-object with the same structure with as many datasets as possible.
-
-**phenoTest** is a dataframe with the explanatory variable and covariates 
-associated to the samples. When you load your own data, the structure of 
-your objects should be similar.
+is a list with 4 datasets extracted from NCBI GEO containing lupus and healthy 
+samples. For each dataset, there is a gene expression matrix for the patients 
+("Disease") and another one for the healthy controls ("Healthy"). You should 
+prepare an object with the same structure with as many datasets as possible.
+**exampleData** and **exampleMetadata** are the test data for this vignette and 
+they will be used in later functions.
 
 ```{r, warning=FALSE}
 ls(refData)
@@ -108,7 +109,7 @@ be a named list with the genes of each gene set. If you are running the script
 with a multi-core processor, use the **cores** parameter to specify the number 
 of workers to be used (most of the pathMED functions include this parameter).
 
-```{r, eval=TRUE, warning=FALSE}
+```{r, eval=TRUE, warning=FALSE, message=FALSE, results='hide'}
 refMscore <- getMscoresRef(data=refData,
                            genesets="tmod",
                            cores=1)
@@ -130,7 +131,7 @@ relevantPaths <- diseasePaths(MRef=refMscore,
 
 # Step 2: Calculate the M-scores
 
-Once the reference data is ready, you can calculate the M-scores for your case 
+Once the reference data is ready, you can calculate the M-scores for your test 
 samples, which is a necessary step to construct the machine learning predictors.
 **getMscores()** function takes as input an expression matrix with the cases 
 samples, an optional expression matrix with healthy controls and the output of 

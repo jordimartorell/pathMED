@@ -108,6 +108,9 @@ getML <- function(expData,
         replacement = c('.','.','.'),
         vectorize=FALSE)
     expData <- expData[!is.na(expData$group),]
+    if(is.factor(data$group)){
+        data$group<-as.character(data.group)
+    }
     outcomeClass <- class(expData$group)
     if (!methods::is(expData$group, "character")){
         prior <- "Corr"
@@ -125,7 +128,7 @@ getML <- function(expData,
                     ' outcome variables.'))
     }
     removedAlg<-algorithms[!algorithms %in% names(methodList)]
-    if (length(removedAlg) > 0 & algorithms != 'all') {
+    if (length(removedAlg) > 0 & !('all' %in% algorithms)) {
         warning(paste0('Algorithms : ', paste(removedAlg, collapse=", "),
                        ' have been removed. Not suitable for ', outcomeClass,
                        ' outcome variables.'))

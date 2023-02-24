@@ -1,6 +1,7 @@
 #' Metadata of test gene expression data
 #'
-#' Metadata from the study...
+#' Metadata from the dataset GSE224705. Response column conteins the information
+#' about the response and non-response to the drug for each sample.
 #'
 #' @docType data
 #'
