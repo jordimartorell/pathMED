@@ -13,11 +13,11 @@
 #' add=list(modelName = caretModelSpec(method='modelName',
 #' tuneGrid=(.parameters='values')))
 #' @param var2predict character with the column name of the @metadata to predict
-#' @param subsamples number of sub-samples in which exp.data is divided
-#' @param splitProp proportion of samples used as train for the subsamples (0-1)
-#' @param foldsCV number of internal folds (for parameter tuning)
+#' @param subsamples number of sub-samples in which exp.data is split
+#' @param splitProp proportion of samples used as train for the subsamples
+#' @param foldsCV number of cross-validation folds (for parameter tuning)
 #' @param repeatsCV number of repetitions of the parameter tuning process
-#' @param positiveClass outcome vaue that must be considered as positive class
+#' @param positiveClass outcome value that must be considered as positive class
 #' (for categoric outcomes)
 #' @param featureFilter method to reduce number of features (none,fcbf)
 #' @param prior rank best model based on AUC (AUC), the mean of AUC and the

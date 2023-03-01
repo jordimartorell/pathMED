@@ -17,13 +17,16 @@ author:
 package: pathMED
 date: "`r BiocStyle::doc_date()`"
 abstract: >
-  pathMED uses gene expression data from reference studies to predict phenotypes
-  in new datasets (e.g., disease status or response to treatments) at the 
-  individual sample level. The 
-  workflow is to calculate M-scores (i.e., pathways activities) from both 
-  reference and new data. Then, several machine learning methods are evaluated 
-  in order to select the best method and to tune hyperparameters. Performance 
-  metrics and a ready-to-use model for other datasets are returned.
+  pathMED quantifies disease-related molecular disregulations on biological
+  pathways for individual samples. First, M-scores (pathways activities) are
+  calculated from gene-expression data from reference studies (with samples from
+  healthy samples and patients with a certain disease) to extract
+  disease-relevant biological pathways. Then, M-scores for the selected pathways
+  can be used to predict phenotypes and clinical outcomes in new datasets (e.g., 
+  disease status or response to treatments). For this, several machine learning
+  methods are evaluated in order to select the best method and to tune
+  hyperparameters. Performance metrics and a ready-to-use model to predict the
+  trained outcomes for new patients are returned.
 output:
   BiocStyle::html_document
 vignette: >
@@ -64,10 +67,13 @@ references:
 ---
 
 # Introduction
-This package contains the functions used in a previous work that used  
+
+
+This methodology was used in a previous work that used 
 personalized scoring to predict the drug response, symptoms and progression of 
 Systemic Lupus Erythematosus patients from gene expression data 
-@toroDominguez2022.
+@toroDominguez2022. pathMED has been developed to be applicable to any disease 
+or biological context.
 
 # Step 1: Prepare the reference data
 
@@ -102,7 +108,8 @@ head(refData$dataset1$Disease)
 _getMscoresRef()_ function uses this object as input and calculates the 
 M-scores for each gene set of the specified database. By default, Reactome
 is the used database, but the **genesets** parameter can be modified to use 
-KEGG ("kegg"), transcriptional modules ("tmod") or Gene Ontology ("gobp", 
+KEGG ("kegg"),  transcriptional modules related with immune functions (“tmod”)
+or Gene Ontology ("gobp", 
 "gomf", "gocc"). Furthermore, is "custom" is selected, any geneset with the 
 proper format can be introduced to the **customGeneset** parameter. It should 
 be a named list with the genes of each gene set. If you are running the script 
@@ -121,7 +128,14 @@ It is necessary to find the gene sets that are more relevant for the studied
 phenotype. With the **diseasePaths** function, you can perform such selection 
 specifying the percentage of samples that in which the pathways should be 
 statistically significant (**perc_samples** parameter) and the minimum number
-of datasets that must pass this threshold (**min_datasets** parameter).
+of datasets that must pass this threshold (**min_datasets** parameter). These
+two parameters are used to extract pathways that may be significant in small 
+subgroups of patients (something very common when dealing with patients with 
+heterogeneous diseases), but at the same time that these pathways appear 
+deregulated in different studies (to filter possible biases from individual 
+studies). The significance of each route in each sample of the different studies
+is calculated based on its M-score, as in the original article
+@toroDominguez2022.
 
 ```{r, warning=FALSE}
 relevantPaths <- diseasePaths(MRef=refMscore,
@@ -155,18 +169,24 @@ order to find which one has the best performance predicting the specified
 variable (**var2predict** parameter). The input objects are the M-scores matrix 
 calculated in the step 2 (**expData**), and a data frame with the metadata of 
 the samples (**metadata**). One or several algorithms may be selected with the 
-**algorithms** parameter (see the function help).
+**algorithms** parameter (see the function help). Subsampling is performed n
+times (**subsamples**) to split data into training and test datasets, with the
+proportion of training samples specified in the **splitProp** parameter. With
+training data, n-fold cross-validation (n=**foldsCV**) is repeated several times
+(**reaptsCV** parameter) for hyperparameter tuning. An optional features filter
+may be applied (**featureFilter**) parameter. **Prior** parameter is used to
+specify the metric to select the best model.
 
 ```{r, warning=FALSE, eval=FALSE}
 fit.model <- getML(expData=MScoresExample,
                  metadata=exampleMetadata,
                  var2predict="Response",
                  algorithms="svmLinear",
-                 outerfolds=10,
+                 subsamples=10,
                  splitProp=0.8,
-                 innerfolds=10,
-                 innerRepeats=10,
-                 featureFilter = "none",
+                 foldsCV=10,
+                 repeatsCV=10,
+                 featureFilter="none",
                  prior="BAUC")
 ```
 
