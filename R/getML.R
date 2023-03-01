@@ -19,9 +19,6 @@
 #' @param repeatsCV number of repetitions of the parameter tuning process
 #' @param positiveClass outcome value that must be considered as positive class
 #' (for categoric outcomes)
-#' @param featureFilter method to reduce number of features (none,fcbf)
-#' @param prior rank best model based on AUC (AUC), the mean of AUC and the
-#' balanced accuracy (BAUC), the balanced accuracy (BA) or manual (Manual)
 #'
 #' @return A list with four elements. The first one is the model. The second one
 #' is a table with different metrics obtained. The third one is a list with the
@@ -67,9 +64,7 @@
 #' subsamples=5,
 #' splitProp=0.8,
 #' foldsCV=10,
-#' repeatsCV=10,
-#' featureFilter = "none",
-#' prior="BAUC")
+#' repeatsCV=10)
 #' }
 #'
 #' @export
@@ -82,9 +77,7 @@ getML <- function(expData,
                   splitProp=0.75,
                   foldsCV=10,
                   repeatsCV=5,
-                  positiveClass=NULL,
-                  featureFilter='none',
-                  prior='AUC'){
+                  positiveClass=NULL){
 
     if (!var2predict %in% colnames(metadata)) {
         stop("var2predict must be a column of metadata")
@@ -112,11 +105,13 @@ getML <- function(expData,
         data$group<-as.character(data.group)
     }
     outcomeClass <- class(expData$group)
-    if (!methods::is(expData$group, "character")){
+    if (methods::is(expData$group, "character")){
+        prior <- "MCC"
+    } else {
         prior <- "Corr"
     }
     if(is.null(positiveClass)){
-        positiveClass<- levels(metadata$group)[1]
+        positiveClass <- levels(factor(metadata[,var2predict]))[1]
     }
 
     ## Get algorithm variables
@@ -149,13 +144,6 @@ getML <- function(expData,
                                                      TRUE, FALSE),
                                    index=createResample(training$group,
                                                         foldsCV))
-
-        invisible(switch(featureFilter,
-                         "fcbf"={
-                             training <- .fast.cor.FS(training, thresh=0.0025)
-                             testing <- testing[,colnames(training)]},
-                         "none"={}
-        ))
 
         modelResults <- .removeOutText(caretList(group~., data=training,
                                                  trControl=my_control,
@@ -204,19 +192,20 @@ getML <- function(expData,
 
               allpreds <- do.call("rbind", lapply(resultNested,
                                                   function(x){x$preds[[mod]]}))
-              AUC <- invisible(MLeval::evalm(allpreds, silent=TRUE))$stdres[[
-                  1]]["AUC-ROC", "Score"]
-              statsTmp <- c(AUC, apply(cm.mod, 1, mean))
-              names(statsTmp)[1] <- "AUC"
+              AUCMCC <- invisible(MLeval::evalm(allpreds, silent=TRUE,
+                                             showplots=FALSE,
+                                             optimise="MCC"))$stdres[[
+                  1]][c("MCC", "AUC-ROC"), "Score"]
+              statsTmp <- c(AUCMCC, apply(cm.mod, 1, mean))
+              names(statsTmp)[1:2] <- c("MCC","AUC")
               return(statsTmp)
+          } else{
+              allpreds <- do.call("rbind", lapply(resultNested,
+                                                  function(x){
+                                                      x$preds[[mod]]}))
+              statsTmp <- stats::cor(allpreds$pred, allpreds$obs)
 
-              } else{
-                  allpreds <- do.call("rbind", lapply(resultNested,
-                                                      function(x){
-                                                          x$preds[[mod]]}))
-                  statsTmp <- stats::cor(allpreds$pred, allpreds$obs)
-
-              }
+          }
           }
           )))
 
@@ -224,17 +213,7 @@ getML <- function(expData,
 
     if(length(methodList) > 1){
         switch(prior,
-               "AUC"={stats <- stats[,order(stats["AUC",],decreasing=TRUE)]},
-               "BAUC"={
-                   ord <- apply(stats[c("AUC","Balanced Accuracy"),], 2 ,sum)
-                   stats <- stats[,order(ord,decreasing=TRUE)]},
-               "Manual"={
-                   print(stats)
-                   sel <- as.character(readline("Select algorithm > "))
-                   stats <- stats[,c(sel,setdiff(colnames(stats),sel))]},
-               "BA"={stats <- stats[,order(as.numeric(
-                   stats["Balanced Accuracy",]),
-                   decreasing=TRUE)]},
+               "MCC"={stats <- stats[,order(stats["MCC",],decreasing=TRUE)]},
                "Corr"={
                    rownames(stats) <- "Correlation"
                    stats <- stats[,order(as.numeric(stats["Correlation",]),
@@ -256,12 +235,6 @@ getML <- function(expData,
     colnames(bestTune) <- paste0(".", colnames(parameters))
     rownames(bestTune) <- NULL
 
-    invisible(switch(featureFilter,
-                     "fcbf"={
-                         expData <- .fast.cor.FS(expData, thresh=0.0025)},
-                     "none"={}
-    ))
-
     my_control <- trainControl(method="repeatedcv", number=foldsCV,
                                savePredictions="final", repeats=repeatsCV,
                                classProbs=ifelse(outcomeClass=="character",
@@ -271,13 +244,14 @@ getML <- function(expData,
                                       method=colnames(stats)[1],
                                       tuneGrid=bestTune, trControl=my_control))
 
-    auc <- NULL
+    mcc <- NULL
     if(outcomeClass=="character"){
         allpreds <- do.call("rbind",
                             lapply(resultNested,
                                    function(x){x$preds[[colnames(stats)[1]]]}))
-        auc <- MLeval::evalm(allpreds, silent=TRUE)
+        mcc <- MLeval::evalm(allpreds, silent=TRUE, showplots=FALSE,
+                             optimise="MCC")
     }
-    return(list(model=fit.model, stats=stats, bestTune=bestTune, auc=auc))
+    return(list(model=fit.model, stats=stats, bestTune=bestTune, mcc=mcc))
 }
 

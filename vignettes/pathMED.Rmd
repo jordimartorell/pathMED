@@ -173,9 +173,7 @@ the samples (**metadata**). One or several algorithms may be selected with the
 times (**subsamples**) to split data into training and test datasets, with the
 proportion of training samples specified in the **splitProp** parameter. With
 training data, n-fold cross-validation (n=**foldsCV**) is repeated several times
-(**reaptsCV** parameter) for hyperparameter tuning. An optional features filter
-may be applied (**featureFilter**) parameter. **Prior** parameter is used to
-specify the metric to select the best model.
+(**reaptsCV** parameter) for hyperparameter tuning.
 
 ```{r, warning=FALSE, eval=FALSE}
 fit.model <- getML(expData=MScoresExample,
@@ -185,9 +183,7 @@ fit.model <- getML(expData=MScoresExample,
                  subsamples=10,
                  splitProp=0.8,
                  foldsCV=10,
-                 repeatsCV=10,
-                 featureFilter="none",
-                 prior="BAUC")
+                 repeatsCV=10)
 ```
 
 # Session info
