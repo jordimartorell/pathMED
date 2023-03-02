@@ -1,7 +1,5 @@
 #' Find relevant pathways from the reference M-scores
 #'
-#' Subtitle
-#'
 #' @param MRef output from the getMscoresRef function
 #' @param min_datasets number of datasets that each pathway must meet the
 #' perc_samples threshold

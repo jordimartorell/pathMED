@@ -25,7 +25,7 @@ associated to each region are generated. In addition, this list also contains
 the input methData, pheno and platform objects
 }
 \description{
-Subtitle
+Calculate M-scores for a dataset
 }
 \examples{
 data(refData, exampleData)

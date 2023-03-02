@@ -7,16 +7,13 @@
 getML(
   expData,
   metadata,
-  algorithms = "all",
-  add = NULL,
+  models = methodsML(),
   var2predict,
   subsamples = 4,
   splitProp = 0.75,
   foldsCV = 10,
   repeatsCV = 5,
-  positiveClass = NULL,
-  featureFilter = "none",
-  prior = "AUC"
+  positiveClass = NULL
 )
 }
 \arguments{
@@ -26,31 +23,22 @@ rows. expData must be a numerical matrix}
 \item{metadata}{dataframe with information for each sample. Samples in rows
 and variables in columns}
 
-\item{algorithms}{'glm','lm','lda','xgbTree','rf','knn','svmLinear','nnet',
-'svmRadial','nb','lars','rpart', 'gamboost', 'ada', 'brnn', 'enet' or 'all'
-(all algorithms are used)}
-
-\item{add}{additional model list (supported by caret) in format:
-add=list(modelName = caretModelSpec(method='modelName',
-tuneGrid=(.parameters='values')))}
+\item{models}{named list with the ML models generated with
+caret::caretModelSpec function. methodsML function may be used to prepare
+this list}
 
 \item{var2predict}{character with the column name of the @metadata to predict}
 
-\item{subsamples}{number of sub-samples in which exp.data is divided}
+\item{subsamples}{number of sub-samples in which exp.data is split}
 
-\item{splitProp}{proportion of samples used as train for the subsamples (0-1)}
+\item{splitProp}{proportion of samples used as train for the subsamples}
 
-\item{foldsCV}{number of internal folds (for parameter tuning)}
+\item{foldsCV}{number of cross-validation folds (for parameter tuning)}
 
 \item{repeatsCV}{number of repetitions of the parameter tuning process}
 
-\item{positiveClass}{outcome vaue that must be considered as positive class
+\item{positiveClass}{outcome value that must be considered as positive class
 (for categoric outcomes)}
-
-\item{featureFilter}{method to reduce number of features (none,fcbf)}
-
-\item{prior}{rank best model based on AUC (AUC), the mean of AUC and the
-balanced accuracy (BAUC), the balanced accuracy (BA) or manual (Manual)}
 }
 \value{
 A list with four elements. The first one is the model. The second one
@@ -59,7 +47,7 @@ best parameters selected in tuning process. The last element contains data
 for AUC plots
 }
 \description{
-Retrieve best model for a specific outcome
+Build machine-learning based on gene-expression/mscores data
 }
 \examples{
 data(refData, exampleData, exampleMetadata)
@@ -77,13 +65,11 @@ nk = 5)
 fit.model <- getML(expData=MScoresExample,
 metadata=exampleMetadata,
 var2predict="Response",
-algorithms="svmLinear",
+models=methodsML("svmLinear"),
 subsamples=5,
 splitProp=0.8,
 foldsCV=10,
-repeatsCV=10,
-featureFilter = "none",
-prior="BAUC")
+repeatsCV=10)
 }
 
 }

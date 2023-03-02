@@ -1,7 +1,5 @@
 #' Calculate M-scores for a dataset
 #'
-#' Subtitle
-#'
 #' @param Patient Expression matrix of cases or numeric vector with one sample.
 #' @param Healthy Expression matrix of healthy controls.
 #' @param genesets Output from the diseasePaths function

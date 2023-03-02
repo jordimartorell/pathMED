@@ -1,17 +1,12 @@
 #' Build machine-learning based on gene-expression/mscores data
 #'
-#' Retrieve best model for a specific outcome
-#'
 #' @param expData Feature matrix. Samples in columns and features in
 #' rows. expData must be a numerical matrix
 #' @param metadata dataframe with information for each sample. Samples in rows
 #' and variables in columns
-#' @param algorithms 'glm','lm','lda','xgbTree','rf','knn','svmLinear','nnet',
-#' 'svmRadial','nb','lars','rpart', 'gamboost', 'ada', 'brnn', 'enet' or 'all'
-#' (all algorithms are used)
-#' @param add additional model list (supported by caret) in format:
-#' add=list(modelName = caretModelSpec(method='modelName',
-#' tuneGrid=(.parameters='values')))
+#' @param models named list with the ML models generated with
+#' caret::caretModelSpec function. methodsML function may be used to prepare
+#' this list
 #' @param var2predict character with the column name of the @metadata to predict
 #' @param subsamples number of sub-samples in which exp.data is split
 #' @param splitProp proportion of samples used as train for the subsamples
@@ -60,7 +55,7 @@
 #' fit.model <- getML(expData=MScoresExample,
 #' metadata=exampleMetadata,
 #' var2predict="Response",
-#' algorithms="svmLinear",
+#' models=methodsML("svmLinear"),
 #' subsamples=5,
 #' splitProp=0.8,
 #' foldsCV=10,
@@ -70,8 +65,7 @@
 #' @export
 getML <- function(expData,
                   metadata,
-                  algorithms='all',
-                  add=NULL,
+                  models=methodsML(),
                   var2predict,
                   subsamples=4,
                   splitProp=0.75,
@@ -114,21 +108,6 @@ getML <- function(expData,
         positiveClass <- levels(factor(metadata[,var2predict]))[1]
     }
 
-    ## Get algorithm variables
-    methodList <- .methodsML(algorithms=algorithms, add=NULL,
-                            outcomeClass=outcomeClass, training=expData)
-
-    if (length(methodList) < 1) {
-        stop(paste0('Selected algorithms do not work with ', outcomeClass,
-                    ' outcome variables.'))
-    }
-    removedAlg<-algorithms[!algorithms %in% names(methodList)]
-    if (length(removedAlg) > 0 & !('all' %in% algorithms)) {
-        warning(paste0('Algorithms : ', paste(removedAlg, collapse=", "),
-                       ' have been removed. Not suitable for ', outcomeClass,
-                       ' outcome variables.'))
-    }
-
     ## 2. Subsamples
     sampleSets <- unname(vapply(seq_len(subsamples), function(x){
         createDataPartition(y=expData$group, p=splitProp, list=TRUE)},
@@ -143,11 +122,12 @@ getML <- function(expData,
                                    classProbs=ifelse(outcomeClass=="character",
                                                      TRUE, FALSE),
                                    index=createResample(training$group,
-                                                        foldsCV))
+                                                        foldsCV),
+                                   search="random")
 
         modelResults <- .removeOutText(caretList(group~., data=training,
                                                  trControl=my_control,
-                                                 tuneList=methodList))
+                                                 tuneList=models))
         ## Get model stats for subsamples
         predictionTable <- list()
         cm <- list()
@@ -183,7 +163,7 @@ getML <- function(expData,
 
     ## 3. Best algorithm selection (model prioritization)
     stats <- as.data.frame(do.call("cbind",
-                                   lapply(names(methodList),
+                                   lapply(names(models),
                                           function(mod){
           if(outcomeClass=="character"){
               cm.mod <- do.call("cbind", lapply(resultNested,function(x){
@@ -209,9 +189,9 @@ getML <- function(expData,
           }
           )))
 
-    colnames(stats) <- names(methodList)
+    colnames(stats) <- names(models)
 
-    if(length(methodList) > 1){
+    if(length(models) > 1){
         switch(prior,
                "MCC"={stats <- stats[,order(stats["MCC",],decreasing=TRUE)]},
                "Corr"={
@@ -238,7 +218,8 @@ getML <- function(expData,
     my_control <- trainControl(method="repeatedcv", number=foldsCV,
                                savePredictions="final", repeats=repeatsCV,
                                classProbs=ifelse(outcomeClass=="character",
-                                                 TRUE, FALSE))
+                                                 TRUE, FALSE),
+                               search="random")
 
     fit.model <- .removeOutText(train(group~.,data=expData,
                                       method=colnames(stats)[1],

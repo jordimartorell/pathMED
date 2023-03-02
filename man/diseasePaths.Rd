@@ -26,7 +26,7 @@ pathway must be significant}
 A list with the selected pathways
 }
 \description{
-Subtitle
+Find relevant pathways from the reference M-scores
 }
 \examples{
 data(refData)
