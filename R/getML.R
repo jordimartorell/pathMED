@@ -218,8 +218,7 @@ getML <- function(expData,
     my_control <- trainControl(method="repeatedcv", number=foldsCV,
                                savePredictions="final", repeats=repeatsCV,
                                classProbs=ifelse(outcomeClass=="character",
-                                                 TRUE, FALSE),
-                               search="random")
+                                                 TRUE, FALSE))
 
     fit.model <- .removeOutText(train(group~.,data=expData,
                                       method=colnames(stats)[1],

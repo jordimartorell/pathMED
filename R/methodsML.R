@@ -37,23 +37,34 @@ methodsML <- function(algorithms = "all",
                              character=c('glm', 'lda', 'xgbTree', 'rf', 'knn',
                                          'nnet', 'svmLinear','svmRadial', 'nb',
                                          'ada', 'gamboost'))
+
+    metric = ifelse(outcomeClass == "character", "Kappa", "RMSE")
+
     methodList <- list(
-        lm=caretModelSpec(method='lm', tuneLength=tuneLength),
-        glm=caretModelSpec(method='glm', tuneLength=tuneLength),
-        lda=caretModelSpec(method='lda', tuneLength=tuneLength),
-        xgbTree=caretModelSpec(method='xgbTree', tuneLength=tuneLength),
-        rf=caretModelSpec(method='rf', tuneLength=tuneLength),
-        knn=caretModelSpec(method='knn', tuneLength=tuneLength),
-        svmLinear=caretModelSpec(method='svmLinear', tuneLength=tuneLength),
-        svmRadial=caretModelSpec(method='svmRadial', tuneLength=tuneLength),
-        nnet=caretModelSpec(method='nnet', tuneLength=tuneLength),
-        nb=caretModelSpec(method='nb', tuneLength=tuneLength),
-        lars=caretModelSpec(method='lars', tuneLength=tuneLength),
-        rpart=caretModelSpec(method='rpart', tuneLength=tuneLength),
-        ada=caretModelSpec(method='ada', tuneLength=tuneLength),
-        gamboost=caretModelSpec(method='gamboost', tuneLength=tuneLength),
-        brnn=caretModelSpec(method='brnn', tuneLength=tuneLength),
-        enet=caretModelSpec(method='enet', tuneLength=tuneLength)
+        lm=caretModelSpec(method='lm', tuneLength=tuneLength, metric=metric),
+        glm=caretModelSpec(method='glm', tuneLength=tuneLength, metric=metric),
+        lda=caretModelSpec(method='lda', tuneLength=tuneLength, metric=metric),
+        xgbTree=caretModelSpec(method='xgbTree', tuneLength=tuneLength,
+                               metric=metric),
+        rf=caretModelSpec(method='rf', tuneLength=tuneLength, metric=metric),
+        knn=caretModelSpec(method='knn', tuneLength=tuneLength, metric=metric),
+        svmLinear=caretModelSpec(method='svmLinear', tuneLength=tuneLength,
+                                 metric=metric),
+        svmRadial=caretModelSpec(method='svmRadial', tuneLength=tuneLength,
+                                 metric=metric),
+        nnet=caretModelSpec(method='nnet', tuneLength=tuneLength,
+                            metric=metric),
+        nb=caretModelSpec(method='nb', tuneLength=tuneLength, metric=metric),
+        lars=caretModelSpec(method='lars', tuneLength=tuneLength,
+                            metric=metric),
+        rpart=caretModelSpec(method='rpart', tuneLength=tuneLength,
+                             metric=metric),
+        ada=caretModelSpec(method='ada', tuneLength=tuneLength, metric=metric),
+        gamboost=caretModelSpec(method='gamboost', tuneLength=tuneLength,
+                                metric=metric),
+        brnn=caretModelSpec(method='brnn', tuneLength=tuneLength,
+                            metric=metric),
+        enet=caretModelSpec(method='enet', tuneLength=tuneLength, metric=metric)
     )
 
 
