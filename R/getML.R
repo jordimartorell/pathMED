@@ -95,8 +95,8 @@ getML <- function(expData,
         replacement = c('.','.','.'),
         vectorize=FALSE)
     expData <- expData[!is.na(expData$group),]
-    if(is.factor(data$group)){
-        data$group<-as.character(data.group)
+    if(is.factor(expData$group)){
+        expData$group<-as.character(expData$group)
     }
     outcomeClass <- class(expData$group)
     if (methods::is(expData$group, "character")){
