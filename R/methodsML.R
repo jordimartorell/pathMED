@@ -1,5 +1,6 @@
 #' Prepare ML models
 #'
+#' @importFrom caretEnsemble caretModelSpec
 #' @param algorithms 'glm','lm','lda','xgbTree','rf','knn','svmLinear','nnet',
 #' 'svmRadial','nb','lars','rpart', 'gamboost', 'ada', 'brnn', 'enet' or 'all'
 #' (all algorithms are used)

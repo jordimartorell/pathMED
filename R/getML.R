@@ -224,14 +224,6 @@ getML <- function(expData,
                                       method=colnames(stats)[1],
                                       tuneGrid=bestTune, trControl=my_control))
 
-    mcc <- NULL
-    if(outcomeClass=="character"){
-        allpreds <- do.call("rbind",
-                            lapply(resultNested,
-                                   function(x){x$preds[[colnames(stats)[1]]]}))
-        mcc <- MLeval::evalm(allpreds, silent=TRUE, showplots=FALSE,
-                             optimise="MCC")
-    }
-    return(list(model=fit.model, stats=stats, bestTune=bestTune, mcc=mcc))
+    return(list(model=fit.model, stats=stats, bestTune=bestTune))
 }
 
