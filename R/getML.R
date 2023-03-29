@@ -109,9 +109,14 @@ getML <- function(expData,
     }
 
     ## 2. Subsamples
-    sampleSets <- unname(vapply(seq_len(subsamples), function(x){
+    ## 2. Subsamples
+    if(!is.list(subsamples)){
+      sampleSets <- unname(vapply(seq_len(subsamples), function(x){
         createDataPartition(y=expData$group, p=splitProp, list=TRUE)},
         list(seq_len(subsamples))))
+    }else{
+    sampleSets<-subsamples
+    }
 
     resultNested <- pbapply::pblapply(sampleSets, function(x){
         training <- expData[as.numeric(unlist(x)),]
