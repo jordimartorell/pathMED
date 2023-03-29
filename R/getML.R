@@ -109,7 +109,6 @@ getML <- function(expData,
     }
 
     ## 2. Subsamples
-    ## 2. Subsamples
     if(!is.list(subsamples)){
       sampleSets <- unname(vapply(seq_len(subsamples), function(x){
         createDataPartition(y=expData$group, p=splitProp, list=TRUE)},
