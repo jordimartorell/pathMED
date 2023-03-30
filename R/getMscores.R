@@ -66,8 +66,9 @@ getMscores <- function(Patient,
         } else {
             message("Healthy samples supplied, calculating M-scores using ",
                     "healthy samples as reference")
-            H <- data.frame(rowMeans(Healthy),
-                          matrixStats::rowSds(Healthy))
+            H <- data.frame(apply(Healthy,1,function(x){mean(x,na.rm = T)}),
+                            apply(Healthy,1,function(x){sd(x,na.rm = T)}))
+            rownames(H)<-rownames(Healthy)
             res <- lapply(path.list, function(x) {
                 .getMscorePath(x, Patient=Patient, Healthy=H)
             })
