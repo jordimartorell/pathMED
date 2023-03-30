@@ -49,8 +49,8 @@ getMscoresRef <- function(data,
         Healthy <- Healthy[ifelse(apply(Healthy, 1, stats::sd) == 0, FALSE,
                                   TRUE),]
         Healthy <- Healthy[!is.na(rownames(Healthy)),]
-        H <- data.frame(rowMeans(Healthy),
-                      matrixStats::rowSds(Healthy))
+        H <- data.frame(apply(Healthy,1,function(x){mean(x,na.rm = T)}),
+                        apply(Healthy,1,function(x){sd(x,na.rm = T)}))
         rownames(H) <- rownames(Healthy)
         message("Running dataset ", i, " of ", lengthData)
         res <- BiocParallel::bplapply(Patient, function(pat, geneNames,
