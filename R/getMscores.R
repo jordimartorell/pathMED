@@ -100,8 +100,9 @@ getMscores <- function(Patient,
             message("Healthy samples supplied. Calculating M-scores using ",
                     "healthy samples as reference for ", ncol(Patient),
                     " patients")
-            H <- data.frame(rowMeans(Healthy),
-                          matrixStats::rowSds(Healthy))
+            H <- data.frame(apply(Healthy,1,function(x){mean(x,na.rm = T)}),
+                            apply(Healthy,1,function(x){sd(x,na.rm = T)}))
+            rownames(H)<-rownames(Healthy)
             res <- BiocParallel::bplapply(Patient, function(pat, geneNames,
                                                             path.list, Healthy) {
                 names(pat) <- geneNames
