@@ -42,20 +42,24 @@ getMscoresRef <- function(data,
 
     lengthData <- length(data)
 
+    # Avoid using more cores than datasets
+    cores <- min(cores, lengthData)
+
     data.Mscore <- lapply(seq_len(lengthData), function (i) {
         dataset <- data[[i]]
-        Patient <- dataset[[1]]
-        Healthy <- as.matrix(dataset[[2]])
+        Patient <- as.data.frame(dataset[[1]])
+        Healthy <- as.data.frame(dataset[[2]])
         Healthy <- Healthy[ifelse(apply(Healthy, 1, stats::sd) == 0, FALSE,
                                   TRUE),]
         Healthy <- Healthy[!is.na(rownames(Healthy)),]
         H <- data.frame(apply(Healthy,1,function(x){mean(x,na.rm = T)}),
                         apply(Healthy,1,function(x){sd(x,na.rm = T)}))
-        rownames(H)<-rownames(Healthy)
         rownames(H) <- rownames(Healthy)
         message("Running dataset ", i, " of ", lengthData)
-        res <- BiocParallel::bplapply(Patient, function(pat, geneNames,
-                                                        path.list, Healthy) {
+        res <- BiocParallel::bplapply(seq_len(ncol(Patient)),
+                                      function(column, Patient, geneNames,
+                                               path.list, Healthy, .getMscorePath) {
+            pat <- Patient[,column]
             names(pat) <- geneNames
             res.i <- lapply(path.list,
                             .getMscorePath,
@@ -64,9 +68,11 @@ getMscoresRef <- function(data,
             res.i <- as.data.frame(do.call("rbind", res.i))
             return(res.i)
         },
+        Patient=Patient,
         geneNames=rownames(Patient),
         path.list=path.list,
         Healthy=H,
+        .getMscorePath = .getMscorePath,
         BPPARAM=BiocParallel::SnowParam(workers=cores, progressbar=TRUE))
 
         res <- do.call("cbind", res)

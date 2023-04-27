@@ -92,26 +92,6 @@
 }
 
 
-
-## Function to remove co-linear features
-#@ data: matrix with features in columns and samples in rows. Column of group
-## is required (outcome to predict)
-#@ thresh: SU threshold
-.fast.cor.FS<-function(data,
-                       thresh=0.0025){
-    stopifnot('group' %in% colnames(data))
-
-    y <- as.factor(data$group)
-    x <- subset(data, select = -c(group))
-    dis <- FCBF::discretize_exprs(t(x))
-
-    fcbf.res <- FCBF::fcbf(dis, y, verbose=TRUE, thresh)
-    xx <- x[,fcbf.res$index]
-    xx <- as.data.frame(cbind(group=y, xx))
-
-    return(xx)
-}
-
 ## Function to remove messages and cat text from a function output
 .removeOutText <- function(...){
     tmpf <- tempfile()

@@ -24,18 +24,18 @@ kegg, reactome, tmod) or 'custom' to provide the annotation.}
 \item{customGeneset}{Only if genesets == 'custom'. A named list with each
 gene set.}
 
-\item{minPathSize}{numeric, minimum number of genes in a pathway to consider 
+\item{minPathSize}{numeric, minimum number of genes in a pathway to consider
 split the pathway}
 
 \item{minSplitSize}{numeric, minimum number of genes in a pathway-split.
 Smaller splits will join the closest split.}
 
-\item{maxSplits}{numeric, maximum number of subdivisions for a pathway. NULL, 
+\item{maxSplits}{numeric, maximum number of subdivisions for a pathway. NULL,
 any restrictions}
 
-\item{explainedvariance}{numeric, percentage of cumulative variance explained 
+\item{explainedvariance}{numeric, percentage of cumulative variance explained
 within a pathway. This parameter is used to select the number of subdivisions
-of a pathway that manage to explain at least the percentage of variance 
+of a pathway that manage to explain at least the percentage of variance
 defined by explainedvariance}
 }
 \value{
@@ -47,7 +47,7 @@ Cluster pathways into pathway-components
 }
 \examples{
 data(refData)
-custom.tmod<-splitPathway(data=refData,
+custom.tmod <- splitPathways(data=refData,
 genesets="tmod",
 customGeneset = NULL,
 minPathSize = 10,

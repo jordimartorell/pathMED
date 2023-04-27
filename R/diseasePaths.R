@@ -34,6 +34,8 @@ diseasePaths <- function(MRef,
     genesets <- MRef[[2]]
     expr.list <- MRef[[3]]
 
+    min_datasets <- min(min_datasets, length(MRef))
+
     HighDys.perc <- lapply(MScores, function(dat) {
         apply(dat, 1, function(x) {
             values <- as.numeric(x[!is.na(x)])
@@ -47,7 +49,7 @@ diseasePaths <- function(MRef,
 
     selected.path <- apply(HighDys.perc, 1, function(x){
         nperc <- length(x[x > perc_samples])
-        ntimes <- ifelse(nperc > min_datasets, TRUE, FALSE)
+        ntimes <- ifelse(nperc >= min_datasets, TRUE, FALSE)
         return(ntimes)
     })
     message("Selected paths: ", sum(selected.path))
