@@ -42,8 +42,7 @@ getMscoresRef <- function(data,
 
     lengthData <- length(data)
 
-    # Avoid using more cores than datasets
-    cores <- min(cores, lengthData)
+
 
     data.Mscore <- lapply(seq_len(lengthData), function (i) {
         dataset <- data[[i]]
@@ -56,6 +55,10 @@ getMscoresRef <- function(data,
                         apply(Healthy,1,function(x){sd(x,na.rm = T)}))
         rownames(H) <- rownames(Healthy)
         message("Running dataset ", i, " of ", lengthData)
+
+        # Avoid using more cores than samokes
+        workers <- min(cores, ncol(Patient))
+
         res <- BiocParallel::bplapply(seq_len(ncol(Patient)),
                                       function(column, Patient, geneNames,
                                                path.list, Healthy, .getMscorePath) {
@@ -73,7 +76,7 @@ getMscoresRef <- function(data,
         path.list=path.list,
         Healthy=H,
         .getMscorePath = .getMscorePath,
-        BPPARAM=BiocParallel::SnowParam(workers=cores, progressbar=TRUE))
+        BPPARAM=BiocParallel::SnowParam(workers=workers, progressbar=TRUE))
 
         res <- do.call("cbind", res)
         colnames(res) <- colnames(Patient)
