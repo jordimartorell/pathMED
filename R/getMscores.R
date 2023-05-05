@@ -42,9 +42,8 @@ getMscores <- function(Patient,
     }
 
     path.list <- genesets[[1]]
-    if(is.null(Healthy)){
-      Reference <- genesets[[2]]
-    }
+    Reference <- genesets[[2]]
+    
     
     if(is.vector(Patient)){ # Only one patient
         message("Calculating Mscores for one sample")
