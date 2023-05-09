@@ -42,8 +42,6 @@ getMscoresRef <- function(data,
 
     lengthData <- length(data)
 
-
-
     data.Mscore <- lapply(seq_len(lengthData), function (i) {
         dataset <- data[[i]]
         Patient <- as.data.frame(dataset[[1]])

@@ -42,19 +42,12 @@
 #' explainedvariance = 50)
 #' @export
 
-splitPathways <- function(data,
-                        genesets,
-                        customGeneset = NULL,
-                        minPathSize = 10,
-                        minSplitSize = 3,
-                        maxSplits = NULL,
-                        explainedvariance = 50){
-
-
-    ## Expression to Z-score by gene
+splitPathways <- function (data, genesets, customGeneset = NULL, minPathSize = 10,
+                           minSplitSize = 3, maxSplits = NULL, explainedvariance = 50)
+{
     data.zscore <- lapply(data,function(x){
         Href <- data.frame("mean"=rowMeans(as.matrix(x$Healthy),na.rm = T),
-                         "sd" = matrixStats::rowSds(as.matrix(x$Healthy),na.rm = T))
+                           "sd" = matrixStats::rowSds(as.matrix(x$Healthy),na.rm = T))
 
         x.zscore <- apply(as.matrix(x$Disease),2,function(pat){
             res <- (pat-Href$mean) / Href$sd
@@ -74,70 +67,94 @@ splitPathways <- function(data,
         path.list <- genesetsData[[genesets]]
     }
 
-    new.path.list <- list()
-    npath <- 1
-    for(i in 1:length(path.list)){
-        genes <- intersect(path.list[[i]],rownames(merged.datasets))
-
-        if(length(genes) >= minPathSize){
-
+    new.path.list <- lapply(1:length(path.list),function(x){
+        path_name <- names(path.list)[x]
+        genes <- intersect(path.list[[x]], rownames(merged.datasets))
+        if (length(genes) >= minPathSize) {
             tmp <- merged.datasets[genes,]
             pca <- FactoMineR::PCA(t(tmp),graph = F)
 
-            ## Select number of components
-            npcas  <- nrow(pca$eig[ifelse(pca$eig[,3] < explainedvariance,T,F),])+1
+            pca_eig <- as.data.frame(pca$eig)
+            pca_eig <- pca_eig[pca_eig$`cumulative percentage of variance` < explainedvariance,]
+            npcas <- nrow(pca_eig) + 1
 
-            if(length(npcas)!=0){
-
-                if(!is.null(maxSplits)){
-                    if(npcas>maxSplits){npcas=maxSplits}
+            if (length(npcas) != 0) {
+                if (!is.null(maxSplits)) {
+                    if (npcas > maxSplits) {
+                        npcas = maxSplits
+                    }
                 }
 
-                clusterPaths <- factoextra::eclust(tmp, "kmeans", k=npcas)$clust_plot$data
-                invisible(dev.off())
+                set.seed(123)
+                x <- tmp
+                clust <- stats::kmeans(x,npcas)
+                data <- scale(x)
+                cluster <- as.factor(clust$cluster)
+                axes = c(1, 2)
 
-                ## Join small clusters to nearest cluster
+                pca <- stats::prcomp(data, scale = FALSE, center = FALSE)
+                ind <- factoextra::facto_summarize(pca, element = "ind", result = "coord",
+                                                   axes = axes)
+                ind$cluster <- cluster
+                colnames(ind) <- c("name","x","y","cood","cluster")
+
+                clusterPaths <- ind
                 distance <- NULL
                 clusters <- as.numeric(unique(clusterPaths$cluster))
-                clusters <- clusters[order(clusters,decreasing = F)]
-                for(d in 1:length(clusters)){
-                    distance <- rbind(distance, c(mean(clusterPaths$x[clusterPaths$cluster==clusters[d]],na.rm = T),
-                                                mean(clusterPaths$y[clusterPaths$cluster==clusters[d]],na.rm = T)))
-
+                clusters <- clusters[order(clusters, decreasing = F)]
+                for (d in 1:length(clusters)) {
+                    distance <- rbind(distance, c(mean(clusterPaths$x[clusterPaths$cluster ==
+                                                                          clusters[d]], na.rm = T), mean(clusterPaths$y[clusterPaths$cluster ==
+                                                                                                                            clusters[d]], na.rm = T)))
                 }
-                distance <- as.matrix(dist(distance,diag = NULL,upper = T,method = "euclidean"))
-                diag(distance)=NA
+                distance <- as.matrix(dist(distance, diag = NULL,
+                                           upper = T, method = "euclidean"))
+                diag(distance) = NA
                 rownames(distance) <- as.character(clusters)
-
-                for(cl in 1:length(clusters)){
-                    if(as.numeric(table(clusterPaths$cluster==clusters[cl])["TRUE"])<minSplitSize){
-                        nearCl <- as.numeric(which.min(distance[as.character(clusters[cl]),]))
-                        clusterPaths[clusterPaths$cluster==clusters[cl],"cluster"] <- nearCl
-                        distance <- distance[!rownames(distance) %in% as.character(clusters[cl]),]
+                for (cl in 1:length(clusters)) {
+                    if (as.numeric(table(clusterPaths$cluster ==
+                                         clusters[cl])["TRUE"]) < minSplitSize) {
+                        nearCl <- as.numeric(which.min(distance[as.character(clusters[cl]),
+                        ]))
+                        clusterPaths[clusterPaths$cluster == clusters[cl],
+                                     "cluster"] <- nearCl
+                        distance <- distance[!rownames(distance) %in%
+                                                 as.character(clusters[cl]), ]
                     }
                 }
                 clusterPaths$cluster <- factor(clusterPaths$cluster)
-
-                paths <- split(clusterPaths,clusterPaths$cluster)
-                for(P in 1:length(paths)){
-                    new.path.list[[npath]] <- as.character(rownames(paths[[P]]))
-                    names(new.path.list)[npath] <- paste0(names(path.list)[i],sep=".split.",names(paths[P]))
-                    npath <- npath+1
-                }
-
-            }else{
-                new.path.list[[npath]] <- path.list[[i]]
-                names(new.path.list)[npath] <- names(path.list)[i]
-                npath <- npath+1
+                paths <- split(clusterPaths, clusterPaths$cluster)
+                paths_list <- lapply(1:length(paths), function(i){
+                    genes <- as.character(rownames(paths[[i]]))
+                })
+                names(paths_list) <- paste0(path_name,".split",seq(1:length(paths)))
+                return(paths_list)
+            } else{
+                paths_list <- list(genes)
+                names(paths_list) <- path_name
+                return(paths_list)
             }
+        } else{
+            paths_list <- list(genes)
+            names(paths_list) <- path_name
+            return(paths_list)
+        }
+    })
 
-        }else{
-            new.path.list[[npath]] <- path.list[[i]]
-            names(new.path.list)[npath] <- names(path.list)[i]
-            npath <- npath+1
+    new_path_list <- list()
+    for(x in 1:length(new.path.list)){
+        if (length(new.path.list[[x]]) == 1){
+            genes <- unlist(new.path.list[[x]])
+            names(genes) <- NULL
+            new_path_list[[names(new.path.list[[x]])]] <- genes
+        } else{
+            for (j in 1:length(new.path.list[[x]])){
+                genes <- unlist(new.path.list[[x]][[j]])
+                names(genes) <- NULL
+                new_path_list[[names(new.path.list[[x]][j])]] <- genes
+            }
         }
     }
-
-    return(new.path.list)
+    return(new_path_list)
 }
 
