@@ -52,7 +52,7 @@ getMscoresRef <- function(data,
         H <- data.frame(apply(Healthy,1,function(x){mean(x,na.rm = T)}),
                         apply(Healthy,1,function(x){sd(x,na.rm = T)}))
         rownames(H) <- rownames(Healthy)
-        H<-H[ifelse(H[,1]==0 | H[,2]==0,F,T),]
+        H<-H[ifelse(H[,2]==0,F,T),]
         message("Running dataset ", i, " of ", lengthData)
 
         # Avoid using more cores than samokes
