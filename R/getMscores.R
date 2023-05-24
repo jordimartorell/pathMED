@@ -70,6 +70,7 @@ getMscores <- function(Patient,
             H <- data.frame(apply(Healthy,1,function(x){mean(x,na.rm = T)}),
                             apply(Healthy,1,function(x){sd(x,na.rm = T)}))
             rownames(H)<-rownames(Healthy)
+            H<-H[ifelse(H[,1]==0 | H[,2]==0,F,T),]      
             res <- lapply(path.list, function(x) {
                 .getMscorePath(x, Patient=Patient, Healthy=H)
             })
@@ -104,6 +105,7 @@ getMscores <- function(Patient,
             H <- data.frame(apply(Healthy,1,function(x){mean(x,na.rm = T)}),
                             apply(Healthy,1,function(x){sd(x,na.rm = T)}))
             rownames(H)<-rownames(Healthy)
+            H<-H[ifelse(H[,1]==0 | H[,2]==0,F,T),]
             res <- BiocParallel::bplapply(seq_len(ncol(Patient)), function(column, geneNames,
                                                             path.list, Healthy) {
                 pat <- Patient[,column, drop=TRUE]
