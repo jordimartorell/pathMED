@@ -111,25 +111,25 @@ getML <- function(expData,
     ## 2. Subsamples
     if(!is.list(subsamples)){
       sampleSets <- unname(vapply(seq_len(subsamples), function(x){
-        createDataPartition(y=expData$group, p=splitProp, list=TRUE)},
+        caret::createDataPartition(y=expData$group, p=splitProp, list=TRUE)},
         list(seq_len(subsamples))))
-    }else{
-    sampleSets<-subsamples
+    } else {
+    sampleSets <- subsamples
     }
 
     resultNested <- pbapply::pblapply(sampleSets, function(x){
         training <- expData[as.numeric(unlist(x)),]
         testing <- expData[-as.numeric(unlist(x)),]
-        my_control <- trainControl(method="repeatedcv", number=foldsCV,
+        my_control <- caret::trainControl(method="repeatedcv", number=foldsCV,
                                    savePredictions="final",
                                    repeats=repeatsCV,
                                    classProbs=ifelse(outcomeClass=="character",
                                                      TRUE, FALSE),
-                                   index=createResample(training$group,
+                                   index=caret::createResample(training$group,
                                                         foldsCV),
-                                   search="random")
-
-        modelResults <- .removeOutText(caretList(group~., data=training,
+                                   search="random"
+                                   )
+        modelResults <- .removeOutText(caretList(group ~ ., data=training,
                                                  trControl=my_control,
                                                  tuneList=models))
         ## Get model stats for subsamples
@@ -219,7 +219,7 @@ getML <- function(expData,
     colnames(bestTune) <- paste0(".", colnames(parameters))
     rownames(bestTune) <- NULL
 
-    my_control <- trainControl(method="repeatedcv", number=foldsCV,
+    my_control <- caret::trainControl(method="repeatedcv", number=foldsCV,
                                savePredictions="final", repeats=repeatsCV,
                                classProbs=ifelse(outcomeClass=="character",
                                                  TRUE, FALSE))

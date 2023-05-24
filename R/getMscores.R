@@ -43,8 +43,8 @@ getMscores <- function(Patient,
 
     path.list <- genesets[[1]]
     Reference <- genesets[[2]]
-    
-    
+
+
     if(is.vector(Patient)){ # Only one patient
         message("Calculating Mscores for one sample")
 
@@ -104,8 +104,9 @@ getMscores <- function(Patient,
             H <- data.frame(apply(Healthy,1,function(x){mean(x,na.rm = T)}),
                             apply(Healthy,1,function(x){sd(x,na.rm = T)}))
             rownames(H)<-rownames(Healthy)
-            res <- BiocParallel::bplapply(Patient, function(pat, geneNames,
+            res <- BiocParallel::bplapply(seq_len(ncol(Patient)), function(column, geneNames,
                                                             path.list, Healthy) {
+                pat <- Patient[,column, drop=TRUE]
                 names(pat) <- geneNames
                 res.i <- lapply(path.list,
                                 .getMscorePath,
