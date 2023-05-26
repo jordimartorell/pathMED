@@ -129,7 +129,7 @@ getML <- function(expData,
                                                         foldsCV),
                                    search="random"
                                    )
-        modelResults <- .removeOutText(caretList(group ~ ., data=training,
+        modelResults <- .removeOutText(caretEnsemble::caretList(group ~ ., data=training,
                                                  trControl=my_control,
                                                  tuneList=models))
         ## Get model stats for subsamples
