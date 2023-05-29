@@ -85,7 +85,7 @@ getML <- function(expData,
     }
 
     expData <- expData[,samples]
-    metadata <- metadata[samples,]
+    metadata <- metadata[samples,,drop=FALSE]
 
     expData <- data.frame('group'=metadata[,var2predict],
                           as.data.frame(t(expData)))
