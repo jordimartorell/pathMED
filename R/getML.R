@@ -218,6 +218,8 @@ getML <- function(expData,
         }}))
     colnames(bestTune) <- paste0(".", colnames(parameters))
     rownames(bestTune) <- NULL
+  
+    if (".max_depth"%in%colnames(bestTune)) {bestTune$.max_depth <- round(bestTune$.max_depth)}
 
     my_control <- caret::trainControl(method="repeatedcv", number=foldsCV,
                                savePredictions="final", repeats=repeatsCV,
