@@ -197,7 +197,7 @@ getML <- function(expData,
 
     if(length(models) > 1){
         switch(prior,
-               "MCC"={stats <- stats[,order(stats["MCC",],decreasing=TRUE)]},
+               "MCC"={stats <- stats[,order(as.numeric(stats["MCC",]),decreasing=TRUE)]},
                "Corr"={
                    rownames(stats) <- "Correlation"
                    stats <- stats[,order(as.numeric(stats["Correlation",]),
