@@ -48,7 +48,8 @@
     tmp.mscore <- Ref.mscore[,names(distances)[seq_len(k)]]
     tmp.mscore <- apply(tmp.mscore,1,mean)
 
-    return(tmp.mscore)
+    return(list("mscores"=tmp.mscore,
+                "distance"=mean(distances[seq_len(k)],na.rm=T)))
 }
 
 
