@@ -35,6 +35,7 @@ getMscores <- function(Patient,
                        Healthy=NULL,
                        genesets,
                        nk=5,
+                       maxDistance= 30,
                        cores = 1){
 
     if (is.null(Healthy) & is.null(nk)) {
@@ -56,13 +57,20 @@ getMscores <- function(Patient,
                                rownames(Reference$Reference.normalized))
             Patient <- Patient[genes]
 
-            res <- .getNearSample(patient=Patient,
+            res.l <- .getNearSample(patient=Patient,
                                   Ref.norm=Reference$Reference.normalized[
                                         genes,],
                                   Ref.mscore=Reference$Reference.mscore,
                                   k=nk)
-            res <- as.data.frame(res)
+            res <- as.data.frame(res.l$mscores)
             colnames(res)<-"Mscores"
+
+          if(res.l$distance > maxDistance){
+            message("Distance between patient expression and k-samples from ",
+                    "Patient-reference are higher than maxDistance. Mscores ",
+                    "for this patients will not be imputed...")
+            res<-NULL    
+          }
 
         } else {
             message("Healthy samples supplied, calculating M-scores using ",
@@ -90,12 +98,25 @@ getMscores <- function(Patient,
 
             Mscores <- pbapply::pbapply(Patient, 2, function(x) {
                 names(x) <- genes
-                .getNearSample(patient=x,
+                res.l <- .getNearSample(patient=x,
                                Ref.norm=Reference$Reference.normalized[genes,],
                                Ref.mscore=Reference$Reference.mscore,
                                k=nk)
+
+                 if(res.l$distance > maxDistance){
+                    return(NULL)    
+                 }else{
+                    return(res.l$mscores)
+                 }
             })
 
+            if(ncol(Patient) != ncol(Mscores)){
+                message("Distance between ", abs(ncol(Patient) - ncol(Mscores)),
+                        " patients expression and k-samples from ",
+                        "Patient-reference are higher than maxDistance. Mscores ",
+                        "for these patients will not be imputed...")
+            } 
+               
             res <- Mscores
 
         } else {
