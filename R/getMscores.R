@@ -37,114 +37,121 @@ getMscores <- function(Patient,
                        nk=5,
                        maxDistance= 30,
                        cores = 1){
-
-    if (is.null(Healthy) & is.null(nk)) {
-        stop("If Healthy=NULL, nk must be defined")
+  
+  if (is.null(Healthy) & is.null(nk)) {
+    stop("If Healthy=NULL, nk must be defined")
+  }
+  
+  path.list <- genesets[[1]]
+  Reference <- genesets[[2]]
+  
+  
+  if(is.vector(Patient)){ # Only one patient
+    message("Calculating Mscores for one sample")
+    
+    if(is.null(Healthy)){
+      message("No healthy samples supplied, calculating M-scores by ",
+              "similarity with samples from reference")
+      
+      genes <- intersect(names(Patient),
+                         rownames(Reference$Reference.normalized))
+      Patient <- Patient[genes]
+      
+      res.l <- .getNearSample(patient=Patient,
+                              Ref.norm=Reference$Reference.normalized[
+                                genes,],
+                              Ref.mscore=Reference$Reference.mscore,
+                              k=nk)
+      res <- as.data.frame(res.l$mscores)
+      colnames(res)<-"Mscores"
+      
+      if(res.l$distance > maxDistance){
+        message("Distance between patient's expression and k-samples from ",
+                "Patient-reference are higher than maxDistance. Mscores ",
+                "for this patients will not be imputed...")
+        res<-NULL    
+      }
+      
+    } else {
+      message("Healthy samples supplied, calculating M-scores using ",
+              "healthy samples as reference")
+      H <- data.frame(apply(Healthy,1,function(x){mean(x,na.rm = T)}),
+                      apply(Healthy,1,function(x){sd(x,na.rm = T)}))
+      rownames(H)<-rownames(Healthy)
+      H<-H[ifelse(H[,2]==0,F,T),]      
+      res <- lapply(path.list, function(x) {
+        .getMscorePath(x, Patient=Patient, Healthy=H)
+      })
+      res <- as.data.frame(do.call("rbind", res))
+      colnames(res) <- "Mscores"
     }
-
-    path.list <- genesets[[1]]
-    Reference <- genesets[[2]]
-
-
-    if(is.vector(Patient)){ # Only one patient
-        message("Calculating Mscores for one sample")
-
-        if(is.null(Healthy)){
-            message("No healthy samples supplied, calculating M-scores by ",
-                    "similarity with samples from reference")
-
-            genes <- intersect(names(Patient),
-                               rownames(Reference$Reference.normalized))
-            Patient <- Patient[genes]
-
-            res.l <- .getNearSample(patient=Patient,
-                                  Ref.norm=Reference$Reference.normalized[
-                                        genes,],
-                                  Ref.mscore=Reference$Reference.mscore,
-                                  k=nk)
-            res <- as.data.frame(res.l$mscores)
-            colnames(res)<-"Mscores"
-
-          if(res.l$distance > maxDistance){
-            message("Distance between patient expression and k-samples from ",
-                    "Patient-reference are higher than maxDistance. Mscores ",
-                    "for this patients will not be imputed...")
-            res<-NULL    
-          }
-
-        } else {
-            message("Healthy samples supplied, calculating M-scores using ",
-                    "healthy samples as reference")
-            H <- data.frame(apply(Healthy,1,function(x){mean(x,na.rm = T)}),
-                            apply(Healthy,1,function(x){sd(x,na.rm = T)}))
-            rownames(H)<-rownames(Healthy)
-            H<-H[ifelse(H[,2]==0,F,T),]      
-            res <- lapply(path.list, function(x) {
-                .getMscorePath(x, Patient=Patient, Healthy=H)
-            })
-            res <- as.data.frame(do.call("rbind", res))
-            colnames(res) <- "Mscores"
+    
+  } else { ## Several patients
+    if (is.null(Healthy)) {
+      message("No healthy samples supplied. Calculating M-scores by ",
+              "similarity with samples from reference for ",
+              ncol(Patient), " patients")
+      
+      genes <- intersect(rownames(Patient),
+                         rownames(Reference$Reference.normalized))
+      Patient <- Patient[genes,]
+      
+      Mscores <- pbapply::pbapply(Patient, 2, function(x) {
+        names(x) <- genes
+        res.l <- .getNearSample(patient=x,
+                                Ref.norm=Reference$Reference.normalized[genes,],
+                                Ref.mscore=Reference$Reference.mscore,
+                                k=nk)
+      })
+      
+      Mscores <- do.call("cbind",lapply(Mscores,function(m.x){
+        if(m.x$distance <= maxDistance){
+          return(m.x$mscores)    
         }
+      }))
+      
+      if(!is.null(Mscores)){
+        if(ncol(Patient) != ncol(Mscores)){
+         message("Distance between expression of ", 
+                 abs(ncol(Patient) - ncol(Mscores))," patients and k-samples ",
+                 "from Patient-reference are higher than maxDistance. Mscores ",
+                 "for these patients will not be imputed...")
+        } 
+      }else{
+       message("Distance between expression of ",ncol(Patient)," patients and ",
+       "k-samples from Patient-reference are higher than maxDistance. Mscores ",
+       "for these patients will not be imputed...")
+      }
 
-    } else { ## Several patients
-        if (is.null(Healthy)) {
-            message("No healthy samples supplied. Calculating M-scores by ",
-                    "similarity with samples from reference for ",
-                    ncol(Patient), " patients")
-
-            genes <- intersect(rownames(Patient),
-                               rownames(Reference$Reference.normalized))
-            Patient <- Patient[genes,]
-
-            Mscores <- pbapply::pbapply(Patient, 2, function(x) {
-                names(x) <- genes
-                res.l <- .getNearSample(patient=x,
-                               Ref.norm=Reference$Reference.normalized[genes,],
-                               Ref.mscore=Reference$Reference.mscore,
-                               k=nk)
-
-                 if(res.l$distance > maxDistance){
-                    return(NULL)    
-                 }else{
-                    return(res.l$mscores)
-                 }
-            })
-
-            if(ncol(Patient) != ncol(Mscores)){
-                message("Distance between ", abs(ncol(Patient) - ncol(Mscores)),
-                        " patients expression and k-samples from ",
-                        "Patient-reference are higher than maxDistance. Mscores ",
-                        "for these patients will not be imputed...")
-            } 
-               
-            res <- Mscores
-
-        } else {
-            message("Healthy samples supplied. Calculating M-scores using ",
-                    "healthy samples as reference for ", ncol(Patient),
-                    " patients")
-            H <- data.frame(apply(Healthy,1,function(x){mean(x,na.rm = T)}),
-                            apply(Healthy,1,function(x){sd(x,na.rm = T)}))
-            rownames(H)<-rownames(Healthy)
-            H<-H[ifelse(H[,2]==0,F,T),]
-            res <- BiocParallel::bplapply(seq_len(ncol(Patient)), function(column, geneNames,
-                                                            path.list, Healthy) {
-                pat <- Patient[,column, drop=TRUE]
-                names(pat) <- geneNames
-                res.i <- lapply(path.list,
-                                .getMscorePath,
-                                Healthy=Healthy,
-                                Patient=pat)
-                res.i <- as.data.frame(do.call("rbind", res.i))
-                return(res.i)
-            },
-            geneNames=rownames(Patient),
-            path.list=path.list,
-            Healthy=H,
-            BPPARAM=BiocParallel::SnowParam(workers = cores, progressbar=TRUE))
-            res <- do.call("cbind", res)
-            colnames(res) <- colnames(Patient)
-        }
+      res <- Mscores
+      
+    } else {
+      message("Healthy samples supplied. Calculating M-scores using ",
+              "healthy samples as reference for ", ncol(Patient),
+              " patients")
+      H <- data.frame(apply(Healthy,1,function(x){mean(x,na.rm = T)}),
+                      apply(Healthy,1,function(x){sd(x,na.rm = T)}))
+      rownames(H)<-rownames(Healthy)
+      H<-H[ifelse(H[,2]==0,F,T),]
+      res <- BiocParallel::bplapply(seq_len(ncol(Patient)), function(column, geneNames,
+                                                                     path.list, Healthy) {
+        pat <- Patient[,column, drop=TRUE]
+        names(pat) <- geneNames
+        res.i <- lapply(path.list,
+                        getMscorePath,
+                        Healthy=Healthy,
+                        Patient=pat)
+        res.i <- as.data.frame(do.call("rbind", res.i))
+        return(res.i)
+      },
+      geneNames=rownames(Patient),
+      path.list=path.list,
+      Healthy=H,
+      BPPARAM=BiocParallel::SnowParam(workers = cores, progressbar=TRUE))
+      res <- do.call("cbind", res)
+      colnames(res) <- colnames(Patient)
     }
-    return(res)
+  }
+  return(res)
 }
+
