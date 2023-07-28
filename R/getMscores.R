@@ -138,7 +138,7 @@ getMscores <- function(Patient,
         pat <- Patient[,column, drop=TRUE]
         names(pat) <- geneNames
         res.i <- lapply(path.list,
-                        getMscorePath,
+                        .getMscorePath,
                         Healthy=Healthy,
                         Patient=pat)
         res.i <- as.data.frame(do.call("rbind", res.i))
