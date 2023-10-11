@@ -233,6 +233,6 @@ getML <- function(expData,
                                       method=colnames(stats)[1],
                                       tuneGrid=bestTune, trControl=my_control))
 
-    return(list(model=fit.model, stats=stats, bestTune=bestTune))
+    return(list(model=fit.model, stats=stats, bestTune=bestTune, subsample.preds = resultNested$preds))
 }
 
