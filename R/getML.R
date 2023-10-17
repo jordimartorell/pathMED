@@ -212,6 +212,11 @@ getML <- function(expData,
         x$models[[colnames(stats)[1]]]$bestTune
     }))
 
+    ## Table of prediction from subsets
+    predsTable<-do.call("rbind",lapply(resultNested,function(x){
+      x$preds[colnames(stats)[1]][[1]]
+    }))
+
     bestTune <- data.frame(lapply(seq_len(ncol(parameters)), function(x){
         tmpValues <- data.frame(parameters[,x])
         if(!methods::is(tmpValues[,1], "numeric")){
@@ -233,6 +238,6 @@ getML <- function(expData,
                                       method=colnames(stats)[1],
                                       tuneGrid=bestTune, trControl=my_control))
 
-    return(list(model=fit.model, stats=stats, bestTune=bestTune, subsample.preds = resultNested$preds))
+    return(list(model=fit.model, stats=stats, bestTune=bestTune, subsample.preds = predsTable))
 }
 
