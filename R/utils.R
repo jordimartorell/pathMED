@@ -120,7 +120,7 @@
     })
     listFolds<-lapply(1:length(splittedFolds[[1]]),function(k){
       res<-c(unlist(lapply(1:length(splittedFolds),function(r){
-        as.numeric(unname(splittedFolds[[r]][k])[[1]])
+        as.integer(unname(splittedFolds[[r]][k])[[1]])
       })))
     })
     
