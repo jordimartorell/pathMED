@@ -128,7 +128,7 @@ getML <- function(expData,
       #sampleSets <- unname(vapply(seq_len(Koutter), function(x){
         #caret::createDataPartition(y=expData$group, p=splitProp, list=TRUE)},
         #list(seq_len(Koutter))))
-      sampleSets <- .makeclassBalancedFolds(y=expData$group,kfold = Koutter,
+      sampleSets <- .makeClassBalancedFolds(y=expData$group,kfold = Koutter,
                               repeats = 1, varType = outcomeClass)
         
     } else {
@@ -139,7 +139,7 @@ getML <- function(expData,
         training <- expData[as.numeric(unlist(x)),]
         testing <- expData[-as.numeric(unlist(x)),]
       
-        folds<-.makeclassBalancedFolds(y=training$group,kfold = Kinner,
+        folds<-.makeClassBalancedFolds(y=training$group,kfold = Kinner,
                               repeats = repeatsCV,varType = outcomeClass)
       
         my_control <- caret::trainControl(method="cv", number=Kinner,
