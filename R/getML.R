@@ -104,6 +104,12 @@ getML <- function(expData,
     } else {
         prior <- "Corr"
     }
+
+    if (foldsCV > min(table(metadata[,var2predict])) & outcomeClass == "character"){
+        stop(paste("foldsCV must be less or equal to the smallest group. Max foldsCV= ",
+            min(table(metadata[,var2predict]))))
+    }
+  
     if(is.null(positiveClass)){
         positiveClass <- levels(factor(metadata[,var2predict]))[1]
     }
@@ -120,13 +126,16 @@ getML <- function(expData,
     resultNested <- pbapply::pblapply(sampleSets, function(x){
         training <- expData[as.numeric(unlist(x)),]
         testing <- expData[-as.numeric(unlist(x)),]
-        my_control <- caret::trainControl(method="repeatedcv", number=foldsCV,
+      
+        folds<-.makeclassBalancedFolds(y=training$group,kfold = foldsCV,
+                              repeats = repeatsCV,varType = outcomeClass)
+      
+        my_control <- caret::trainControl(method="cv", number=foldsCV,
                                    savePredictions="final",
-                                   repeats=repeatsCV,
+                                   #repeats=repeatsCV,
                                    classProbs=ifelse(outcomeClass=="character",
                                                      TRUE, FALSE),
-                                   index=caret::createResample(training$group,
-                                                        foldsCV),
+                                   index= folds,
                                    search="random"
                                    )
         modelResults <- .removeOutText(caretEnsemble::caretList(group ~ ., data=training,
