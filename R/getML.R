@@ -8,9 +8,10 @@
 #' caret::caretModelSpec function. methodsML function may be used to prepare
 #' this list
 #' @param var2predict character with the column name of the @metadata to predict
-#' @param subsamples number of sub-samples in which exp.data is split
-#' @param splitProp proportion of samples used as train for the subsamples
-#' @param foldsCV number of cross-validation folds (for parameter tuning)
+#' @param Koutter number of Outter folds in which exp.data is split for neasted cold validation.
+#' A list of integer with elements for each resampling iteration is admitted. 
+#' Each list element is a vector of integers corresponding to the rows used for training at that iteration.
+#' @param Kinner number of cross-validation folds (for parameter tuning)
 #' @param repeatsCV number of repetitions of the parameter tuning process
 #' @param positiveClass outcome value that must be considered as positive class
 #' (for categoric outcomes)
@@ -56,9 +57,8 @@
 #' metadata=exampleMetadata,
 #' var2predict="Response",
 #' models=methodsML("svmLinear"),
-#' subsamples=5,
-#' splitProp=0.8,
-#' foldsCV=10,
+#' Koutter=5,
+#' Kinner=10,
 #' repeatsCV=10)
 #' }
 #'
@@ -67,9 +67,8 @@ getML <- function(expData,
                   metadata,
                   models=methodsML(),
                   var2predict,
-                  subsamples=4,
-                  splitProp=0.75,
-                  foldsCV=10,
+                  Koutter=4,
+                  Kinner=10,
                   repeatsCV=5,
                   positiveClass=NULL){
 
@@ -105,32 +104,45 @@ getML <- function(expData,
         prior <- "Corr"
     }
 
-    if (foldsCV > min(table(metadata[,var2predict])) & outcomeClass == "character"){
-        stop(paste("foldsCV must be less or equal to the smallest group. Max foldsCV= ",
-            min(table(metadata[,var2predict]))))
+    if ( outcomeClass == "character" & !is.list(Koutter)){
+      size.m <- min(table(metadata[,var2predict]))
+      Kint.m <- as.integer(size.m - (size.m/Koutter))
+
+      if(Koutter > size.m){
+        stop(paste0("Koutter must be less or equal to the smallest group. Max Koutter ",
+            size.m))
+      }    
+      if(Kinner > Kint.m){
+        stop(paste0("Not enough samples for ",
+                  Koutter, " Koutter and ",Kinner," Kinner. For ", Koutter,
+                   " Koutter, Kinner must be less or equal to ",Kint.m))
+      }  
     }
   
     if(is.null(positiveClass)){
         positiveClass <- levels(factor(metadata[,var2predict]))[1]
     }
 
-    ## 2. Subsamples
-    if(!is.list(subsamples)){
-      sampleSets <- unname(vapply(seq_len(subsamples), function(x){
-        caret::createDataPartition(y=expData$group, p=splitProp, list=TRUE)},
-        list(seq_len(subsamples))))
+    ## 2. Koutter
+    if(!is.list(Koutter)){
+      #sampleSets <- unname(vapply(seq_len(Koutter), function(x){
+        #caret::createDataPartition(y=expData$group, p=splitProp, list=TRUE)},
+        #list(seq_len(Koutter))))
+      sampleSets <- .makeclassBalancedFolds(y=expData$group,kfold = Koutter,
+                              repeats = 1, varType = outcomeClass)
+        
     } else {
-    sampleSets <- subsamples
+    sampleSets <- Koutter
     }
 
     resultNested <- pbapply::pblapply(sampleSets, function(x){
         training <- expData[as.numeric(unlist(x)),]
         testing <- expData[-as.numeric(unlist(x)),]
       
-        folds<-.makeclassBalancedFolds(y=training$group,kfold = foldsCV,
+        folds<-.makeclassBalancedFolds(y=training$group,kfold = Kinner,
                               repeats = repeatsCV,varType = outcomeClass)
       
-        my_control <- caret::trainControl(method="cv", number=foldsCV,
+        my_control <- caret::trainControl(method="cv", number=Kinner,
                                    savePredictions="final",
                                    #repeats=repeatsCV,
                                    classProbs=ifelse(outcomeClass=="character",
@@ -141,7 +153,7 @@ getML <- function(expData,
         modelResults <- .removeOutText(caretEnsemble::caretList(group ~ ., data=training,
                                                  trControl=my_control,
                                                  tuneList=models))
-        ## Get model stats for subsamples
+        ## Get model stats for Koutter
         predictionTable <- list()
         cm <- list()
         for(model in modelResults){
@@ -238,7 +250,7 @@ getML <- function(expData,
   
     if (".max_depth"%in%colnames(bestTune)) {bestTune$.max_depth <- round(bestTune$.max_depth)}
 
-    my_control <- caret::trainControl(method="repeatedcv", number=foldsCV,
+    my_control <- caret::trainControl(method="repeatedcv", number=Kinner,
                                savePredictions="final", repeats=repeatsCV,
                                classProbs=ifelse(outcomeClass=="character",
                                                  TRUE, FALSE))
