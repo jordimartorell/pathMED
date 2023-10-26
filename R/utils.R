@@ -102,3 +102,35 @@
     out <- suppressMessages(eval(...))
     out
 }
+
+
+## Function to created class-balanced fold
+.makeClassBalancedFolds<-function(y,kfold,repeats,varType){
+  
+  if(varType=="character"){
+    
+    y<-data.frame("value"=y,index=1:length(y))
+    y<-split(y, y$value)
+    
+    splittedFolds<-lapply(y,function(x){
+      folds<-caret::createMultiFolds(x$index,k = kfold,repeats)
+      res<-lapply(folds,function(i){
+        x[i,]$index
+      })
+    })
+    listFolds<-lapply(1:length(splittedFolds[[1]]),function(k){
+      res<-c(unlist(lapply(1:length(splittedFolds),function(r){
+        as.numeric(unname(splittedFolds[[r]][k])[[1]])
+      })))
+    })
+    
+  }else{
+    y<-data.frame("value"=y,index=1:length(y))
+    folds<-caret::createMultiFolds(y$index,k = kfold,repeats)
+    listFolds<-lapply(folds,function(i){
+      y[i,]$index
+    })
+  }
+  return(listFolds)
+}
+
