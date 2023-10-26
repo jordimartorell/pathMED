@@ -104,9 +104,13 @@ getML <- function(expData,
         prior <- "Corr"
     }
 
-    if ( outcomeClass == "character" & !is.list(Koutter)){
+    if (outcomeClass == "character" & !is.list(Koutter)){
       size.m <- min(table(metadata[,var2predict]))
       Kint.m <- as.integer(size.m - (size.m/Koutter))
+
+      if(size.m < 5){
+        warning("The smallest group has too low number of samples, models could not work correctly")
+      }
 
       if(Koutter > size.m){
         stop(paste0("Koutter must be less or equal to the smallest group. Max Koutter ",
