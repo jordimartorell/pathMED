@@ -68,7 +68,7 @@ getML <- function(expData,
                   models=methodsML(),
                   var2predict,
                   Koutter=5,
-                  Kinner=5,
+                  Kinner=4,
                   repeatsCV=5,
                   positiveClass=NULL){
 
@@ -111,7 +111,7 @@ getML <- function(expData,
       if (size.m < 3) {
         stop("The smallest group has too few samples, minimum number of samples per group is 3.")
       }
-      if (size.m < 5) {
+      if (size.m < 10) {
         warning("The smallest group has too few samples, the models may not work properly.")
       }
       if (Koutter < 2) {stop("Koutter must be 2 or more")}
