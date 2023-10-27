@@ -67,8 +67,8 @@ getML <- function(expData,
                   metadata,
                   models=methodsML(),
                   var2predict,
-                  Koutter=4,
-                  Kinner=10,
+                  Koutter=5,
+                  Kinner=5,
                   repeatsCV=5,
                   positiveClass=NULL){
 
