@@ -106,7 +106,7 @@ getML <- function(expData,
 
     if (outcomeClass == "character" & !is.list(Koutter)){
       size.m <- min(table(metadata[,var2predict]))
-      Kint.m <- as.integer(size.m - (size.m/Koutter))
+      Kint.m <- as.integer(size.m/Koutter)
 
       if(size.m < 5){
         warning("The smallest group has too low number of samples, models could not work correctly")
