@@ -105,22 +105,26 @@ getML <- function(expData,
     }
 
     if (outcomeClass == "character" & !is.list(Koutter)){
-      size.m <- min(table(metadata[,var2predict]))
-      Kint.m <- as.integer(size.m/Koutter)
-
-      if(size.m < 5){
-        warning("The smallest group has too low number of samples, models could not work correctly")
+      size.m <- min(table(metadata[, var2predict]))
+      Kint.m <- as.integer(size.m-(size.m/Koutter))
+      if (Kint.m < 2) {Kint.m <- 2}
+      if (size.m < 3) {
+        stop("The smallest group has too few samples, minimum number of samples per group is 3.")
       }
-
-      if(Koutter > size.m){
-        stop(paste0("Koutter must be less or equal to the smallest group. Max Koutter ",
-            size.m))
-      }    
-      if(Kinner > Kint.m){
-        stop(paste0("Not enough samples for ",
-                  Koutter, " Koutter and ",Kinner," Kinner. For ", Koutter,
-                   " Koutter, Kinner must be less or equal to ",Kint.m))
-      }  
+      if (size.m < 5) {
+        warning("The smallest group has too few samples, the models may not work properly.")
+      }
+      if (Koutter < 2) {stop("Koutter must be 2 or more")}
+      if (Kinner < 2) {stop("Kinner must be 2 or more")}
+      if (Koutter > size.m) {
+        stop(paste0("Koutter must be smaller than or equal to the smallest group. Maximum Koutter is ", size.m))
+      }
+      if (Kinner > Kint.m) {
+        stop(paste0("Not enough samples for ", Koutter,
+                    " Koutter and ", Kinner, " Kinner. For ", Koutter,
+                    " Koutter, Kinner must be less or equal to ",
+                    Kint.m))
+      }
     }
   
     if(is.null(positiveClass)){
