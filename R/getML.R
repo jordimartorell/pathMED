@@ -169,12 +169,14 @@ getML <- function(expData,
                 classLabels <- levels(as.factor(training$group))
                 predTest <- stats::predict(model, newdata=testing,
                                            type="prob")[,classLabels]
-                x <- as.factor(ifelse(is.na(predTest[,1]) | is.na(predTest[,2]),NA,
-                            ifelse(predTest[,1]==predTest[,2],NA,
-                                   ifelse(predTest[,1]>predTest[,2],
-                                          colnames(predTest)[1],
-                                          colnames(predTest)[2]))))
-                y <- as.factor(testing$group)
+
+                 sel<-unlist(lapply(1:nrow(predTest),function(n){
+                  ifelse(sum(!is.na(predTest[n,]))==0,FALSE,TRUE)}))
+                 y <- as.factor(testing$group[sel])
+                 predTest<-predTest[sel,]
+                 x<-as.factor(unlist(lapply(1:nrow(predTest),function(n){
+                  names(which.max(predTest[n,]))})))
+              
                 cmModel <- confusionMatrix(x,y,positive = positiveClass)
                 cm <- append(cm,list(cmModel))
                 predTest <- data.frame(predTest,"obs"=y)
