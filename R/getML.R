@@ -169,7 +169,7 @@ getML <- function(expData,
         modelResults <- .removeOutText(caretEnsemble::caretList(group ~ ., data=training,
                                                  trControl=my_control,
                                                  tuneList=models,
-                                                 continue_on_fail = FALSE))
+                                                 continue_on_fail = TRUE))
         ## Get model stats for Koutter
         predictionTable <- list()
         cm <- list()
