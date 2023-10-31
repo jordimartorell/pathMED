@@ -208,16 +208,15 @@ getML <- function(expData,
     })
 
     ## 3. Best algorithm selection (model prioritization)
-      if(outcomeClass=="character"){
-    metrics<-c("mcc","balacc","accuracy","recall","specificity","npv",
+   if(outcomeClass=="character"){
+      metrics<-c("mcc","balacc","accuracy","recall","specificity","npv",
                "precision","fscore","preval")
-    type<-"classification"
-    levels<-c(positiveClass,unique(unique(expData$group))[!unique(expData$group) %in% positiveClass])
-    
+      type<-"classification"
+      levels<-c(positiveClass,unique(unique(expData$group))[!unique(expData$group) %in% positiveClass])
   }else{
-    metrics<-c("r","RMSE","R2","MAE","RMAE","MAPE","RSE")
-    type<-"regression"
-    levels <- NULL
+      metrics<-c("r","RMSE","R2","MAE","RMAE","MAPE","RSE")
+      type<-"regression"
+      levels <- NULL
   }
   
   
