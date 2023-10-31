@@ -131,6 +131,14 @@ getML <- function(expData,
         positiveClass <- levels(factor(metadata[,var2predict]))[1]
     }
 
+    if(length(unique(expData$group))>2){
+      models<-models[!names(models) %in% c('glm', 'ada','gamboost')]
+      warning("glm, ada and gamboost models are not available for multi-class models")
+      if(length(models)==0){
+        stop("Any algorithm suitable. Please, check the MethodsML function")
+      }
+    }
+  
     ## 2. Koutter
     if(!is.list(Koutter)){
       #sampleSets <- unname(vapply(seq_len(Koutter), function(x){
