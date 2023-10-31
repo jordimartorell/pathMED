@@ -200,42 +200,56 @@ getML <- function(expData,
     })
 
     ## 3. Best algorithm selection (model prioritization)
-    stats <- as.data.frame(do.call("cbind",
-                                   lapply(names(models),
-                                          function(mod){
-          if(outcomeClass=="character"){
-              cm.mod <- do.call("cbind", lapply(resultNested,function(x){
-                  c(x$cm[[mod]]$overall["Accuracy"], x$cm[[mod]]$byClass)
-              }))
+      if(outcomeClass=="character"){
+    metrics<-c("mcc","balacc","accuracy","recall","specificity","npv",
+               "precision","fscore","preval")
+    type<-"classification"
+    levels<-c(positiveClass,unique(unique(expData$group))[!unique(expData$group) %in% positiveClass])
+    
+  }else{
+    metrics<-c("r","RMSE","R2","MAE","RMAE","MAPE","RSE")
+    type<-"regression"
+    levels <- NULL
+  }
+  
+  
+  stats<-do.call("cbind",lapply(names(models),function(x){
+    
+    sum.model.x<-do.call("cbind",lapply(1:length(sampleSets),function(it){
+      
+      tmp<-resultNested[[it]]$preds[[x]]
+      if(outcomeClass=="character"){
+        obs<-factor(tmp$obs,levels =levels)
+        lab.pred<-unlist(lapply(1:nrow(tmp),function(n){
+          names(which.max(tmp[n,!colnames(tmp) %in% "obs"]))}))
+        lab.pred<-factor(lab.pred,levels = levels)
+      }else{
+        obs<-tmp$obs
+        lab.pred<-tmp$pred
+      }
+      
+      resultsTable <- suppressWarnings(metrica::metrics_summary(obs = obs,
+                                                                pred = lab.pred, type=type, 
+                                                                pos_level = "1",
+                                                                metrics_list = metrics))
+      rownames(resultsTable)<-resultsTable$Metric
+      res<-data.frame("Score"=resultsTable[metrics,"Score"]) 
+      rownames(res)<-metrics
+      return(res)
+    }))
+    
+    sum.model.all<-data.frame("results"=apply(sum.model.x,1,function(metr){
+      mean(metr,na.rm=T)}))
+    return(sum.model.all)
+  }))
+  names(stats)<-names(models)
 
-              allpreds <- do.call("rbind", lapply(resultNested,
-                                                  function(x){x$preds[[mod]]}))
-              AUCMCC <- invisible(MLeval::evalm(allpreds, silent=TRUE,
-                                             showplots=FALSE,
-                                             optimise="MCC"))$stdres[[
-                  1]][c("MCC", "AUC-ROC"), "Score"]
-              statsTmp <- c(AUCMCC, apply(cm.mod, 1, mean))
-              names(statsTmp)[1:2] <- c("MCC","AUC")
-              return(statsTmp)
-          } else{
-              allpreds <- do.call("rbind", lapply(resultNested,
-                                                  function(x){
-                                                      x$preds[[mod]]}))
-              statsTmp <- stats::cor(allpreds$pred, allpreds$obs)
-
-          }
-          }
-          )))
-
-    colnames(stats) <- names(models)
-
-    if(length(models) > 1){
-        switch(prior,
-               "MCC"={stats <- stats[,order(as.numeric(stats["MCC",]),decreasing=TRUE)]},
-               "Corr"={
-                   rownames(stats) <- "Correlation"
-                   stats <- stats[,order(as.numeric(stats["Correlation",]),
-                                         decreasing=TRUE)]})
+   if(length(models) > 1){
+    switch(prior,
+           "MCC"={stats <- stats[,order(as.numeric(stats["mcc",]),decreasing=TRUE)]},
+           "Corr"={
+             #rownames(stats) <- "Correlation"
+             stats <- stats[,order(as.numeric(stats["r",]),decreasing=TRUE)]})
     }
 
     ## 4. Build model with all data, best algorithm and best parameters
@@ -260,14 +274,9 @@ getML <- function(expData,
   
     if (".max_depth"%in%colnames(bestTune)) {bestTune$.max_depth <- round(bestTune$.max_depth)}
 
-    my_control <- caret::trainControl(method="repeatedcv", number=Kinner,
-                               savePredictions="final", repeats=repeatsCV,
-                               classProbs=ifelse(outcomeClass=="character",
-                                                 TRUE, FALSE))
-
     fit.model <- .removeOutText(train(group~.,data=expData,
                                       method=colnames(stats)[1],
-                                      tuneGrid=bestTune, trControl=my_control))
+                                      tuneGrid=bestTune))
 
     return(list(model=fit.model, stats=stats, bestTune=bestTune, subsample.preds = predsTable))
 }
