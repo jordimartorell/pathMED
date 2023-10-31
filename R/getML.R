@@ -132,8 +132,8 @@ getML <- function(expData,
     }
 
     if(length(unique(expData$group))>2){
-      models<-models[!names(models) %in% c('glm', 'ada','gamboost')]
       warning("glm, ada and gamboost models are not available for multi-class models")
+      models<-models[!names(models) %in% c('glm', 'ada','gamboost')]
       if(length(models)==0){
         stop("Any algorithm suitable. Please, check the MethodsML function")
       }
@@ -211,11 +211,11 @@ getML <- function(expData,
     ## 3. Best algorithm selection (model prioritization)
    if(outcomeClass=="character"){
       metrics<-c("mcc","balacc","accuracy","recall","specificity","npv",
-               "precision","fscore","preval")
+               "precision","fscore")
       type<-"classification"
       levels<-c(positiveClass,unique(unique(expData$group))[!unique(expData$group) %in% positiveClass])
   }else{
-      metrics<-c("r","RMSE","R2","MAE","RMAE","MAPE","RSE")
+      metrics<-c("r","RMSE","R2","MAE","RMAE","RSE")
       type<-"regression"
       levels <- NULL
   }
