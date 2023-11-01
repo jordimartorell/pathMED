@@ -70,6 +70,7 @@ getML <- function(expData,
                   Koutter=5,
                   Kinner=4,
                   repeatsCV=5,
+                  continue_on_fail = TRUE,
                   positiveClass=NULL){
 
     if (!var2predict %in% colnames(metadata)) {
@@ -150,8 +151,11 @@ getML <- function(expData,
     } else {
     sampleSets <- Koutter
     }
-
-    resultNested <- pbapply::pblapply(sampleSets, function(x){
+  
+  message("Training models...")
+  pb <- txtProgressBar(min = 0, max = length(sampleSets)*length(models), style = 3) # Progress bar starts
+  
+    resultNested <- lapply(sampleSets, function(x){
         training <- expData[as.numeric(unlist(x)),]
         testing <- expData[-as.numeric(unlist(x)),]
       
@@ -166,10 +170,27 @@ getML <- function(expData,
                                    index= folds,
                                    search="random"
                                    )
-        modelResults <- .removeOutText(caretEnsemble::caretList(group ~ ., data=training,
-                                                 trControl=my_control,
-                                                 tuneList=models,
-                                                 continue_on_fail = TRUE))
+        global_args <- list(group~. , training)
+        global_args[["trControl"]] <- my_control
+        modelList <- lapply(models, function(m) {
+          model_args <- c(global_args, m)
+          if (continue_on_fail == TRUE) {
+            model <- tryCatch(do.call(train, model_args), error = function(e) NULL)
+          } else {
+            model <- do.call(train, model_args)
+          }
+          setTxtProgressBar(pb, getTxtProgressBar(pb) + 1) # Progress bar increases
+          return(model)
+        })
+        names(modelList) <- names(models)
+        nulls <- sapply(modelList, is.null)
+        modelList <- modelList[!nulls]
+        if (length(modelList) == 0) {
+          stop("caret:train failed for all models.  Please inspect your data.")
+        }
+        class(modelList) <- c("caretList")
+        modelResults <- .removeOutText(modelList)
+        
         ## Get model stats for Koutter
         predictionTable <- list()
         cm <- list()
@@ -207,7 +228,10 @@ getML <- function(expData,
         }
         return(list(models=modelResults, preds=predictionTable, cm=cm))
     })
-
+          
+    close(pb) # Progress bar ends
+    message("Done")
+    
     ## 3. Best algorithm selection (model prioritization)
    if(outcomeClass=="character"){
       metrics<-c("mcc","balacc","accuracy","recall","specificity","npv",
