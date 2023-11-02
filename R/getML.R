@@ -15,6 +15,8 @@
 #' @param repeatsCV number of repetitions of the parameter tuning process
 #' @param positiveClass outcome value that must be considered as positive class
 #' (for categoric outcomes)
+#' @param continue_on_fail whether or not to continue training the models if any of them fail
+#' @param saveLogFile path to a .txt file in which to save error and warning messages
 #'
 #' @return A list with four elements. The first one is the model. The second one
 #' is a table with different metrics obtained. The third one is a list with the
