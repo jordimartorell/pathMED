@@ -35,6 +35,7 @@
 #' @import mboost
 #' @import import
 #' @import kernlab
+#' @import metrica
 #'
 #' @references Toro-Domínguez, D. et al (2022). \emph{Scoring personalized
 #' molecular portraits identify Systemic Lupus Erythematosus subtypes and
