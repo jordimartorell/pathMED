@@ -231,6 +231,17 @@ getML <- function(expData,
           
     close(pb) # Progress bar ends
     message("Done")
+
+    validModels <- list()
+    validModels <- lapply(resultNested, function(m){
+      vm <- append(validModels, names(m$models))
+      return(vm)
+      })
+    validModels <- unique(unlist(validModels))
+    failedModels <- names(models)[!names(models)%in%validModels]
+    message(paste0("The following models failed: ", paste0(failedModels, collapse = ", ")))
+  
+    models <- models[validModels] # Remove failed models
     
     ## 3. Best algorithm selection (model prioritization)
    if(outcomeClass=="character"){
