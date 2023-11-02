@@ -262,7 +262,9 @@ getML <- function(expData,
       })
     validModels <- unique(unlist(validModels))
     failedModels <- names(models)[!names(models)%in%validModels]
-    message(paste0("The following models failed: ", paste0(failedModels, collapse = ", ")))
+    if (length(failedModels)>0) {
+      message(paste0("The following models failed: ", paste0(failedModels, collapse = ", ")))
+    }
     if (!is.null(saveLogFile)) {
       message(paste0("Error and warning messages saved in ", saveLogFile))
     }
