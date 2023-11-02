@@ -185,7 +185,7 @@ getML <- function(expData,
         modelList <- lapply(models, function(m) {
           model_args <- c(global_args, m)
           if (continue_on_fail == TRUE) {
-            model <- tryCatch(do.call(train, model_args), 
+            model <- .removeOutText(tryCatch(do.call(train, model_args), 
                           error = function(e) {
                             if (!is.null(saveLogFile)) {
                               cat(paste0("Error in model ", m$method, ":\n", paste0(e$message, collapse = "\n"), "\n\n"), file = saveLogFile, append = TRUE)
@@ -198,9 +198,9 @@ getML <- function(expData,
                             }
                             w <- NULL
                           }
-            )
+            ))
           } else {
-            model <- do.call(train, model_args)
+            model <- .removeOutText(do.call(train, model_args))
           }
           setTxtProgressBar(pb, getTxtProgressBar(pb) + 1) # Progress bar increases
           return(model)
