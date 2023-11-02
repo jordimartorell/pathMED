@@ -71,8 +71,15 @@ getML <- function(expData,
                   Kinner=4,
                   repeatsCV=5,
                   continue_on_fail = TRUE,
-                  positiveClass=NULL){
+                  positiveClass=NULL,
+                  saveLogFile = NULL){
 
+    if (!is.null(saveLogFile)) {
+      if (file.exists(saveLogFile)) {
+        file.remove(saveLogFile) # reset log file
+      }
+    }
+  
     if (!var2predict %in% colnames(metadata)) {
         stop("var2predict must be a column of metadata")
     }
@@ -175,7 +182,20 @@ getML <- function(expData,
         modelList <- lapply(models, function(m) {
           model_args <- c(global_args, m)
           if (continue_on_fail == TRUE) {
-            model <- tryCatch(do.call(train, model_args), error = function(e) NULL)
+            model <- tryCatch(do.call(train, model_args), 
+                          error = function(e) {
+                            if (!is.null(saveLogFile)) {
+                              cat(paste0("Error in model ", m$method, ":\n", paste0(e$message, collapse = "\n"), "\n\n"), file = saveLogFile, append = TRUE)
+                            }
+                            e <- NULL
+                          }, 
+                          warning = function(w) {
+                            if (!is.null(saveLogFile)) {
+                              cat(paste0("Warning in model ", m$method, ":\n", paste0(w$message, collapse = "\n"), "\n\n"), file = saveLogFile, append = TRUE)
+                            }
+                            w <- NULL
+                          }
+            )
           } else {
             model <- do.call(train, model_args)
           }
@@ -240,6 +260,9 @@ getML <- function(expData,
     validModels <- unique(unlist(validModels))
     failedModels <- names(models)[!names(models)%in%validModels]
     message(paste0("The following models failed: ", paste0(failedModels, collapse = ", ")))
+    if (!is.null(saveLogFile)) {
+      message(paste0("Error and warning messages saved in ", saveLogFile))
+    }
   
     models <- models[validModels] # Remove failed models
     
