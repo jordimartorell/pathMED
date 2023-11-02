@@ -196,7 +196,6 @@ getML <- function(expData,
                             if (!is.null(saveLogFile)) {
                               cat(paste0("Warning in model ", m$method, ":\n", paste0(w$message, collapse = "\n"), "\n\n"), file = saveLogFile, append = TRUE)
                             }
-                            w <- NULL
                           }
             ))
           } else {
