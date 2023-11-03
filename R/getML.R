@@ -68,7 +68,7 @@
 #' @export
 getML <- function(expData,
                   metadata,
-                  models=methodsML(),
+                  models=methodsML(outcomeClass = "character"),
                   var2predict,
                   Koutter=5,
                   Kinner=4,
