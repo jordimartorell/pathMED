@@ -152,9 +152,9 @@ getML <- function(expData,
     if(length(unique(expData$group))>2 & outcomeClass == "character"){
       warning("glm, ada and gamboost models are not available for multi-class models")
       models<-models[!names(models) %in% c('glm', 'ada','gamboost')]
-      if(length(models)==0){
-        stop("No algorithm suitable. Please, check the MethodsML function")
-      }
+    }
+    if(length(models)==0){
+      stop("No algorithm suitable. Please, check the MethodsML function")
     }
   
     ## 2. Koutter
