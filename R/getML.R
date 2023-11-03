@@ -94,6 +94,13 @@ getML <- function(expData,
         stop("Row names of metadata and column names of expData do not match")
     }
 
+    metadata[, var2predict] <- stringi::stri_replace_all_regex(metadata[, var2predict],
+                                                             pattern = c("/", " ", "-"), replacement = c(".", ".","."), vectorize = FALSE)
+    if (!is.null(positiveClass)) {
+      positiveClass <- stringi::stri_replace_all_regex(positiveClass,
+                                                       pattern = c("/", " ", "-"), replacement = c(".", ".","."), vectorize = FALSE)
+    }
+  
     expData <- expData[,samples]
     metadata <- metadata[samples,,drop=FALSE]
 
@@ -103,9 +110,6 @@ getML <- function(expData,
         colnames(expData), pattern = c('/',' ','-'),
         replacement = c('.','.','.'), vectorize=FALSE)
     expData <- expData[!is.na(expData$group),]
-    expData$group <- stringi::stri_replace_all_regex(
-        expData$group, pattern = c('/',' ','-'),
-        replacement = c('.','.','.'), vectorize=FALSE)
     if(is.factor(expData$group)){
         expData$group<-as.character(expData$group)
     }
