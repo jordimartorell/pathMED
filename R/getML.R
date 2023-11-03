@@ -149,7 +149,7 @@ getML <- function(expData,
         positiveClass <- levels(factor(metadata[,var2predict]))[1]
     }
 
-    if(length(unique(expData$group))>2){
+    if(length(unique(expData$group))>2 & outcomeClass == "character"){
       warning("glm, ada and gamboost models are not available for multi-class models")
       models<-models[!names(models) %in% c('glm', 'ada','gamboost')]
       if(length(models)==0){
