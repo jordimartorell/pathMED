@@ -94,8 +94,10 @@ getML <- function(expData,
         stop("Row names of metadata and column names of expData do not match")
     }
 
-    metadata[, var2predict] <- stringi::stri_replace_all_regex(metadata[, var2predict],
-                                                             pattern = c("/", " ", "-"), replacement = c(".", ".","."), vectorize = FALSE)
+    if (is.character(metadata[, var2predict])|is.factor(metadata[, var2predict])) {
+      metadata[, var2predict] <- stringi::stri_replace_all_regex(metadata[, var2predict],
+                                                                 pattern = c("/", " ", "-"), replacement = c(".", ".","."), vectorize = FALSE)
+    }
     if (!is.null(positiveClass)) {
       positiveClass <- stringi::stri_replace_all_regex(positiveClass,
                                                        pattern = c("/", " ", "-"), replacement = c(".", ".","."), vectorize = FALSE)
