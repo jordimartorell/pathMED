@@ -25,8 +25,11 @@
 #' methodsML(c('rf', 'knn'), tuneLength=20)
 #' @export
 methodsML <- function(algorithms = "all",
-                       outcomeClass = "character",
+                       outcomeClass = NULL,
                        tuneLength = 15){
+    if (is.null(outcomeClass)) {
+      stop("outcomeClass is missing, please specify whether the variable to predict is character or numeric.")
+    }
     if('all' %in% algorithms){
         algorithms <- c('glm', 'lm', 'lda', 'xgbTree', 'rf', 'knn', 'svmLinear',
                         'svmRadial', 'nnet', 'nb', 'lars', 'rpart', 'ada',
