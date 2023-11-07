@@ -194,7 +194,7 @@ getML <- function(expData,
         model_args <- c(global_args, m)
         if (continue_on_fail == TRUE) {
           warn <- err <- NULL
-          model <- pathMED:::.removeOutText(
+          model <- .removeOutText(
             withCallingHandlers(
               tryCatch(do.call(caret::train, model_args), 
                        error = function(e) {
@@ -204,13 +204,13 @@ getML <- function(expData,
                            warn <<- append(warn, conditionMessage(w))
                            invokeRestart("muffleWarning")
                            }
+                )
               )
             if (!is.null(saveLogFile)) {
               cat(paste0("Model ", m$method, ":\n", paste0(err, collapse = "\n"), paste0(warn, collapse = "\n"), "\n\n"), file = saveLogFile, append = TRUE)
               }
-            )
           } else {
-            model <- pathMED:::.removeOutText(do.call(caret::train, model_args))
+            model <- .removeOutText(do.call(caret::train, model_args))
             }
         setTxtProgressBar(pb, getTxtProgressBar(pb) + 1)
         return(model)
