@@ -189,28 +189,33 @@ getML <- function(expData,
                                    )
         global_args <- list(group~. , training)
         global_args[["trControl"]] <- my_control
+      
         modelList <- lapply(models, function(m) {
-          model_args <- c(global_args, m)
-          if (continue_on_fail == TRUE) {
-            model <- .removeOutText(tryCatch(do.call(train, model_args), 
-                          error = function(e) {
-                            if (!is.null(saveLogFile)) {
-                              cat(paste0("Error in model ", m$method, ":\n", paste0(e$message, collapse = "\n"), "\n\n"), file = saveLogFile, append = TRUE)
-                            }
-                            e <- NULL
-                          }, 
-                          warning = function(w) {
-                            if (!is.null(saveLogFile)) {
-                              cat(paste0("Warning in model ", m$method, ":\n", paste0(w$message, collapse = "\n"), "\n\n"), file = saveLogFile, append = TRUE)
-                            }
-                          }
-            ))
+        model_args <- c(global_args, m)
+        if (continue_on_fail == TRUE) {
+          warn <- err <- NULL
+          model <- pathMED:::.removeOutText(
+            withCallingHandlers(
+              tryCatch(do.call(caret::train, model_args), 
+                       error = function(e) {
+                         err <- conditionMessage(e)
+                         NULL
+                         }), warning = function(w) {
+                           warn <<- append(warn, conditionMessage(w))
+                           invokeRestart("muffleWarning")
+                           }
+              )
+            if (!is.null(saveLogFile)) {
+              cat(paste0("Model ", m$method, ":\n", paste0(err, collapse = "\n"), paste0(warn, collapse = "\n"), "\n\n"), file = saveLogFile, append = TRUE)
+              }
+            )
           } else {
-            model <- .removeOutText(do.call(train, model_args))
-          }
-          setTxtProgressBar(pb, getTxtProgressBar(pb) + 1) # Progress bar increases
-          return(model)
+            model <- pathMED:::.removeOutText(do.call(caret::train, model_args))
+            }
+        setTxtProgressBar(pb, getTxtProgressBar(pb) + 1)
+        return(model)
         })
+      
         names(modelList) <- names(models)
         nulls <- sapply(modelList, is.null)
         modelList <- modelList[!nulls]
