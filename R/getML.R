@@ -277,7 +277,7 @@ getML <- function(expData,
       message(paste0("The following models failed: ", paste0(failedModels, collapse = ", ")))
     }
     if (file.exists(saveLogFile)) {
-      message(paste0("Error and warning messages saved in ", saveLogFile))
+      message(paste0("Log messages saved in ", saveLogFile))
     }
   
     models <- models[validModels] # Remove failed models
