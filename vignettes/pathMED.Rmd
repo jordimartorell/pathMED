@@ -169,21 +169,22 @@ order to find which one has the best performance predicting the specified
 variable (**var2predict** parameter). The input objects are the M-scores matrix 
 calculated in the step 2 (**expData**), and a data frame with the metadata of 
 the samples (**metadata**). One or several algorithms may be selected with the 
-**algorithms** parameter (see the function help). Subsampling is performed n
-times (**subsamples**) to split data into training and test datasets, with the
-proportion of training samples specified in the **splitProp** parameter. With
-training data, n-fold cross-validation (n=**foldsCV**) is repeated several times
-(**reaptsCV** parameter) for hyperparameter tuning.
+**algorithms** parameter (see the function help). Nested cross-validation is 
+performed using k folds for the outter CV (**Koutter**) and inner CV (**Kinner**). 
+The inner k-fold cross-validation is repeated several times (**reaptsCV** 
+parameter) for hyperparameter tuning.
 
 ```{r, warning=FALSE, eval=FALSE}
 fit.model <- getML(expData=MScoresExample,
                  metadata=exampleMetadata,
                  var2predict="Response",
-                 algorithms="svmLinear",
-                 subsamples=10,
-                 splitProp=0.8,
-                 foldsCV=10,
-                 repeatsCV=10)
+                  models = methodsML(algorithms = "all", outcomeClass = "character"),
+                  Koutter = 2,
+                  Kinner = 3,
+                  repeatsCV = 1,
+                  continue_on_fail = TRUE,
+                  positiveClass = NULL,
+                  saveLogFile = NULL)
 ```
 
 # Session info
