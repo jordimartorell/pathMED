@@ -206,7 +206,7 @@ getML <- function(expData,
                            }
                 )
               )
-            if (!is.null(saveLogFile)) {
+            if (!is.null(saveLogFile) & (!is.null(warn)|!is.null(err))) {
               cat(paste0("Model ", m$method, ":\n", paste0(err, collapse = "\n"), paste0(warn, collapse = "\n"), "\n\n"), file = saveLogFile, append = TRUE)
               }
           } else {
