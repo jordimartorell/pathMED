@@ -28,6 +28,20 @@
 #'  . Briefings in Bioinformatics. 23(5)
 #'
 #' @examples
+#' data(reference_datasets)
+#' 
+#' refData <- buildRefData(
+#'   data = list(dataset1, dataset2, dataset3, dataset4),
+#'   metadata = list(metadata1, metadata2, metadata3, metadata4),
+#'   groupVar = "group",
+#'   controlGroup = "Healthy_sample")
+#'
+#' metadata <- rbind(metadata1, metadata2, metadata3, metadata4) 
+#' refData <- buildRefData(
+#'   data = list(dataset1, dataset2, dataset3, dataset4),
+#'   metadata = metadata, # also works with a metadata for all datasets
+#'   groupVar = "group",
+#'   controlGroup = "Healthy_sample")
 #'
 #' @export
 buildRefData <- function(data, metadata, groupVar, controlGroup){
