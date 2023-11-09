@@ -49,9 +49,19 @@ splitPathways <- function (data, genesets, customGeneset = NULL, minPathSize = 1
         Href <- data.frame("mean"=rowMeans(as.matrix(x$Healthy),na.rm = T),
                            "sd" = matrixStats::rowSds(as.matrix(x$Healthy),na.rm = T))
 
-        x.zscore <- apply(as.matrix(x$Disease),2,function(pat){
+        #x.zscore <- apply(as.matrix(x$Disease),2,function(pat){
+        #    res <- (pat-Href$mean) / Href$sd
+        #})
+        x.zscore<-NULL
+        for(pat.i in 1:ncol(x$Disease)){
+            pat<-x$Disease[,pat.i]
+            names(pat)<-rownames(x$Disease)
+            pat<-pat[rownames(Href)]
             res <- (pat-Href$mean) / Href$sd
-        })
+            x.zscore<-cbind(x.zscore,pat)
+        }
+        colnames(x.zscore)<-colnames(x$Disease)
+      
         return(x.zscore)
     })
     ## Merge all samples
