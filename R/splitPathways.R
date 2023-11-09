@@ -1,6 +1,6 @@
 #' Cluster pathways into pathway-components
 #'
-#' @param data A refData object structure: alist of lists, each one with a 
+#' @param data A refData object structure: a list of lists, each one with a 
 #' cases expression matrix and controls expression matrix, always in this order.
 #' @param genesets character, name of the preloaded database (gobp, gomf, gocc,
 #' kegg, reactome, tmod) or 'custom' to provide the annotation.
