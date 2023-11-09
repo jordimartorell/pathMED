@@ -24,7 +24,9 @@
 #' @examples
 #' methodsML(c('rf', 'knn'), tuneLength=20)
 #' @export
-methodsML <- function(algorithms = "all",
+methodsML <- function(algorithms = c("glm", "lm", "lda", "xgbTree", "rf",
+                                     "knn", "svmLinear", "svmRadial", "nnet", "nb", "lars",
+                                     "rpart", "ada", "gamboost"),
                        outcomeClass = NULL,
                        tuneLength = 15){
     if (is.null(outcomeClass)) {
