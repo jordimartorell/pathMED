@@ -4,7 +4,7 @@
 \alias{methodsML}
 \title{Prepare ML models}
 \usage{
-methodsML(algorithms = "all", outcomeClass = "character", tuneLength = 15)
+methodsML(algorithms = "all", outcomeClass = NULL, tuneLength = 15)
 }
 \arguments{
 \item{algorithms}{'glm','lm','lda','xgbTree','rf','knn','svmLinear','nnet',

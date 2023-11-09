@@ -4,7 +4,14 @@
 \alias{getMscores}
 \title{Calculate M-scores for a dataset}
 \usage{
-getMscores(Patient, Healthy = NULL, genesets, nk = 5, cores = 1)
+getMscores(
+  Patient,
+  Healthy = NULL,
+  genesets,
+  nk = 5,
+  maxDistance = 30,
+  cores = 1
+)
 }
 \arguments{
 \item{Patient}{Expression matrix of cases or numeric vector with one sample.}

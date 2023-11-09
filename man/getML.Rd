@@ -7,13 +7,14 @@
 getML(
   expData,
   metadata,
-  models = methodsML(),
+  models = methodsML(outcomeClass = "character"),
   var2predict,
-  subsamples = 4,
-  splitProp = 0.75,
-  foldsCV = 10,
+  Koutter = 5,
+  Kinner = 4,
   repeatsCV = 5,
-  positiveClass = NULL
+  continue_on_fail = TRUE,
+  positiveClass = NULL,
+  saveLogFile = NULL
 )
 }
 \arguments{
@@ -29,16 +30,20 @@ this list}
 
 \item{var2predict}{character with the column name of the @metadata to predict}
 
-\item{subsamples}{number of sub-samples in which exp.data is split}
+\item{Koutter}{number of Outter folds in which exp.data is split for neasted cold validation.
+A list of integer with elements for each resampling iteration is admitted. 
+Each list element is a vector of integers corresponding to the rows used for training at that iteration.}
 
-\item{splitProp}{proportion of samples used as train for the subsamples}
-
-\item{foldsCV}{number of cross-validation folds (for parameter tuning)}
+\item{Kinner}{number of cross-validation folds (for parameter tuning)}
 
 \item{repeatsCV}{number of repetitions of the parameter tuning process}
 
+\item{continue_on_fail}{whether or not to continue training the models if any of them fail}
+
 \item{positiveClass}{outcome value that must be considered as positive class
 (for categoric outcomes)}
+
+\item{saveLogFile}{path to a .txt file in which to save error and warning messages}
 }
 \value{
 A list with four elements. The first one is the model. The second one
@@ -66,9 +71,8 @@ fit.model <- getML(expData=MScoresExample,
 metadata=exampleMetadata,
 var2predict="Response",
 models=methodsML("svmLinear"),
-subsamples=5,
-splitProp=0.8,
-foldsCV=10,
+Koutter=5,
+Kinner=10,
 repeatsCV=10)
 }
 

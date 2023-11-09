@@ -8,7 +8,8 @@ diseasePaths(
   MRef,
   min_datasets = round(length(MRef[[1]]) * 0.34),
   perc_samples = 10,
-  Pcutoff = 0.05
+  Pcutoff = 0.05,
+  plotMetrics = TRUE
 )
 }
 \arguments{
@@ -21,6 +22,8 @@ perc_samples threshold}
 pathway must be significant}
 
 \item{Pcutoff}{P-value cutoff for significance}
+
+\item{plotMetrics}{Plot number of significant pathways selected based on the different combination of perc_samples and min_datasets parameters}
 }
 \value{
 A list with the selected pathways
