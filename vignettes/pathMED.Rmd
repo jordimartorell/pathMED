@@ -77,40 +77,55 @@ or biological context.
 
 # Step 1: Prepare the reference data
 
-## 1.1. Calculate the M-scores for reference data
-
-The firs step is to calculate M-scores for the reference datasets. M-scores 
-measure the level of disturbance of molecular pathways between patients and 
-healthy controls. This approach permits to compare the obtained results with 
-the M-scores from new data, even when the measured genes do not completely
-overlap.
+## 1.1. Build the reference data object
 
 ```{r, message = FALSE, results='hide', warning=FALSE}
 library(pathMED)
-data(refData, exampleData, exampleMetadata)
+data(reference_datasets, exampleData, exampleMetadata)
 ```
 
-We loaded to our R environment **refData**, 
-**exampleData** and **exampleMetadata** objects. **refData** 
-is a list with 4 datasets extracted from NCBI GEO containing lupus and healthy 
-samples. For each dataset, there is a gene expression matrix for the patients 
-("Disease") and another one for the healthy controls ("Healthy"). You should 
-prepare an object with the same structure with as many datasets as possible.
+We loaded to our R environment **reference_datasets**, 
+**exampleData** and **exampleMetadata**.
+**reference_datasets** includes 4 gene expression datasets and 4 metadata 
+datasets containing clinical information for each dataset. These datasets 
+were extracted from NCBI GEO and contains lupus and healthy samples, codified 
+in the metadata as "Healthy_sample" and "Disease_sample".
 **exampleData** and **exampleMetadata** are the test data for this vignette and 
 they will be used in later functions.
 
-```{r, warning=FALSE}
-ls(refData)
-ls(refData$dataset1)
-head(refData$dataset1$Disease)
+_buildRefData()_ function can be used to create a refData object with the 
+structure required for the pathMED pipeline. We can input our expression 
+datasets as a list (**data**) or as a single dataset if we only have one. We can 
+introduce a list of **metadata**, one for each expression dataset or a single 
+metadata with information for samples of all datasets. The grouping column of 
+metadata (**groupVar**) and the level of the control group (**controlGroup**), 
+usually healthy samples, must be introduced (or one for each metadata if they 
+are different).
+
+```{r, message = FALSE, results='hide', warning=FALSE}
+refData <- buildRefData(
+  data = list(dataset1, dataset2, dataset3, dataset4),
+  metadata = list(metadata1, metadata2, metadata3, metadata4),
+  groupVar = "group",
+  controlGroup = "Healthy_sample")
 ```
 
-_getMscoresRef()_ function uses this object as input and calculates the 
-M-scores for each gene set of the specified database. By default, Reactome
+You should use as many datasets as possible to create the **refData**.
+
+## 1.2. Calculate the M-scores for reference data
+
+After creating a **refData** object, the next step is to calculate M-scores 
+for the reference datasets. M-scores measure the level of disturbance of 
+molecular pathways between patients and healthy controls. 
+This approach permits to compare the obtained results with the M-scores from 
+new data, even when the measured genes do not completely overlap.
+
+_getMscoresRef()_ function uses this **refData** object as input and calculates
+the M-scores for each gene set of the specified database. By default, Reactome
 is the used database, but the **genesets** parameter can be modified to use 
 KEGG ("kegg"),  transcriptional modules related with immune functions (“tmod”)
 or Gene Ontology ("gobp", 
-"gomf", "gocc"). Furthermore, is "custom" is selected, any geneset with the 
+"gomf", "gocc"). Furthermore, if "custom" is selected, any geneset with the 
 proper format can be introduced to the **customGeneset** parameter. It should 
 be a named list with the genes of each gene set. If you are running the script 
 with a multi-core processor, use the **cores** parameter to specify the number 
@@ -122,7 +137,7 @@ refMscore <- getMscoresRef(data=refData,
                            cores=1)
 ```
 
-## 1.2. Filter gene sets
+## 1.3. Filter gene sets
 
 It is necessary to find the gene sets that are more relevant for the studied 
 phenotype. With the **diseasePaths** function, you can perform such selection 
