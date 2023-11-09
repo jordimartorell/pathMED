@@ -5,11 +5,12 @@
 #' @param metadata A list of data frames or a single data frame with information
 #'  for each sample. Samples in rows and variables in columns.
 #' @param groupVar Character or list of characters indicating the column name of
-#'  @metadata that classify samples in healthy and disease. If several metadatas
-#'   are provided you can specify a @groupVar for each metadata.
-#' @param healthyGroup Character or list of characters indicating which level of
-#'  @groupVar correspond to healthy samples. If several @groupVar are provided 
-#'  you can specify a @healthyGroup for each @groupVar 
+#'  @metadata classifying the samples in healthy and disease. If several metadatas
+#'   are provided a @groupVar can be specified for each metadata.
+#' @param healthyGroup Character or list of characters indicating which @groupVar
+#'  level corresponds to healthy samples. All other samples will be 
+#'  considered as disease. If several @groupVar are provided a @healthyGroup
+#'  can be specified for each @groupVar 
 #' 
 #' @return A list of reference Healthy and Disease data frames that serves as 
 #' input for getMscoresRef and splitPathways functions.
