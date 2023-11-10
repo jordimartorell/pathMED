@@ -111,6 +111,8 @@ refData <- buildRefData(
 ```
 
 You should use as many datasets as possible to create the **refData**.
+Note that all the gene expression datasets should be log2 transformed and with 
+a normal distribution.
 
 ## 1.2. Calculate the M-scores for reference data
 
