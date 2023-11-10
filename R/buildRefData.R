@@ -58,6 +58,24 @@ buildRefData <- function(data, metadata, groupVar, controlGroup){
   if (!methods::is(controlGroup, "list")) {
     controlGroup <- list(controlGroup)
   }
+
+  notLogDataset <- list()
+  for (i in 1:length(data)) { # check log transformation
+    qx <- as.numeric(quantile(data[[i]], c(0., 0.25, 0.5, 0.75, 0.99, 1.0), 
+                              na.rm=TRUE))
+    notLog <- (qx[5] > 100) ||(qx[6] - qx[1] > 50 &&
+                                 qx[2] > 0) || (qx[2] > 0 &&
+                                                  qx[2] < 1 &&
+                                                  qx[4] > 1 && qx[4] < 2)
+    notLogDataset <- append(notLogDataset, notLog)
+    names(notLogDataset)[[i]] <-  paste0("dataset", i)
+  }
+  if (any(notLogDataset==TRUE)) {
+    warning(paste0("The following expression datasets do not have a log2 distribution: ", 
+                   paste0(names(notLogDataset[notLogDataset==TRUE]), 
+                          collapse = ", "), 
+                   ". Please check that your data is normalized and transformed to log2."))
+  }
   
   refData <- list()
   if (length(unique(c(length(data),length(metadata),length(groupVar),length(controlGroup))))==1) {
