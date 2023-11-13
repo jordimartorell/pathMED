@@ -80,7 +80,6 @@ buildRefData <- function(data, metadata, groupVar, controlGroup){
   refData <- list()
   if (length(unique(c(length(data),length(metadata),length(groupVar),length(controlGroup))))==1) {
     for (i in 1:length(data)) {
-      i = 1
       refData[[length(refData)+1]] <- list(
         Disease = data[[i]][,intersect(colnames(data[[i]]), rownames(metadata[[i]])[!metadata[[i]][,groupVar[[i]]]==controlGroup[[i]]])],
         Healthy = data[[i]][,intersect(colnames(data[[i]]), rownames(metadata[[i]])[metadata[[i]][,groupVar[[i]]]==controlGroup[[i]]])])
