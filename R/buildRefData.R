@@ -81,24 +81,24 @@ buildRefData <- function(data, metadata, groupVar, controlGroup){
   if (length(unique(c(length(data),length(metadata),length(groupVar),length(controlGroup))))==1) {
     for (i in 1:length(data)) {
       refData[[length(refData)+1]] <- list(
-        Disease = data[[i]][,intersect(colnames(data[[i]]), rownames(metadata[[i]])[!metadata[[i]][,groupVar[[i]]]==controlGroup[[i]]])],
-        Healthy = data[[i]][,intersect(colnames(data[[i]]), rownames(metadata[[i]])[metadata[[i]][,groupVar[[i]]]==controlGroup[[i]]])])
+        Disease = as.data.frame(data[[i]][,intersect(colnames(data[[i]]), rownames(metadata[[i]])[!metadata[[i]][,groupVar[[i]]]==controlGroup[[i]]])]),
+        Healthy = as.data.frame(data[[i]][,intersect(colnames(data[[i]]), rownames(metadata[[i]])[metadata[[i]][,groupVar[[i]]]==controlGroup[[i]]])]))
       names(refData)[i] <- paste0("dataset", i)
     }
   }
   if (length(metadata)==length(data) & length(metadata)>1 & length(groupVar)==length(controlGroup) & length(groupVar)==1) {
     for (i in 1:length(data)) {
       refData[[length(refData)+1]] <- list(
-        Disease = data[[i]][intersect(colnames(data[[i]]),rownames(metadata[[i]])[!metadata[[i]][,groupVar[[1]]]==controlGroup[[1]]])],
-        Healthy = data[[i]][intersect(colnames(data[[i]]),rownames(metadata[[i]])[metadata[[i]][,groupVar[[1]]]==controlGroup[[1]]])])
+        Disease = as.data.frame(data[[i]][intersect(colnames(data[[i]]),rownames(metadata[[i]])[!metadata[[i]][,groupVar[[1]]]==controlGroup[[1]]])]),
+        Healthy = as.data.frame(data[[i]][intersect(colnames(data[[i]]),rownames(metadata[[i]])[metadata[[i]][,groupVar[[1]]]==controlGroup[[1]]])]))
       names(refData)[i] <- paste0("dataset", i)
     }
   }
   if (length(metadata)!=length(data) & length(unique(c(length(metadata),length(groupVar),length(controlGroup),1)))==1) {
     for (i in 1:length(data)) {
       refData[[length(refData)+1]] <- list(
-        Disease = data[[i]][intersect(colnames(data[[i]]),rownames(metadata[[1]])[!metadata[[1]][,groupVar[[1]]]==controlGroup[[1]]])],
-        Healthy = data[[i]][intersect(colnames(data[[i]]),rownames(metadata[[1]])[metadata[[1]][,groupVar[[1]]]==controlGroup[[1]]])])
+        Disease = as.data.frame(data[[i]][intersect(colnames(data[[i]]),rownames(metadata[[1]])[!metadata[[1]][,groupVar[[1]]]==controlGroup[[1]]])]),
+        Healthy = as.data.frame(data[[i]][intersect(colnames(data[[i]]),rownames(metadata[[1]])[metadata[[1]][,groupVar[[1]]]==controlGroup[[1]]])]))
       names(refData)[i] <- paste0("dataset", i)
     }
   }
