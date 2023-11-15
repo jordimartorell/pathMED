@@ -207,8 +207,8 @@ getML <- function(expData,
                 )
               )
             if (!is.null(saveLogFile) & (!is.null(warn)|!is.null(err))) {
-              cat(paste0("Model ", m$method, ":\n", paste0("ERROR: ", err, collapse = "\n"), 
-                         paste0("WARNING: ", warn, collapse = "\n"), "\n\n"), file = saveLogFile, append = TRUE)
+              cat(paste0("Model ", m$method, ":\n", paste0(err, collapse = "\n"), 
+                         paste0(warn, collapse = "\n"), "\n\n"), file = saveLogFile, append = TRUE)
               }
           } else {
             model <- .removeOutText(do.call(caret::train, model_args))
@@ -329,8 +329,8 @@ getML <- function(expData,
                                                    })
                                                if (!is.null(saveLogFile) & (!is.null(warn) | !is.null(err))) {
                                                  cat(paste0("Model ", x, ", metrics_summary:\n", 
-                                                            paste0("ERROR: ", err, collapse = "\n"), 
-                                                            paste0("WARNING: ", warn, collapse = "\n"), "\n\n"), 
+                                                            paste0(err, collapse = "\n"), 
+                                                            paste0(warn, collapse = "\n"), "\n\n"), 
                                                      file = saveLogFile, append = TRUE)
                                                  }
                                                } else {
