@@ -81,7 +81,7 @@ dissectDB<-function(data,genesets,customGeneset = NULL, minPathSize = 10,
         tmp<-z.data[[1]][genes,]
         p.list<-.clusterPath(data=tmp,
                              path_name = path_name,
-                             minPathSize = minPathSize,
+                             minSplitSize = minSplitSize,
                              explainedvariance = explainedvariance,
                              maxSplits = maxSplits,
                              cooccurrence = FALSE)
@@ -104,7 +104,7 @@ dissectDB<-function(data,genesets,customGeneset = NULL, minPathSize = 10,
           tmp<-z.data[[d]][genes,]
           p.list<-.clusterPath(data=tmp,
                                path_name = path_name,
-                               minPathSize = minPathSize,
+                               minSplitSize = minSplitSize,
                                explainedvariance = explainedvariance,
                                maxSplits = maxSplits,
                                cooccurrence = TRUE)
@@ -143,7 +143,7 @@ dissectDB<-function(data,genesets,customGeneset = NULL, minPathSize = 10,
         
         p.list<-.clusterPath(data=cooccurrence_matrix,
                              path_name = path_name,
-                             minPathSize = minPathSize,
+                             minSplitSize = minSplitSize,
                              explainedvariance = explainedvariance,
                              maxSplits = maxSplits,
                              cooccurrence = FALSE)
