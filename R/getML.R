@@ -207,7 +207,8 @@ getML <- function(expData,
                 )
               )
             if (!is.null(saveLogFile) & (!is.null(warn)|!is.null(err))) {
-              cat(paste0("Model ", m$method, ":\n", paste0(err, collapse = "\n"), paste0(warn, collapse = "\n"), "\n\n"), file = saveLogFile, append = TRUE)
+              cat(paste0("Model ", m$method, ":\n", paste0("ERROR: ", err, collapse = "\n"), 
+                         paste0("WARNING: ", warn, collapse = "\n"), "\n\n"), file = saveLogFile, append = TRUE)
               }
           } else {
             model <- .removeOutText(do.call(caret::train, model_args))
@@ -295,35 +296,66 @@ getML <- function(expData,
   }
   
   
-  stats<-do.call("cbind",lapply(names(models),function(x){
-    
-    sum.model.x<-do.call("cbind",lapply(1:length(sampleSets),function(it){
-      
-      tmp<-resultNested[[it]]$preds[[x]]
-      if(outcomeClass=="character"){
-        obs<-factor(tmp$obs,levels =levels)
-        lab.pred<-unlist(lapply(1:nrow(tmp),function(n){
-          names(which.max(tmp[n,!colnames(tmp) %in% "obs"]))}))
-        lab.pred<-factor(lab.pred,levels = levels)
-      }else{
-        obs<-tmp$obs
-        lab.pred<-tmp$pred
-      }
-      
-      resultsTable <- suppressWarnings(metrica::metrics_summary(obs = obs,
-                                                                pred = lab.pred, type=type, 
-                                                                pos_level = "1",
-                                                                metrics_list = metrics))
-      rownames(resultsTable)<-resultsTable$Metric
-      res<-data.frame("Score"=resultsTable[metrics,"Score"]) 
-      rownames(res)<-metrics
-      return(res)
-    }))
-    
-    sum.model.all<-data.frame("results"=apply(sum.model.x,1,function(metr){
-      mean(metr,na.rm=T)}))
+  stats <- do.call("cbind", lapply(names(models), function(x) {
+    sum.model.x <- do.call("cbind", lapply(1:length(sampleSets), 
+                                           function(it) {
+                                             tmp <- resultNested[[it]]$preds[[x]]
+                                             if (outcomeClass == "character") {
+                                               obs <- factor(tmp$obs, levels = levels)
+                                               lab.pred <- unlist(lapply(1:nrow(tmp), function(n) {
+                                                 names(which.max(tmp[n, !colnames(tmp) %in% 
+                                                                       "obs"]))
+                                               }))
+                                               lab.pred <- factor(lab.pred, levels = levels)
+                                             } else {
+                                               obs <- tmp$obs
+                                               lab.pred <- tmp$pred
+                                             }
+                                             
+                                             
+                                             if (continue_on_fail == TRUE) {
+                                               warn <- err <- NULL
+                                               resultsTable <- withCallingHandlers(tryCatch(
+                                                 metrica::metrics_summary(obs = obs, 
+                                                                          pred = lab.pred, type = type, pos_level = "1", 
+                                                                          metrics_list = metrics), 
+                                                 error = function(e) {
+                                                   err <- conditionMessage(e)
+                                                   NULL
+                                                   }), 
+                                                 warning = function(w) {
+                                                   warn <<- append(warn, conditionMessage(w))
+                                                   invokeRestart("muffleWarning")
+                                                   })
+                                               if (!is.null(saveLogFile) & (!is.null(warn) | !is.null(err))) {
+                                                 cat(paste0("Model ", x, ", metrics_summary:\n", 
+                                                            paste0("ERROR: ", err, collapse = "\n"), 
+                                                            paste0("WARNING: ", warn, collapse = "\n"), "\n\n"), 
+                                                     file = saveLogFile, append = TRUE)
+                                                 }
+                                               } else {
+                                                 resultsTable <- suppressWarnings(metrica::metrics_summary(obs = obs, 
+                                                                                                           pred = lab.pred, 
+                                                                                                           type = type, 
+                                                                                                           pos_level = "1", 
+                                                                                                           metrics_list = metrics))
+                                               }
+                                             if (is.null(resultsTable)) {
+                                               res <- data.frame(Score = rep(NA, length(metrics)))
+                                             } else {
+                                               rownames(resultsTable) <- resultsTable$Metric
+                                               res <- data.frame(Score = resultsTable[metrics, "Score"])
+                                             }
+                                             rownames(res) <- metrics
+                                             return(res)
+                                           }))
+    sum.model.all <- data.frame(results = apply(sum.model.x, 
+                                                1, function(metr) {
+                                                  mean(metr, na.rm = T)
+                                                }))
     return(sum.model.all)
   }))
+
   names(stats)<-names(models)
 
    if(length(models) > 1){
