@@ -147,7 +147,7 @@
     npcas <- nrow(pca_eig) + 1 ## Get K (npcas)
     
   }else{
-    Nb<-NbClust::NbClust(data = tmp, diss = NULL, distance = "euclidean", min.nc = 2, max.nc = nrow(tmp)-1,
+    Nb<-NbClust::NbClust(data = data, diss = NULL, distance = "euclidean", min.nc = 2, max.nc = nrow(data)-1,
                          method = "complete", index = "ch", alphaBeale = 0.1)$All.index
     Nb<-Nb[is.finite(Nb)]
     npcas<-2 ## Get K (npcas)
