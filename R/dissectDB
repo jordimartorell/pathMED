@@ -33,7 +33,7 @@
 #'
 #' @examples
 #' data(refData)
-#' custom.tmod <- disectDB(data=refData,
+#' custom.tmod <- dissectDB(data=refData,
 #' genesets="tmod",
 #' customGeneset = NULL,
 #' minPathSize = 10,
