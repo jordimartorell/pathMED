@@ -136,26 +136,26 @@
 
 
 ## Function to cluster pathways into co-expressed circuits
-.clusterPath<-function(data,path_name,minSplitSize,explainedvariance = NULL,
+.clusterPath<-function(data,path_name,minSplitSize,explainedvariance,
                        maxSplits,cooccurrence =  FALSE){
   
   set.seed(1234)
-  if(!is.null(explainedvariance)){
+  #if(!is.null(explainedvariance)){
     pca <- FactoMineR::PCA(t(data),graph = F)
     pca_eig <- as.data.frame(pca$eig)
     pca_eig <- pca_eig[pca_eig$`cumulative percentage of variance` < explainedvariance,]
     npcas <- nrow(pca_eig) + 1 ## Get K (npcas)
     
-  }else{
-    Nb<-NbClust::NbClust(data = data, diss = NULL, distance = "euclidean", min.nc = 2, max.nc = nrow(data)-1,
-                         method = "complete", index = "ch", alphaBeale = 0.1)$All.index
-    Nb<-Nb[is.finite(Nb)]
-    npcas<-2 ## Get K (npcas)
-    for(i in 1:(length(Nb)-1)){
-      if(Nb[i]<=Nb[i+1]){
-        npcas<-as.numeric(names(Nb)[i+1])
-      }}
-  }
+  #}else{
+  #  Nb<-NbClust::NbClust(data = data, diss = NULL, distance = "euclidean", min.nc = 2, max.nc = nrow(data)-1,
+  #                       method = "complete", index = "ch", alphaBeale = 0.1)$All.index
+  #  Nb<-Nb[is.finite(Nb)]
+  #  npcas<-2 ## Get K (npcas)
+  #  for(i in 1:(length(Nb)-1)){
+  #    if(Nb[i]<=Nb[i+1]){
+  #      npcas<-as.numeric(names(Nb)[i+1])
+  #    }}
+  #}
   
   if (npcas > 1) {
     if (!is.null(maxSplits)) {if (npcas > maxSplits) {npcas = maxSplits}}
