@@ -176,7 +176,7 @@
       clusters <- table(clusterPaths$cluster)
       clusters <- as.numeric(names(clusters[order(clusters, decreasing = F)]))
       for (cl in clusters) {
-        if (as.numeric(table(clusterPaths$cluster == cl)["TRUE"]) < minSplitSize) {
+        if (as.numeric(table(clusterPaths$cluster == cl)["TRUE"]) < maxSplitSize) {
           nearCl <- as.numeric(names(which.min(distance[as.character(cl),])))
           clusterPaths[clusterPaths$cluster == cl,"cluster"] <- nearCl
           distance <- distance[!rownames(distance) %in% as.character(cl),
