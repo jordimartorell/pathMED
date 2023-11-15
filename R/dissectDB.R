@@ -15,8 +15,7 @@
 #' @param explainedvariance numeric, percentage of cumulative variance explained
 #' within a pathway. This parameter is used to select the number of subdivisions
 #' of a pathway that manage to explain at least the percentage of variance
-#' defined by explainedvariance. If NULL, number of subdivisions are calculated
-#' using NbClust R package
+#' defined by explainedvariance. 
 #'
 #' @return A list with all pathways and pathway-subdivisions and their involved
 #' genes
