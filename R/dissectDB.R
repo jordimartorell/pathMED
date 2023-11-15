@@ -68,7 +68,7 @@ dissectDB<-function(data,genesets,customGeneset = NULL, minPathSize = 10,
   }
   
   ## 3. Disect pathways
-  cat("This proccess can take time...")
+  cat("This proccess can take time...\n")
   pb = txtProgressBar(min = 1, max = length(path.list), initial = 0) 
   new.path.list<-list()
   for(p in 1:length(path.list)){ ## Loop for each pathway
