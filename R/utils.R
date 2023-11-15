@@ -137,7 +137,7 @@
 
 ## Function to cluster pathways into co-expressed circuits
 
-.clusterPath<-function(data,path_name,minPathSize,explainedvariance,
+.clusterPath<-function(data,path_name,minSplitSize,explainedvariance,
                        maxSplits,cooccurrence =  FALSE){
   
   set.seed(1234)
@@ -172,11 +172,11 @@
     rownames(distance) <- as.character(clusters)
     
     ## Joint small clusters
-    for(iter in 1:minPathSize){
+    for(iter in 1:minSplitSize){
       clusters <- table(clusterPaths$cluster)
       clusters <- as.numeric(names(clusters[order(clusters, decreasing = F)]))
       for (cl in clusters) {
-        if (as.numeric(table(clusterPaths$cluster == cl)["TRUE"]) < maxSplitSize) {
+        if (as.numeric(table(clusterPaths$cluster == cl)["TRUE"]) < minSplitSize) {
           nearCl <- as.numeric(names(which.min(distance[as.character(cl),])))
           clusterPaths[clusterPaths$cluster == cl,"cluster"] <- nearCl
           distance <- distance[!rownames(distance) %in% as.character(cl),
