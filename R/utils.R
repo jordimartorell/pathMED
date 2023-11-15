@@ -134,3 +134,81 @@
   return(listFolds)
 }
 
+
+## Function to cluster pathways into co-expressed circuits
+
+.clusterPath<-function(data,path_name,minPathSize,explainedvariance,
+                       maxSplits,cooccurrence =  FALSE){
+  
+  set.seed(1234)
+  pca <- FactoMineR::PCA(t(data),graph = F)
+  pca_eig <- as.data.frame(pca$eig)
+  pca_eig <- pca_eig[pca_eig$`cumulative percentage of variance` < explainedvariance,]
+  npcas <- nrow(pca_eig) + 1 ## Get K (npcas)
+  
+  if (npcas > 1) {
+    if (!is.null(maxSplits)) {if (npcas > maxSplits) {npcas = maxSplits}}
+    
+    clust <- stats::kmeans(data,npcas)
+    data.sc <- scale(data)
+    pca <- stats::prcomp(data.sc, scale = FALSE, center = FALSE)
+    ind <- factoextra::facto_summarize(pca, element = "ind", result = "coord",
+                                       axes = c(1, 2))
+    ind$cluster <- as.factor(clust$cluster)
+    colnames(ind) <- c("name","x","y","cood","cluster")
+    
+    clusterPaths <- ind
+    distance <- NULL
+    
+    # Distance between clusters (x,y)
+    clusters <- as.numeric(unique(clusterPaths$cluster))
+    clusters <- clusters[order(clusters, decreasing = F)]
+    for (cl in clusters) {
+      distance <- rbind(distance, c(mean(clusterPaths$x[clusterPaths$cluster == cl], na.rm = T),
+                                    mean(clusterPaths$y[clusterPaths$cluster == cl], na.rm = T)))
+    }
+    distance <- as.matrix(dist(distance, diag = NULL,upper = T, method = "euclidean"))
+    diag(distance) = NA
+    rownames(distance) <- as.character(clusters)
+    
+    ## Joint small clusters
+    for(iter in 1:minPathSize){
+      clusters <- table(clusterPaths$cluster)
+      clusters <- as.numeric(names(clusters[order(clusters, decreasing = F)]))
+      for (cl in clusters) {
+        if (as.numeric(table(clusterPaths$cluster == cl)["TRUE"]) < minSplitSize) {
+          nearCl <- as.numeric(names(which.min(distance[as.character(cl),])))
+          clusterPaths[clusterPaths$cluster == cl,"cluster"] <- nearCl
+          distance <- distance[!rownames(distance) %in% as.character(cl),
+                               !colnames(distance) %in% as.character(cl)]
+        }}
+      clusterPaths$cluster <- factor(clusterPaths$cluster,levels=unique(clusterPaths$cluster))
+    }
+    
+    if(cooccurrence){
+      p.list<-data.frame("cluster"=clusterPaths$cluster)
+      rownames(p.list)<-clusterPaths$name
+      return(p.list)
+      
+    }else{
+      paths <- split(clusterPaths, clusterPaths$cluster)
+      p.list <- lapply(1:length(paths), function(pi){
+        genes <- as.character(rownames(paths[[pi]]))})
+      names(p.list) <- paste0(path_name,".split",seq(1:length(p.list)))
+      return(p.list)
+    }
+    
+  }else{ ## Only one K
+    if(cooccurrence){
+      p.list<-data.frame("cluster"=rep(1,nrow(data)))
+      rownames(p.list)<-rownames(data)
+      return(p.list)
+      
+    }else{
+      p.list<-list(rownames(data))
+      names(p.list)<-path_name
+      return(p.list) 
+    }
+  }
+}
+
