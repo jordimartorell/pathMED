@@ -136,22 +136,33 @@
 
 
 ## Function to cluster pathways into co-expressed circuits
-
-.clusterPath<-function(data,path_name,minSplitSize,explainedvariance,
+.clusterPath<-function(data,path_name,minSplitSize,explainedvariance = NULL,
                        maxSplits,cooccurrence =  FALSE){
   
   set.seed(1234)
-  pca <- FactoMineR::PCA(t(data),graph = F)
-  pca_eig <- as.data.frame(pca$eig)
-  pca_eig <- pca_eig[pca_eig$`cumulative percentage of variance` < explainedvariance,]
-  npcas <- nrow(pca_eig) + 1 ## Get K (npcas)
+  if(!is.null(explainedvariance)){
+    pca <- FactoMineR::PCA(t(data),graph = F)
+    pca_eig <- as.data.frame(pca$eig)
+    pca_eig <- pca_eig[pca_eig$`cumulative percentage of variance` < explainedvariance,]
+    npcas <- nrow(pca_eig) + 1 ## Get K (npcas)
+    
+  }else{
+    Nb<-NbClust::NbClust(data = tmp, diss = NULL, distance = "euclidean", min.nc = 2, max.nc = nrow(tmp)-1,
+                         method = "complete", index = "ch", alphaBeale = 0.1)$All.index
+    Nb<-Nb[is.finite(Nb)]
+    npcas<-2 ## Get K (npcas)
+    for(i in 1:(length(Nb)-1)){
+      if(Nb[i]<=Nb[i+1]){
+        npcas<-as.numeric(names(Nb)[i+1])
+      }}
+  }
   
   if (npcas > 1) {
     if (!is.null(maxSplits)) {if (npcas > maxSplits) {npcas = maxSplits}}
     
     clust <- stats::kmeans(data,npcas)
-    data.sc <- scale(data)
-    pca <- stats::prcomp(data.sc, scale = FALSE, center = FALSE)
+    #data.sc <- scale(data)
+    pca <- stats::prcomp(data, scale = FALSE, center = FALSE)
     ind <- factoextra::facto_summarize(pca, element = "ind", result = "coord",
                                        axes = c(1, 2))
     ind$cluster <- as.factor(clust$cluster)
@@ -211,4 +222,3 @@
     }
   }
 }
-
