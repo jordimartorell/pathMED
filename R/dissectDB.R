@@ -66,6 +66,27 @@ dissectDB<-function(data,genesets,customGeneset = NULL, minPathSize = 10,
   }else{
     path.list <- genesetsData[[genesets]]
   }
+
+  ## Joint all datasets if a certain percentage of genes are shared (i.e. 90%)
+  if(length(z.data)>1 & !is.null(percSharedgenes)){
+    exp.gr<-utils::combn(1:length(z.data),2)
+    sharedGenes<-unlist(lapply(1:ncol(exp.gr),function(it){
+      x<-z.data[[exp.gr[1,it]]]
+      y<-z.data[[exp.gr[2,it]]]
+      return(min(c(length(intersect(rownames(x),rownames(y)))/length(rownames(x)),
+                 length(intersect(rownames(x),rownames(y)))/length(rownames(y))))*100)
+    }))
+    
+    if(all(sharedGenes>=percSharedgenes)){ ## Joint all datasets
+      genes.sd <- Reduce(intersect,lapply(z.data,function(x){rownames(x)}))
+      genes.sd<-genes.sd[!is.na(genes.sd)]
+      z.data <- lapply(z.data,function(x){x[genes.sd,]})
+      merged.datasets <- do.call("cbind",z.data)
+      merged.datasets <- merged.datasets[,!colSums(is.na(merged.datasets)) > 0]
+      z.data<-list(merged.datasets)
+      names(z.data)[1]<-"mergedData"
+    }
+  }
   
   ## 3. Disect pathways
   cat("This proccess can take time...\n")
