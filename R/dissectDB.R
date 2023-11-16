@@ -112,7 +112,7 @@ dissectDB<-function(data,genesets,customGeneset = NULL, minPathSize = 10,
         ## Pathway with small size
         p.list <- list(genes)
         names(p.list)<-path_name
-        new.path.list[count]<-p.list
+        #new.path.list[count]<-p.list
         new.path.list<-c(new.path.list,p.list)
       }
       
@@ -173,7 +173,7 @@ dissectDB<-function(data,genesets,customGeneset = NULL, minPathSize = 10,
       }else{
         p.list <- list(allgenes)
         names(p.list)<-path_name
-        new.path.list[count]<-p.list
+        #new.path.list[count]<-p.list
         new.path.list<-c(new.path.list,p.list)
       }
     }
