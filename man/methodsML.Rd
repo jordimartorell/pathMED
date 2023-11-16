@@ -4,7 +4,12 @@
 \alias{methodsML}
 \title{Prepare ML models}
 \usage{
-methodsML(algorithms = "all", outcomeClass = NULL, tuneLength = 15)
+methodsML(
+  algorithms = c("glm", "lm", "lda", "xgbTree", "rf", "knn", "svmLinear", "svmRadial",
+    "nnet", "nb", "lars", "rpart", "ada", "gamboost"),
+  outcomeClass = NULL,
+  tuneLength = 15
+)
 }
 \arguments{
 \item{algorithms}{'glm','lm','lda','xgbTree','rf','knn','svmLinear','nnet',

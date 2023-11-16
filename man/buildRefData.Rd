@@ -4,30 +4,48 @@
 \alias{buildRefData}
 \title{Establish reference data structure for input to the pathMED pipeline}
 \usage{
-buildRefData(data, metadata, groupVar, healthyGroup)
+buildRefData(data, metadata, groupVar, controlGroup)
 }
 \arguments{
-\item{data}{A list of data frames or a single data frame with samples in 
+\item{data}{A list of data frames or a single data frame with samples in
 columns and features in rows.}
 
 \item{metadata}{A list of data frames or a single data frame with information
 for each sample. Samples in rows and variables in columns.}
 
 \item{groupVar}{Character or list of characters indicating the column name of
-@metadata classifying the samples in healthy and disease. If several metadatas
+@metadata classifying the samples in control and cases. If several metadatas
  are provided a @groupVar can be specified for each metadata.}
 
-\item{healthyGroup}{Character or list of characters indicating which @groupVar
-level corresponds to healthy samples. All other samples will be 
-considered as disease. If several @groupVar are provided a @healthyGroup
-can be specified for each @groupVar}
+\item{controlGroup}{Character or list of characters indicating which @groupVar
+level corresponds to the control group, usually healthy samples. All other 
+samples will be considered as cases, usually disease samples. If 
+several @groupVar are provided a @controlGroup can be specified
+for each @groupVar}
 }
 \value{
-A list of reference Healthy and Disease data frames that serves as 
-input for getMscoresRef and splitPathways functions.
+A list of reference data frames that serves as input
+ for getMscoresRef and splitPathways functions.
 }
 \description{
 Establish reference data structure for input to the pathMED pipeline
+}
+\examples{
+data(reference_datasets)
+
+refData <- buildRefData(
+  data = list(dataset1, dataset2, dataset3, dataset4),
+  metadata = list(metadata1, metadata2, metadata3, metadata4),
+  groupVar = "group",
+  controlGroup = "Healthy_sample")
+
+metadata <- rbind(metadata1, metadata2, metadata3, metadata4) 
+refData <- buildRefData(
+  data = list(dataset1, dataset2, dataset3, dataset4),
+  metadata = metadata, # also works with a metadata for all datasets
+  groupVar = "group",
+  controlGroup = "Healthy_sample")
+
 }
 \references{
 Toro-Domínguez, D. et al (2022). \emph{Scoring personalized
