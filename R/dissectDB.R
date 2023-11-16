@@ -43,7 +43,8 @@
 #' @export
 
 dissectDB<-function(data,genesets,customGeneset = NULL, minPathSize = 10,
-                   minSplitSize = 3, maxSplits=NULL,explainedvariance = 50){
+                   minSplitSize = 3, maxSplits=NULL,explainedvariance = 50,
+                   percSharedgenes = 90){
   
   ## 1. Get zscores by gene
   z.data<-lapply(data,function(x){
