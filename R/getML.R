@@ -263,38 +263,46 @@ getML <- function(expData,
         }
         return(list(models=modelResults, preds=predictionTable, cm=cm))
     })
-          
-    close(pb) # Progress bar ends
-    message("Done")
+  close(pb) # Progress bar ends
+  message("Done")
 
-    validModels <- list()
-    validModels <- lapply(resultNested, function(m){
-      vm <- append(validModels, names(m$models))
-      return(vm)
-      })
-    validModels <- unique(unlist(validModels))
-    failedModels <- names(models)[!names(models)%in%validModels]
-    if (length(failedModels)>0) {
-      message(paste0("The following models failed: ", paste0(failedModels, collapse = ", ")))
-    }
-    if (file.exists(saveLogFile)) {
-      message(paste0("Log messages saved in ", saveLogFile))
-    }
-  
-    models <- models[validModels] # Remove failed models
-    
-    ## 3. Best algorithm selection (model prioritization)
-   if(outcomeClass=="character"){
-      metrics<-c("mcc","balacc","accuracy","recall","specificity","npv",
-               "precision","fscore")
-      type<-"classification"
-      levels<-c(positiveClass,unique(unique(expData$group))[!unique(expData$group) %in% positiveClass])
-  }else{
-      metrics<-c("r","RMSE","R2","MAE","RMAE","RSE")
-      type<-"regression"
-      levels <- NULL
+  validModels <- list()
+  validModels <- lapply(resultNested, function(m) {
+    vm <- append(validModels, names(m$models))
+    return(vm)
+  })
+  validModels <- unique(unlist(validModels))
+  nullmodels <- do.call("cbind", lapply(1:length(resultNested), function(x) {
+    nullmodel <- data.frame(row.names = validModels, !validModels%in%names(resultNested[[x]][["models"]]))
+    nullmodel[!nullmodel[,1],] <- 0
+    colnames(nullmodel) <- paste0("sampleset", x)
+    return(nullmodel)
+  }))
+  perc_Koutter_nullModel <- 50 # percentage of Koutter sample sets with a valid model required to keep that model in results.
+  removeModel <- rowSums(nullmodels)>length(resultNested)*(1-(perc_Koutter_nullModel/100))
+  removeModel <- names(removeModel[removeModel])
+  for (i in 1:length(resultNested)) {
+    resultNested[[i]][["models"]][names(resultNested[[i]][["models"]])%in%removeModel] <- NULL
+    resultNested[[i]][["preds"]][names(resultNested[[i]][["preds"]])%in%removeModel] <- NULL
   }
-  
+  validModels <- validModels[!validModels %in% removeModel]
+  failedModels <- names(models)[!names(models) %in% validModels]
+  if (length(failedModels) > 0) {
+    message(paste0("The following models failed: ", paste0(failedModels, 
+                                                           collapse = ", ")))
+  }
+  models <- models[validModels]
+  if (outcomeClass == "character") {
+    metrics <- c("mcc", "balacc", "accuracy", "recall", 
+                 "specificity", "npv", "precision", "fscore")
+    type <- "classification"
+    levels <- c(positiveClass, unique(unique(expData$group))[!unique(expData$group) %in% 
+                                                               positiveClass])
+  } else {
+    metrics <- c("r", "RMSE", "R2", "MAE", "RMAE", "RSE")
+    type <- "regression"
+    levels <- NULL
+  }
   
   stats <- do.call("cbind", lapply(names(models), function(x) {
     sum.model.x <- do.call("cbind", lapply(1:length(sampleSets), 
