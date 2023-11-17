@@ -112,7 +112,8 @@ refData <- buildRefData(
 
 You should use as many datasets as possible to create the **refData**.
 Note that all the gene expression datasets should be log2 transformed and with 
-a normal distribution.
+a normal distribution. All gene names must be annotated as Gene Symbol in all 
+reference and test datasets.
 
 ## 1.2. Calculate the M-scores for reference data
 
