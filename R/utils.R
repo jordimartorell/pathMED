@@ -145,7 +145,7 @@
     pca_eig <- as.data.frame(pca$eig)
     pca_eig <- pca_eig[pca_eig$`cumulative percentage of variance` < explainedvariance,]
     npcas <- nrow(pca_eig) + 1 ## Get K (npcas)
-    
+    if(all(is.na(pca_eig$`cumulative percentage of variance`))){npcas=0}
   #}else{
   #  Nb<-NbClust::NbClust(data = data, diss = NULL, distance = "euclidean", min.nc = 2, max.nc = nrow(data)-1,
   #                       method = "complete", index = "ch", alphaBeale = 0.1)$All.index
