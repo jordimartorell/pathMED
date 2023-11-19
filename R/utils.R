@@ -141,58 +141,58 @@
   
   set.seed(1234)
   #if(!is.null(explainedvariance)){
-    pca <- FactoMineR::PCA(t(data),graph = F)
-    pca_eig <- as.data.frame(pca$eig)
-    pca_eig <- pca_eig[pca_eig$`cumulative percentage of variance` < explainedvariance,]
-    npcas <- nrow(pca_eig) + 1 ## Get K (npcas)
-    if(all(is.na(pca_eig$`cumulative percentage of variance`))){npcas=0}
-  #}else{
-  #  Nb<-NbClust::NbClust(data = data, diss = NULL, distance = "euclidean", min.nc = 2, max.nc = nrow(data)-1,
-  #                       method = "complete", index = "ch", alphaBeale = 0.1)$All.index
-  #  Nb<-Nb[is.finite(Nb)]
-  #  npcas<-2 ## Get K (npcas)
-  #  for(i in 1:(length(Nb)-1)){
-  #    if(Nb[i]<=Nb[i+1]){
-  #      npcas<-as.numeric(names(Nb)[i+1])
-  #    }}
-  #}
+  pca <- FactoMineR::PCA(t(data),graph = F)
+  pca_eig <- as.data.frame(pca$eig)
+  pca_eig <- pca_eig[pca_eig$`cumulative percentage of variance` < explainedvariance,]
+  npcas <- nrow(pca_eig) + 1 ## Get K (npcas)
+  if(all(is.na(pca_eig$`cumulative percentage of variance`))){npcas=0}
   
   if (npcas > 1) {
     if (!is.null(maxSplits)) {if (npcas > maxSplits) {npcas = maxSplits}}
     
     clust <- stats::kmeans(data,npcas)
     #data.sc <- scale(data)
-    pca <- stats::prcomp(data, scale = FALSE, center = FALSE)
-    ind <- factoextra::facto_summarize(pca, element = "ind", result = "coord",
-                                       axes = c(1, 2))
-    ind$cluster <- as.factor(clust$cluster)
-    colnames(ind) <- c("name","x","y","cood","cluster")
     
-    clusterPaths <- ind
-    distance <- NULL
-    
-    # Distance between clusters (x,y)
-    clusters <- as.numeric(unique(clusterPaths$cluster))
-    clusters <- clusters[order(clusters, decreasing = F)]
-    for (cl in clusters) {
-      distance <- rbind(distance, c(mean(clusterPaths$x[clusterPaths$cluster == cl], na.rm = T),
-                                    mean(clusterPaths$y[clusterPaths$cluster == cl], na.rm = T)))
-    }
-    distance <- as.matrix(dist(distance, diag = NULL,upper = T, method = "euclidean"))
-    diag(distance) = NA
-    rownames(distance) <- as.character(clusters)
-    
-    ## Joint small clusters
-    for(iter in 1:minSplitSize){
-      clusters <- table(clusterPaths$cluster)
-      clusters <- as.numeric(names(clusters[order(clusters, decreasing = F)]))
+    if(all(!table(clust$cluster)>=minSplitSize)){ ## Check if here are small clusters
+      pca <- stats::prcomp(data, scale = FALSE, center = FALSE)
+      
+      ind <- factoextra::facto_summarize(pca, element = "ind", result = "coord",
+                                         axes = c(1, 2))
+      ind$cluster <- as.factor(clust$cluster)
+      colnames(ind) <- c("name","x","y","cood","cluster")
+      
+      clusterPaths <- ind
+      distance <- NULL
+      
+      # Distance between clusters (x,y)
+      clusters <- as.numeric(unique(clusterPaths$cluster))
+      clusters <- clusters[order(clusters, decreasing = F)]
       for (cl in clusters) {
-        if (as.numeric(table(clusterPaths$cluster == cl)["TRUE"]) < minSplitSize) {
-          nearCl <- as.numeric(names(which.min(distance[as.character(cl),])))
-          clusterPaths[clusterPaths$cluster == cl,"cluster"] <- nearCl
-          distance <- distance[!rownames(distance) %in% as.character(cl),
-                               !colnames(distance) %in% as.character(cl)]
-        }}
+        distance <- rbind(distance, c(mean(clusterPaths$x[clusterPaths$cluster == cl], na.rm = T),
+                                      mean(clusterPaths$y[clusterPaths$cluster == cl], na.rm = T)))
+      }
+      distance <- as.matrix(dist(distance, diag = NULL,upper = T, method = "euclidean"))
+      diag(distance) = NA
+      rownames(distance) <- as.character(clusters)
+      
+      ## Joint small clusters
+      for(iter in 1:minSplitSize){
+        clusters <- table(clusterPaths$cluster)
+        clusters <- as.numeric(names(clusters[order(clusters, decreasing = F)]))
+        for (cl in clusters) {
+          if (as.numeric(table(clusterPaths$cluster == cl)["TRUE"]) < minSplitSize) {
+            nearCl <- as.numeric(names(which.min(distance[as.character(cl),])))
+            clusterPaths[clusterPaths$cluster == cl,"cluster"] <- nearCl
+            distance <- distance[!rownames(distance) %in% as.character(cl),
+                                 !colnames(distance) %in% as.character(cl)]
+          }}
+        clusterPaths$cluster <- factor(clusterPaths$cluster,levels=unique(clusterPaths$cluster))
+      }
+      
+    }else{
+      clusterPaths<-data.frame("name"=names(clust$cluster),
+                               "cluster"=as.numeric(clust$cluster))
+      rownames(clusterPaths)<-clusterPaths$name
       clusterPaths$cluster <- factor(clusterPaths$cluster,levels=unique(clusterPaths$cluster))
     }
     
