@@ -39,7 +39,7 @@ diseasePaths <- function(MRef,
   expr.list <- MRef[[3]]
 
   if (length(MRef[[1]])==1) {min_datasets <- 1}
-  min_datasets <- min(min_datasets, length(MRef))
+  min_datasets <- min(min_datasets, length(MRef[[1]]))
 
   HighDys.perc <- lapply(MScores, function(dat) {
     apply(dat, 1, function(x) {
