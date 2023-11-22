@@ -237,15 +237,19 @@ getML <- function(expData,
 
                  sel<-unlist(lapply(1:nrow(predTest),function(n){
                   ifelse(sum(!is.na(predTest[n,]))==0,FALSE,TRUE)}))
-                 y <- as.factor(testing$group[sel])
-                 predTest<-predTest[sel,]
-                 x<-as.factor(unlist(lapply(1:nrow(predTest),function(n){
-                  names(which.max(predTest[n,]))})))
-              
-                cmModel <- confusionMatrix(x,y,positive = positiveClass)
-                cm <- append(cm,list(cmModel))
-                predTest <- data.frame(predTest,"obs"=y)
-
+              if (!any(sel)) {
+                predTest <- NULL
+              } else {
+                y <- as.factor(testing$group[sel])
+                predTest <- predTest[sel, ]
+                x <- as.factor(unlist(lapply(1:nrow(predTest),
+                                             function(n) {
+                                               names(which.max(predTest[n, ]))
+                                               })))
+                cmModel <- confusionMatrix(x, y, positive = positiveClass)
+                cm <- append(cm, list(cmModel))
+                predTest <- data.frame(predTest, obs = y)
+                }
             } else{ ## Numeric outcome
                 predTest <- stats::predict(model, newdata=testing)
                 predTest <- data.frame("pred"=as.numeric(predTest),
@@ -266,6 +270,14 @@ getML <- function(expData,
   close(pb) # Progress bar ends
   message("Done")
 
+  for (s in 1:length(resultNested)) {
+    for (m in 1:length(resultNested[[s]][["models"]])) {
+      if (is.null(resultNested[[s]][["models"]][[m]]) | is.null(resultNested[[s]][["preds"]][[m]])) {
+        resultNested[[s]][["models"]][[m]] <- NULL
+        resultNested[[s]][["preds"]][[m]] <- NULL
+      }
+    }
+  }
   validModels <- list()
   validModels <- lapply(resultNested, function(m) {
     vm <- append(validModels, names(m$models))
