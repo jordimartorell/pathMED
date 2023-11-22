@@ -291,6 +291,9 @@ getML <- function(expData,
     message(paste0("The following models failed: ", paste0(failedModels, 
                                                            collapse = ", ")))
   }
+  if (is.null(validModels)) {
+    stop("All models failed. Please inspect your data.")
+  }
   models <- models[validModels]
   if (outcomeClass == "character") {
     metrics <- c("mcc", "balacc", "accuracy", "recall", 
