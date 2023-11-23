@@ -176,7 +176,7 @@
       clust <- stats::kmeans(data, npcas)
       #data.sc <- scale(data)
       
-      if (all(!table(clust$cluster) >= minSplitSize)) {
+      if (!all(table(clust$cluster) >= minSplitSize)) {
         ## Check if here are small clusters
         pca <- stats::prcomp(data, scale = FALSE, center = FALSE)
         
