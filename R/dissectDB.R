@@ -144,30 +144,16 @@ dissectDB<-function(data,genesets,customGeneset = NULL, minPathSize = 10,
       
       if(length(allgenes)>minPathSize){
         
-        cluster_membership <- lapply(clusters.p, function(cluster) {
-          gene_membership <- rep(NA, length(allgenes))
-          gene_membership[rownames(cluster)] <- cluster[,"cluster"]
-          gene_membership
-        })
-        
         cooccurrence_matrix <- matrix(0, nrow = length(allgenes), ncol = length(allgenes),
-                                      dimnames = list(allgenes, allgenes))
-        
-        # Count cooccurrence for each pair of genes across all clusters
-        for (d in seq_along(cluster_membership)) {
-          genes_in_cluster <- rownames(clusters.p[[d]])
-          cluster_membership_d <- cluster_membership[[d]]
+                                        dimnames = list(allgenes, allgenes))
           
-          # Increment cooccurrence matrix for each pair of genes in the cluster
-          for (x in genes_in_cluster) {
-            for (y in genes_in_cluster) {
-              cooccurrence_matrix[y, x] <- cooccurrence_matrix[y, x] + as.numeric(cluster_membership_d[x] == cluster_membership_d[y])
+          for(d in seq_along(clusters.p)){
+            cls<-unique(as.numeric(clusters.p[[1]][1]$cluster))
+            for(cl in cls){
+              genes<-rownames(clusters.p[[d]])[as.numeric(clusters.p[[d]]$cluster)==cl]
+              cooccurrence_matrix[genes,genes]<-cooccurrence_matrix[genes,genes]+1
             }
           }
-        }
-        
-        # Remove rows and columns with all zeros
-        cooccurrence_matrix <- cooccurrence_matrix[rowSums(cooccurrence_matrix) != 0, colSums(cooccurrence_matrix) != 0]
         
         p.list<-.clusterPath(data=cooccurrence_matrix,
                              path_name = path_name,
