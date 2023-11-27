@@ -94,9 +94,44 @@ diseasePaths <- function(MRef,
        geom_vline(xintercept = perc_samples, linetype = "dashed", color = "grey")+
        scale_x_continuous(breaks = round(seq(min(all$perc_samples), max(all$perc_samples), by = 5),1)) +
        scale_y_continuous(breaks = round(seq(min(all$selected_paths), max(all$selected_paths), by = as.integer(max(all$selected_paths)/10)),1))
-      plot(P1)
+      if (any(endsWith(names(MRef[["genesets"]]), ".split1"))) {
+        splitted_annotations.pre = names(MRef[["genesets"]])
+        splitted_annotations.post = names(genesets)
+        
+        noSplitAnns.pre <- gsub(".split*.", "", splitted_annotations.pre)
+        freqTable.pre <- as.data.frame(table(as.numeric(table(noSplitAnns.pre))))
+        freqTable.pre$paths <- "Before selecion"
+        freqTable.pre$Var1 <- paste0(as.character(freqTable.pre$Var1), " splits")
+        freqTable.pre[nrow(freqTable.pre)+1,] <- c("All pathways (non-splitted)", sum(freqTable.pre$Freq), "Before selecion")
+        freqTable.pre[nrow(freqTable.pre)+1,] <- c("All pathways (splitted)", length(splitted_annotations.pre), "Before selecion")
+        freqTable.pre$Freq <- as.numeric(freqTable.pre$Freq)
+        
+        noSplitAnns.post  <- gsub(".split*.", "", splitted_annotations.post)
+        freqTable.post  <- data.frame(Var1 = freqTable.pre$Var1, Freq = 0, paths = "After selection")
+        freqTable.post$Freq[1:length(as.numeric(table(as.numeric(table(noSplitAnns.post)))))] <- as.numeric(table(as.numeric(table(noSplitAnns.post))))
+        freqTable.post$Freq[nrow(freqTable.post)-1] <- sum(freqTable.post$Freq)
+        freqTable.post$Freq[nrow(freqTable.post)] <- length(splitted_annotations.post)
+        
+        freqTable <- rbind(freqTable.pre, freqTable.post)
+        colnames(freqTable) <- c("n.splits", "n.anns", "selection")
+        freqTable$n.anns <- as.numeric(freqTable$n.anns)
+        freqTable$n.splits[freqTable$n.splits=="1 splits"] <- "No splits"
+        freqTable$selection <- factor(freqTable$selection, levels = c("Before selecion", "After selection"))
+        freqTable$n.splits <- factor(freqTable$n.splits, 
+                                     levels = c("All pathways (splitted)", "All pathways (non-splitted)", "No splits", 
+                                                unique(freqTable$n.splits)[!unique(freqTable$n.splits) %in% c("All pathways (splitted)", "All pathways (non-splitted)", "No splits")]))
+        
+        P2 <- ggplot(freqTable, aes(x = n.splits, y = n.anns, fill = selection)) + 
+          geom_bar(stat = "identity", position=position_dodge()) +
+          theme_bw() + 
+          ylab("Number of pathways") + 
+          xlab("") +
+          theme(axis.text.x = element_text(angle = 45, hjust = 1))
+        
+        Plots <- ggpubr::ggarrange(P1, NULL, P2, ncol = 1, align = "v", heights = c(3, 0.2, 2))
+        plot(Plots)
+      } else {plot(P1)}
     }
   }
-
   return(list(genesets=genesets, reference=reference))
 }
