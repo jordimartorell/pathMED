@@ -340,7 +340,7 @@ stats <- do.call("cbind", lapply(names(models), function(x) {
   sum.model.x <- do.call("cbind", lapply(1:length(sampleSets), 
                                          function(it) {
                                            tmp <- resultNested[[it]]$preds[[x]]
-                                           if (outcomeClass == "character") {
+                                           if (outcomeClass == "character" & !is.null(tmp)) {
                                              obs <- factor(tmp$obs, levels = levels)
                                              lab.pred <- unlist(lapply(1:nrow(tmp), function(n) {
                                                names(which.max(tmp[n, !colnames(tmp) %in% 
