@@ -73,6 +73,7 @@ getML <- function(expData,
                   Koutter=5,
                   Kinner=4,
                   repeatsCV=5,
+                  filterFeatures=TRUE,
                   continue_on_fail = TRUE,
                   positiveClass=NULL,
                   saveLogFile = NULL){
@@ -180,6 +181,20 @@ resultNested <- lapply(sampleSets, function(x){
   
   folds<-.makeClassBalancedFolds(y=training$group,kfold = Kinner,
                                  repeats = repeatsCV,varType = outcomeClass)
+
+  if(filterFeatures){
+      filterCtrl<-sbfControl(functions = NULL,method = "cv", 
+                             verbose = FALSE,returnResamp = "final",
+                             index = folds,allowParallel = TRUE)
+      
+      tmp<-as.data.frame(training[,2:ncol(training)])
+      y<-ifelse(outcomeClass=="character",factor(training$group),
+                as.numeric(training$group))
+      
+      filters <- sbf(x= tmp, y=factor(training$group), sbfControl = filterCtrl)
+      training<-training[,c("group",filters$optVariables)]
+      testing<-testing[,c("group",filters$optVariables)]
+    }
   
   my_control <- caret::trainControl(method="cv", number=Kinner,
                                     savePredictions="final",
