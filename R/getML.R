@@ -192,8 +192,11 @@ resultNested <- lapply(sampleSets, function(x){
                 as.numeric(training$group))
       
       filters <- sbf(x= tmp, y=factor(training$group), sbfControl = filterCtrl)
-      training<-training[,c("group",filters$optVariables)]
-      testing<-testing[,c("group",filters$optVariables)]
+
+      if(length(filters$optVariables)>0){
+        training<-training[,c("group",filters$optVariables)]
+        testing<-testing[,c("group",filters$optVariables)]
+      }
     }
   
   my_control <- caret::trainControl(method="cv", number=Kinner,
