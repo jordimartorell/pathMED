@@ -18,6 +18,7 @@ Imports:
     BiocParallel,
     caret,
     caretEnsemble,
+    gam,
     factoextra,
     FactoMineR,
     import,
