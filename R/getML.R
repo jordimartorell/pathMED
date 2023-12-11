@@ -183,7 +183,7 @@ resultNested <- lapply(sampleSets, function(x){
                                  repeats = repeatsCV,varType = outcomeClass)
 
   if(filterFeatures){
-      filterCtrl<-sbfControl(functions = NULL,method = "cv", 
+      filterCtrl <- caret::sbfControl(functions = NULL,method = "cv", 
                              verbose = FALSE,returnResamp = "final",
                              index = folds,allowParallel = TRUE)
       
@@ -191,7 +191,7 @@ resultNested <- lapply(sampleSets, function(x){
       y<-ifelse(outcomeClass=="character",factor(training$group),
                 as.numeric(training$group))
       
-      filters <- sbf(x= tmp, y=factor(training$group), sbfControl = filterCtrl)
+      filters <- caret::sbf(x= tmp, y=factor(training$group), sbfControl = filterCtrl)
 
       if(length(filters$optVariables)>0){
         training<-training[,c("group",filters$optVariables)]
