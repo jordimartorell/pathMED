@@ -266,7 +266,7 @@ resultNested <- lapply(sampleSets, function(x){
                                      function(n) {
                                        names(which.max(predTest[n, ]))
                                      })),levels = unique(testing$group))
-        cmModel <- confusionMatrix(x, y, positive = positiveClass)
+        cmModel <- caret::confusionMatrix(x, y, positive = positiveClass)
         cm <- append(cm, list(cmModel))
         predTest <- data.frame(predTest, obs = y)
       }
