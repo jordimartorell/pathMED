@@ -441,7 +441,7 @@ rownames(bestTune) <- NULL
 
 if (".max_depth"%in%colnames(bestTune)) {bestTune$.max_depth <- round(bestTune$.max_depth)}
 
-fit.model <- .removeOutText(train(group~.,data=expData,
+fit.model <- .removeOutText(caret::train(group~.,data=expData,
                                   method=colnames(stats)[1],
                                   tuneGrid=bestTune))
 
