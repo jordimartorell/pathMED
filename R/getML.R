@@ -338,7 +338,7 @@ if (outcomeClass == "character") {
   type <- "regression"
   levels <- NULL
 }
-
+message("Calculating metrics...")
 stats <- do.call("cbind", lapply(names(models), function(x) {
   sum.model.x <- do.call("cbind", lapply(1:length(sampleSets), 
                                          function(it) {
@@ -427,7 +427,7 @@ stats<-rbind(stats,"perc.lossSamples"=100-((lossSamples/ntest)*100))
   do.call("rbind",lapply(resultNested,function(x){
   x$preds[colnames(stats)[1]][[1]]
 }))
-
+message("Done")
 
 bestTune <- data.frame(lapply(seq_len(ncol(parameters)), function(x){
   tmpValues <- data.frame(parameters[,x])
@@ -440,11 +440,15 @@ colnames(bestTune) <- paste0(".", colnames(parameters))
 rownames(bestTune) <- NULL
 
 if (".max_depth"%in%colnames(bestTune)) {bestTune$.max_depth <- round(bestTune$.max_depth)}
+  
+rm(resultNested)
+gc()
 
+message("Training final model...")
 fit.model <- .removeOutText(caret::train(group~.,data=expData,
                                   method=colnames(stats)[1],
                                   tuneGrid=bestTune))
-
+message("Done")
 
 return(list(model=fit.model, stats=stats, bestTune=bestTune, subsample.preds = predsTable))
 
