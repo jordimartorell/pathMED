@@ -249,42 +249,39 @@ resultNested <- lapply(sampleSets, function(x){
   ## Get model stats for Koutter
   predictionTable <- list()
   cm <- list()
-  for(model in modelResults){
-    if(outcomeClass=="character"){ ## Categorical outcome
+  for (m in 1:length(modelResults)) {
+    if (outcomeClass == "character") {
       classLabels <- levels(as.factor(training$group))
-      predTest <- stats::predict(model, newdata=testing,
-                                 type="prob")[,classLabels]
-      
-      sel<-unlist(lapply(1:nrow(predTest),function(n){
-        ifelse(sum(!is.na(predTest[n,]))==0,FALSE,TRUE)}))
+      predTest <- stats::predict(modelResults[[m]], newdata = testing, 
+                                 type = "prob")[, classLabels]
+      sel <- unlist(lapply(1:nrow(predTest), function(n) {
+        ifelse(sum(!is.na(predTest[n, ])) == 0, FALSE, 
+               TRUE)
+      }))
       if (!any(sel)) {
         predTest <- NULL
-      } else { ##HEREEE
-        y <- factor(testing$group[sel],levels = unique(testing$group))
+      } else {
+        y <- factor(testing$group[sel], levels = unique(testing$group))
         predTest <- predTest[sel, ]
-        x <- factor(unlist(lapply(1:nrow(predTest),
-                                     function(n) {
-                                       names(which.max(predTest[n, ]))
-                                     })),levels = unique(testing$group))
+        x <- factor(unlist(lapply(1:nrow(predTest), 
+                                  function(n) {
+                                    names(which.max(predTest[n, ]))
+                                  })), levels = unique(testing$group))
         cmModel <- caret::confusionMatrix(x, y, positive = positiveClass)
         cm <- append(cm, list(cmModel))
+        names(cm)[m] <- names(modelResults)[m]
         predTest <- data.frame(predTest, obs = y)
       }
-    } else{ ## Numeric outcome
-      predTest <- stats::predict(model, newdata=testing)
-      predTest <- data.frame("pred"=as.numeric(predTest),
-                             "obs"=as.numeric(testing$group))
+    } else {
+      predTest <- stats::predict(modelResults[[m]], newdata = testing)
+      predTest <- data.frame(pred = as.numeric(predTest), 
+                             obs = as.numeric(testing$group))
+      cm <- NULL
     }
-    predictionTable <- append(predictionTable,
-                              list(stats::na.omit(predTest)))
+    predictionTable <- append(predictionTable, list(stats::na.omit(predTest)))
+    names(predictionTable)[m] <- names(modelResults)[m]
   }
-  
-  names(predictionTable) <- names(modelResults)
-  if(!!length(cm)){
-    names(cm) <- names(modelResults)
-  }else{
-    cm <- NULL
-  }
+  gc()
   return(list(models=modelResults, preds=predictionTable, cm=cm))
 })
 close(pb) # Progress bar ends
