@@ -75,7 +75,11 @@ You can install pathMED from the GitHub repository:
 devtools::install_github("jordimartorell/pathMED")
 ```
 
-Please note that on some operating systems such as Ubuntu there may be installation errors in the packages "metrica", "factoextra" and "FactoMineR", as it is necessary to install system dependencies with administrator permissions. These system dependencies can be identified the following code (adapted to Ubuntu 20.04) and installed by running the output in a terminal as administrator:
+Please note that on some operating systems such as Ubuntu there may be 
+installation errors in the packages "metrica", "factoextra" and "FactoMineR",
+as it is necessary to install system dependencies with administrator permissions.
+These system dependencies can be identified the following code (adapted to 
+Ubuntu 20.04) and installed by running the output in a terminal as administrator:
 
 ```{r}
 pak::pkg_system_requirements(c("metrica", "factoextra", "FactoMineR"), "ubuntu", "20.04")
