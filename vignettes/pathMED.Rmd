@@ -66,14 +66,30 @@ references:
   issue: 5
 ---
 
-# Introduction
 
+# Install pathMED
+
+You can install pathMED from the GitHub repository:
+
+```{r}
+devtools::install_github("jordimartorell/pathMED")
+```
+
+Please note that on some operating systems such as Ubuntu there may be installation errors in the packages "metrica", "factoextra" and "FactoMineR", as it is necessary to install system dependencies with administrator permissions. These system dependencies can be identified the following code (adapted to Ubuntu 20.04) and installed by running the output in a terminal as administrator:
+
+```{r}
+pak::pkg_system_requirements(c("metrica", "factoextra", "FactoMineR"), "ubuntu", "20.04")
+```
+
+
+# Introduction
 
 This methodology was used in a previous work that used 
 personalized scoring to predict the drug response, symptoms and progression of 
 Systemic Lupus Erythematosus patients from gene expression data 
 @toroDominguez2022. pathMED has been developed to be applicable to any disease 
 or biological context.
+
 
 # Step 1: Prepare the reference data
 
