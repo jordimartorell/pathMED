@@ -5,6 +5,8 @@
 #' @param genesets Output from the diseasePaths function, or a list of pathways
 #' @param nk Only for Healthy=NULL, Number of most similar samples to impute
 #' M-scores.
+#' @param maxDistance Maximum distance between patient's expression and k-samples
+#' from patient-reference. Mscores for patients above this distance will not be imputed.
 #' @param cores Number of cores to be used.
 #'
 #' @return A list with the results of each of the analyzed regions. For each
