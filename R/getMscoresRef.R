@@ -55,7 +55,7 @@ getMscoresRef <- function(data,
         H<-H[ifelse(H[,2]==0,F,T),]
         message("Running dataset ", i, " of ", lengthData)
 
-        # Avoid using more cores than samokes
+        # Avoid using more cores than samples
         workers <- min(cores, ncol(Patient))
 
         res <- BiocParallel::bplapply(seq_len(ncol(Patient)),
