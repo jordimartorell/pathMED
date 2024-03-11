@@ -2,7 +2,7 @@
 #'
 #' @param Patient Expression matrix of cases or numeric vector with one sample.
 #' @param Healthy Expression matrix of healthy controls.
-#' @param genesets Output from the diseasePaths function
+#' @param genesets Output from the diseasePaths function, or a list of pathways
 #' @param nk Only for Healthy=NULL, Number of most similar samples to impute
 #' M-scores.
 #' @param cores Number of cores to be used.
