@@ -42,15 +42,15 @@ getMscores <- function(Patient,
     stop("If Healthy=NULL, nk must be defined")
   }
 
-  #if(){
+  if(names(genesets)[2]=="reference"){
     path.list <- genesets[[1]]
     Reference <- genesets[[2]]
- # }else{
- #   path.list <- genesets
- #   if(is.null(Healthy)){
- #     stop("No Healthy controls nor Reference included")
- #   }
- # }
+  }else{
+    path.list <- genesets
+    if(is.null(Healthy)){
+      stop("No Healthy controls nor Reference included")
+    }
+  }
   
   
   if(is.vector(Patient)){ # Only one patient
