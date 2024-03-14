@@ -190,9 +190,11 @@ resultNested <- lapply(sampleSets, function(x){
       tmp<-as.data.frame(training[,2:ncol(training)])
       y<-ifelse(outcomeClass=="character",factor(training$group),
                 as.numeric(training$group))
-      
-      filters <- caret::sbf(x= tmp, y=factor(training$group), sbfControl = filterCtrl)
-
+      if (outcomeClass == "character") {
+        filters <- caret::sbf(x = tmp, y = factor(training$group), sbfControl = filterCtrl)
+      } else {
+        filters <- caret::sbf(x = tmp, y = training$group, sbfControl = filterCtrl)
+      }
       if(length(filters$optVariables)>0){
         training<-training[,c("group",filters$optVariables)]
         testing<-testing[,c("group",filters$optVariables)]
