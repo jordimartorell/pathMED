@@ -442,11 +442,17 @@ if (".max_depth"%in%colnames(bestTune)) {bestTune$.max_depth <- round(bestTune$.
 rm(resultNested)
 gc()
 
-message("Training final model...")
-fit.model <- .removeOutText(caret::train(group~.,data=expData,
-                                  method=colnames(stats)[1],
-                                  tuneGrid=bestTune))
-message("Done")
+message("Training final model in all samples...")
+  if (continue_on_fail == TRUE) {
+    fit.model <- withCallingHandlers(tryCatch(pathMED:::.removeOutText(caret::train(group ~ ., data = expData, 
+                                                                                    method = colnames(stats)[1], 
+                                                                                    tuneGrid = bestTune)), 
+                                              error = function(e) {
+                                                message(paste0("Error fitting the best model (", colnames(stats)[1], ") in all samples. Try manually selecting a subset of samples and use the optimal parameters provided"))
+                                                NULL
+                                                }))
+  }
+  message("Done")
 
 return(list(model=fit.model, stats=stats, bestTune=bestTune, subsample.preds = predsTable))
 
