@@ -428,7 +428,7 @@ message("Done")
 bestTune <- data.frame(lapply(seq_len(ncol(parameters)), function(x){
   tmpValues <- data.frame(parameters[,x])
   if(!methods::is(tmpValues[,1], "numeric")){
-    tmpValues <- names(table(tmpValues))[order(table(tmpValues))][1]
+    tmpValues <- names(table(tmpValues))[order(table(tmpValues), decreasing = T)][1]
   }else{
     tmpValues <- apply(tmpValues, 2, mean)
   }}))
