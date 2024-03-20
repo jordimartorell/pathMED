@@ -106,6 +106,8 @@ if (!is.null(positiveClass)) {
 expData <- expData[,samples]
 metadata <- metadata[samples,,drop=FALSE]
 
+expData <- expData[rowSums(expData) != 0, ] # Remove features with all 0
+
 expData <- data.frame('group'=metadata[,var2predict],
                       as.data.frame(t(expData)))
 colnames(expData) <- stringi::stri_replace_all_regex(
