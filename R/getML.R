@@ -423,9 +423,6 @@ lossSamples<-c(unlist(lapply(1:ncol(stats),function(n){
     nrow(m$preds[colnames(stats)[n]][[1]])})))})))
 stats<-rbind(stats,"perc.lossSamples"=100-((lossSamples/ntest)*100))
   
-  do.call("rbind",lapply(resultNested,function(x){
-  x$preds[colnames(stats)[1]][[1]]
-}))
 message("Done")
 
 bestTune <- data.frame(lapply(seq_len(ncol(parameters)), function(x){
