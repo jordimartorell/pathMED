@@ -448,7 +448,7 @@ message("Training final model in all samples...")
                                                                                     method = colnames(stats)[1], 
                                                                                     tuneGrid = bestTune)), 
                                               error = function(e) {
-                                                message(paste0("Error fitting the best model (", colnames(stats)[1], ") in all samples. Try manually selecting a subset of samples and use the optimal parameters provided"))
+                                                message(paste0("Error fitting the best model (", colnames(stats)[1], ") in all samples. NULL model returned. Try manually selecting a subset of samples and use the optimal parameters provided."))
                                                 NULL
                                                 }))
   }
