@@ -264,6 +264,8 @@ resultNested <- lapply(sampleSets, function(x){
       }))
       if (!any(sel)) {
         predTest <- NULL
+        cm <- append(cm, list(NULL))
+        names(cm)[m] <- names(modelResults)[m]
       } else {
         y <- factor(testing$group[sel], levels = unique(testing$group))
         predTest <- predTest[sel, ]
