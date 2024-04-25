@@ -294,13 +294,20 @@ close(pb) # Progress bar ends
 message("Done")
 
 for (s in 1:length(resultNested)) {
+  m_toremove <- c()
   for (m in 1:length(resultNested[[s]][["models"]])) {
-    if (is.null(resultNested[[s]][["models"]][[m]]) | is.null(resultNested[[s]][["preds"]][[m]])) {
-      resultNested[[s]][["models"]][[m]] <- NULL
-      resultNested[[s]][["preds"]][[m]] <- NULL
+    if (is.null(resultNested[[s]][["models"]][[m]]) | 
+        is.null(resultNested[[s]][["preds"]][[m]])) {
+      m_toremove <- append(m_toremove, m)
     }
   }
+  if(!is.null(m_toremove)){
+    resultNested[[s]][["models"]][[m_toremove]] <- NULL
+    resultNested[[s]][["preds"]][[m_toremove]] <- NULL
+    resultNested[[s]][["cm"]][[m_toremove]] <- NULL
+  }
 }
+
 validModels <- list()
 validModels <- lapply(resultNested, function(m) {
   vm <- append(validModels, names(m$models))
