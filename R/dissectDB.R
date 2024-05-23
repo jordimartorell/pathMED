@@ -92,11 +92,11 @@ dissectDB<-function(data,genesets,customGeneset = NULL, minPathSize = 10,
   
   ## 3. Disect pathways
   cat("This proccess can take time...\n")
-  pb = txtProgressBar(min = 1, max = length(path.list), initial = 0, style = 3)
+  if(length(path.list)>1){pb = txtProgressBar(min = 1, max = length(path.list), initial = 0, style = 3)}
   new.path.list<-list()
   for(p in 1:length(path.list)){ ## Loop for each pathway
     path_name <- names(path.list)[p]
-    setTxtProgressBar(pb,p)
+    if(length(path.list)>1){setTxtProgressBar(pb,p)}
     if(length(z.data)==1){ ## One dataset - kmeans clustering ··················
       genes <- intersect(path.list[[path_name]], rownames(z.data[[1]]))
       
@@ -170,7 +170,7 @@ dissectDB<-function(data,genesets,customGeneset = NULL, minPathSize = 10,
       }
     }
   } ## Loop for each pathway
-  close(pb)
+  if(length(path.list)>1){close(pb)}
   return(new.path.list)
   
 }
