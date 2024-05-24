@@ -7,6 +7,9 @@
 #' M-scores.
 #' @param maxDistance Maximum distance between patient's expression and k-samples
 #' from patient-reference. Mscores for patients above this distance will not be imputed.
+#' @param sqrtZmean Select if, when calculating the Mscores, divide by the 
+#' square root of the number of genes when computing the mean of the Zscores. 
+#' Boolean, FALSE by default.
 #' @param cores Number of cores to be used.
 #'
 #' @return A list with the results of each of the analyzed regions. For each
@@ -38,6 +41,7 @@ getMscores <- function(Patient,
                        genesets,
                        nk=5,
                        maxDistance= 30,
+                       sqrtZmean=FALSE,
                        cores = 1){
   
   if (is.null(Healthy) & is.null(nk)) {
@@ -89,7 +93,7 @@ getMscores <- function(Patient,
       rownames(H)<-rownames(Healthy)
       H<-H[ifelse(H[,2]==0,F,T),]      
       res <- lapply(path.list, function(x) {
-        .getMscorePath(x, Patient=Patient, Healthy=H)
+        .getMscorePath(x, Patient=Patient, Healthy=H, sqrtZmean=sqrtZmean)
       })
       res <- as.data.frame(do.call("rbind", res))
       colnames(res) <- "Mscores"
@@ -149,13 +153,15 @@ getMscores <- function(Patient,
         res.i <- lapply(path.list,
                         .getMscorePath,
                         Healthy=Healthy,
-                        Patient=pat)
+                        Patient=pat, 
+                        sqrtZmean=sqrtZmean)
         res.i <- as.data.frame(do.call("rbind", res.i))
         return(res.i)
       },
       geneNames=rownames(Patient),
       path.list=path.list,
       Healthy=H,
+      sqrtZmean=sqrtZmean,
       BPPARAM=BiocParallel::SnowParam(workers = cores, progressbar=TRUE))
       res <- do.call("cbind", res)
       colnames(res) <- colnames(Patient)
