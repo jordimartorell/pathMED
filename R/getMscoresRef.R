@@ -8,6 +8,9 @@
 #' kegg, reactome, tmod) or 'custom' to provide the annotation.
 #' @param customGeneset Only if genesets == 'custom'. A named list with each
 #' gene set.
+#' @param sqrtZmean Select if, when calculating the Mscores, divide by the 
+#' square root of the number of genes when computing the mean of the Zscores. 
+#' Boolean, FALSE by default
 #' @param cores Number of cores to be used.
 #'
 #' @return A list with three elements. The first one is a list with the M-scores
@@ -32,6 +35,7 @@
 getMscoresRef <- function(data,
                           genesets = "reactome",
                           customGeneset=NULL,
+                          sqrtZmean = FALSE,
                           cores = 1){
     ## Create path.list
     if (genesets == "custom"){
@@ -60,13 +64,15 @@ getMscoresRef <- function(data,
 
         res <- BiocParallel::bplapply(seq_len(ncol(Patient)),
                                       function(column, Patient, geneNames,
-                                               path.list, Healthy, .getMscorePath) {
+                                               path.list, Healthy, sqrtZmean,
+                                               .getMscorePath) {
             pat <- Patient[,column]
             names(pat) <- geneNames
             res.i <- lapply(path.list,
                             .getMscorePath,
                             Healthy=Healthy,
-                            Patient=pat)
+                            Patient=pat,
+                           sqrtZmean=sqrtZmean)
             res.i <- as.data.frame(do.call("rbind", res.i))
             return(res.i)
         },
@@ -74,6 +80,7 @@ getMscoresRef <- function(data,
         geneNames=rownames(Patient),
         path.list=path.list,
         Healthy=H,
+        sqrtZmean=sqrtZmean,
         .getMscorePath = .getMscorePath,
         BPPARAM=BiocParallel::SnowParam(workers=workers, progressbar=TRUE))
 
