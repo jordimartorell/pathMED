@@ -161,7 +161,6 @@ getMscores <- function(Patient,
       geneNames=rownames(Patient),
       path.list=path.list,
       Healthy=H,
-      sqrtZmean=sqrtZmean,
       BPPARAM=BiocParallel::SnowParam(workers = cores, progressbar=TRUE))
       res <- do.call("cbind", res)
       colnames(res) <- colnames(Patient)
