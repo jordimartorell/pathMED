@@ -2,7 +2,8 @@
 ## control distribution
 .getMscorePath <- function(path,
                            Patient,
-                           Healthy) {
+                           Healthy, 
+                           sqrtZmean = FALSE) {
   genes.path <- Reduce(intersect, list(rownames(Healthy),
                                        names(Patient),
                                        as.character(unlist(path))))
@@ -15,8 +16,8 @@
     
     # Zscore by path
     Zscore.genes <- (tmpPat - tmpRef[, 1]) / tmpRef[, 2]
-    path.mscore <- mean(Zscore.genes, na.rm = TRUE)
-    
+    if (sqrtZmean){path.mscore <- sum(Zscore.genes, na.rm = TRUE)/sqrt(length(Zscore.genes))
+    } else {path.mscore <- mean(Zscore.genes, na.rm = TRUE)}
   }
   names(path.mscore) <- names(path)
   return(path.mscore)
