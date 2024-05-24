@@ -10,7 +10,7 @@
 #' gene set.
 #' @param sqrtZmean Select if, when calculating the Mscores, divide by the 
 #' square root of the number of genes when computing the mean of the Zscores. 
-#' Boolean, FALSE by default
+#' Boolean, FALSE by default.
 #' @param cores Number of cores to be used.
 #'
 #' @return A list with three elements. The first one is a list with the M-scores
