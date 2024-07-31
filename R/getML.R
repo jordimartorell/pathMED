@@ -8,6 +8,9 @@
 #' caret::caretModelSpec function. methodsML function may be used to prepare
 #' this list
 #' @param var2predict character with the column name of the @metadata to predict
+#' @param paired character with the column name of the @metadata with paired information.
+#' Paired information is used to always asign samples from the same source (i.e. patient) 
+#' to the same group (train or test). paired = NULL by default
 #' @param Koutter number of Outter folds in which exp.data is split for neasted cold validation.
 #' A list of integer with elements for each resampling iteration is admitted. 
 #' Each list element is a vector of integers corresponding to the rows used for training at that iteration.
@@ -70,6 +73,7 @@ getML <- function(expData,
                   metadata,
                   models=methodsML(outcomeClass = "character"),
                   var2predict,
+                  paired=NULL,
                   Koutter=5,
                   Kinner=4,
                   repeatsCV=5,
@@ -165,7 +169,8 @@ if(!is.list(Koutter)){
   #caret::createDataPartition(y=expData$group, p=splitProp, list=TRUE)},
   #list(seq_len(Koutter))))
   sampleSets <- .makeClassBalancedFolds(y=expData$group,kfold = Koutter,
-                                        repeats = 1, varType = outcomeClass)
+                                        repeats = 1, varType = outcomeClass,
+                                        paired=paired)
   
 } else {
   sampleSets <- Koutter
