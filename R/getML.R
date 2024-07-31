@@ -188,7 +188,7 @@ resultNested <- lapply(sampleSets, function(x){
   
   folds<-.makeClassBalancedFolds(y=training$group,kfold = Kinner,
                                  repeats = repeatsCV,varType = outcomeClass,
-                                ifelse(is.null(paired),NULL,training[,paired])))
+                                ifelse(is.null(paired),NULL,training[,paired]))
 
   if(filterFeatures){
       filterCtrl <- caret::sbfControl(functions = NULL,method = "cv", 
