@@ -121,32 +121,91 @@
 
 
 ## Function to created class-balanced fold
-.makeClassBalancedFolds <- function(y, kfold, repeats, varType,paired) {
-  if (varType == "character") {
-    y <- data.frame("value" = y, index = 1:length(y))
-    y <- split(y, y$value)
+.makeClassBalancedFolds <- function(y, kfold, repeats, varType, paired) {
     
-    splittedFolds <- lapply(y, function(x) {
-      folds <- caret::createMultiFolds(x$index, k = kfold, repeats)
-      res <- lapply(folds, function(i) {
-        x[i, ]$index
-      })
-    })
-    listFolds <- lapply(1:length(splittedFolds[[1]]), function(k) {
-      res <- c(unlist(lapply(1:length(splittedFolds), function(r) {
-        as.integer(unname(splittedFolds[[r]][k])[[1]])
-      })))
-    })
+  ## kfolds by samples (only one sample by patient) ····························
+    if(is.null(paired)){ 
+      if (varType == "character") {
+        y <- data.frame("value" = y, index = 1:length(y))
+        y <- split(y, y$value)
+        
+        splittedFolds <- lapply(y, function(x) {
+          folds <- caret::createMultiFolds(x$index, k = kfold, repeats)
+          res <- lapply(folds, function(i) { x[i, ]$index })
+        })
+        listFolds <- lapply(1:length(splittedFolds[[1]]), function(k) {
+          res <- c(unlist(lapply(1:length(splittedFolds), function(r) {
+            as.integer(unname(splittedFolds[[r]][k])[[1]])
+          })))
+        })
+        
+      } else{
+        y <- data.frame("value" = y, index = 1:length(y))
+        folds <- caret::createMultiFolds(y$index, k = kfold, repeats)
+        listFolds <- lapply(folds, function(i) {
+          y[i, ]$index
+        })
+      }
+      return(listFolds)
+      
+    ## kfolds by patients (several samples for each patient) ···················
+    }else{ 
     
-  } else{
-    y <- data.frame("value" = y, index = 1:length(y))
-    folds <- caret::createMultiFolds(y$index, k = kfold, repeats)
-    listFolds <- lapply(folds, function(i) {
-      y[i, ]$index
-    })
+      if(varType=="character"){
+        
+        groups<-unique(y)
+        ids<-lapply(groups,function(x){
+          return(unique(paired[y==x]))
+        })
+        names(ids)<-groups
+  
+        subsets<-lapply(1:repeats,function(rp){
+          ## Random initiation
+          tmp.ids<-lapply(ids, sample)
+          tmp.ids <- do.call("rbind",lapply(tmp.ids,function(gr){
+            return(data.frame("index"=gr,
+                            "fold"=cut(seq_along(gr), breaks = kfold, labels = FALSE)))
+          }))
+          rownames(tmp.ids)<-NULL
+          
+          ## Get folds of patients
+          res<-list()
+          for (f in unique(tmp.ids$fold)) {
+            filtered_indices <- tmp.ids$index[tmp.ids$fold != f]
+            
+            sampleSel<-1:length(paired)
+            res[[as.character(f)]] <- sampleSel[paired %in% filtered_indices]
+          }
+          return(res)
+        })
+        subsets<-unlist(subsets, recursive = FALSE)
+        names(subsets)<-NULL
+        return(subsets)
+    
+      }else{
+        ids<-unique(paired)
+    
+        subsets<-lapply(1:repeats,function(rp){
+          gr=ids[sample(1:length(ids),length(ids),replace = F)]
+          tmp.ids<-data.frame("index"=gr,
+                              "fold"=cut(seq_along(gr), breaks = kfold, labels = FALSE))
+
+          res<-list()
+          for (f in unique(tmp.ids$fold)) {
+            filtered_indices <- tmp.ids$index[tmp.ids$fold != f]
+            
+            sampleSel<-1:length(paired)
+            res[[as.character(f)]] <- sampleSel[paired %in% filtered_indices]
+          }
+          return(res)
+        })
+        subsets<-unlist(subsets, recursive = FALSE)
+        names(subsets)<-NULL
+        
+        return(subsets) 
+      }
+    }
   }
-  return(listFolds)
-}
 
 
 ## Function to cluster pathways into co-expressed circuits
