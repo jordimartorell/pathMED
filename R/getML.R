@@ -170,7 +170,7 @@ if(!is.list(Koutter)){
   #list(seq_len(Koutter))))
   sampleSets <- .makeClassBalancedFolds(y=expData$group,kfold = Koutter,
                                         repeats = 1, varType = outcomeClass,
-                                        paired=paired)
+                                        paired = expData[,paired])
   
 } else {
   sampleSets <- Koutter
