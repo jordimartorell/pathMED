@@ -121,7 +121,7 @@
 
 
 ## Function to created class-balanced fold
-.makeClassBalancedFolds <- function(y, kfold, repeats, varType) {
+.makeClassBalancedFolds <- function(y, kfold, repeats, varType,paired) {
   if (varType == "character") {
     y <- data.frame("value" = y, index = 1:length(y))
     y <- split(y, y$value)
