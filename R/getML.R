@@ -170,7 +170,8 @@ if(!is.list(Koutter)){
   #list(seq_len(Koutter))))
   sampleSets <- .makeClassBalancedFolds(y=expData$group,kfold = Koutter,
                                         repeats = 1, varType = outcomeClass,
-                                        paired = ifelse(is.null(paired),NULL,expData[,paired]))
+                                        paired = ifelse(is.null(paired),NULL,
+                                                        metadata[setdiff(colnames(expData),"group"),paired]))
   
 } else {
   sampleSets <- Koutter
@@ -188,7 +189,8 @@ resultNested <- lapply(sampleSets, function(x){
   
   folds<-.makeClassBalancedFolds(y=training$group,kfold = Kinner,
                                  repeats = repeatsCV,varType = outcomeClass,
-                                ifelse(is.null(paired),NULL,training[,paired]))
+                                 paired = ifelse(is.null(paired),NULL,
+                                                 metadata[setdiff(colnames(training),"group"),paired]))
 
   if(filterFeatures){
       filterCtrl <- caret::sbfControl(functions = NULL,method = "cv", 
