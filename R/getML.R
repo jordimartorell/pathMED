@@ -168,11 +168,14 @@ if(!is.list(Koutter)){
   #sampleSets <- unname(vapply(seq_len(Koutter), function(x){
   #caret::createDataPartition(y=expData$group, p=splitProp, list=TRUE)},
   #list(seq_len(Koutter))))
-  sampleSets <- .makeClassBalancedFolds(y=expData$group,kfold = Koutter,
-                                        repeats = 1, varType = outcomeClass,
-                                        paired = ifelse(is.null(paired),NULL,
-                                                        metadata[setdiff(colnames(expData),"group"),paired]))
-  
+   if(!is.null(paired)){
+      isPaired<-metadata[rownames(expData),paired]
+    }else{
+      isPaired<-NULL
+    }
+    sampleSets <- .makeClassBalancedFolds(y=expData$group,kfold = Koutter,
+                                          repeats = 1, varType = outcomeClass,
+                                          paired = isPaired)
 } else {
   sampleSets <- Koutter
 }
@@ -186,11 +189,16 @@ pb <- txtProgressBar(min = 0, max = length(sampleSets)*length(models), style = 3
 resultNested <- lapply(sampleSets, function(x){
   training <- expData[as.numeric(unlist(x)),]
   testing <- expData[-as.numeric(unlist(x)),]
-  
-  folds<-.makeClassBalancedFolds(y=training$group,kfold = Kinner,
-                                 repeats = repeatsCV,varType = outcomeClass,
-                                 paired = ifelse(is.null(paired),NULL,
-                                                 metadata[setdiff(colnames(training),"group"),paired]))
+
+    if(!is.null(paired)){
+      isPaired<-metadata[rownames(training),paired]
+    }else{
+      isPaired<-NULL
+    }
+    
+    folds<-.makeClassBalancedFolds(y=training$group,kfold = Kinner,
+                                   repeats = repeatsCV,varType = outcomeClass,
+                                   paired = isPaired)
 
   if(filterFeatures){
       filterCtrl <- caret::sbfControl(functions = NULL,method = "cv", 
