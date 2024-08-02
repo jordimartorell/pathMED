@@ -1,5 +1,3 @@
-
-
 #' Build machine-learning based on gene-expression/mscores data
 #'
 #' @param expData Feature matrix. Samples in columns and features in
