@@ -221,14 +221,12 @@ getML <- function(expData,
       if(filterFeatures=="sbf"){
         filterCtrl <- caret::sbfControl(functions = NULL,method = "cv", 
                                         verbose = FALSE,returnResamp = "final",
-                                        index = folds,allowParallel = TRUE,
-                                        verbose = FALSE)
+                                        index = folds,allowParallel = TRUE)
       }
       if(filterFeatures=="rfe"){
         filterCtrl <- caret::rfeControl(functions = NULL,method = "cv", 
                                         verbose = FALSE,returnResamp = "final",
-                                        index = folds,allowParallel = TRUE,
-                                        verbose = FALSE)
+                                        index = folds,allowParallel = TRUE)
       }
 
       tmp<-as.data.frame(training[,2:ncol(training)])
