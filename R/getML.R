@@ -22,6 +22,8 @@
 #' By Filtering) or NULL (no feature selection)
 #' @param filterSizes Only for filterFeatures = "rfe". A numeric vector of integers 
 #' corresponding to the number of features that should be retained
+#' @param rerank Only for filterFeatures = "rfe". A logical: should variable importance be 
+#' re-calculated each time features are removed?
 #' @param positiveClass outcome value that must be considered as positive class
 #' (for categoric outcomes)
 #' @param continue_on_fail whether or not to continue training the models if any of them fail
@@ -85,6 +87,7 @@ getML <- function(expData,
                   repeatsCV=5,
                   filterFeatures=NULL,
                   filterSizes = seq(2,100, by = 2),
+                  rerank=FALSE,
                   continue_on_fail = TRUE,
                   positiveClass=NULL,
                   saveLogFile = NULL){
@@ -226,7 +229,8 @@ getML <- function(expData,
       if(filterFeatures=="rfe"){
         filterCtrl <- caret::rfeControl(functions = NULL,method = "cv", 
                                         verbose = FALSE,returnResamp = "final",
-                                        index = folds,allowParallel = TRUE)
+                                        index = folds,allowParallel = TRUE,
+                                        rerank=rerank)
       }
 
       tmp<-as.data.frame(training[,2:ncol(training)])
