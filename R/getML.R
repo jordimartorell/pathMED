@@ -517,10 +517,22 @@ getML <- function(expData,
   
   message("Training final model in all samples...")
   newData<-expData[,colnames(expData) %in% c("group",Finalfeatures)] 
+
+## Add aditional parameters for nnet
+if (colnames(stats)[1] == "nnet" & outcomeClass == "character"){
+  maxNW<-((length(Finalfeatures) + 1)*bestTune$.size[1]) + 
+        ((bestTune$.size[1] + 1)* length(unique(newData$group)))
+  additional_params <- list(MaxNWts = round(maxNW * 1.5,digits=0))
+} else {
+  additional_params <- list()
+}
+
+  
   if (continue_on_fail == TRUE) {
     fit.model <- withCallingHandlers(tryCatch(pathMED:::.removeOutText(caret::train(group ~ ., data = newData, 
                                                                                     method = colnames(stats)[1], 
-                                                                                    tuneGrid = bestTune)), 
+                                                                                    tuneGrid = bestTune,
+                                                                                    ... = additional_params)), 
                                               error = function(e) {
                                                 message(paste0("Error fitting the best model (", colnames(stats)[1], ") in all samples. NULL model returned. Try manually selecting a subset of samples and use the optimal parameters provided."))
                                                 NULL
