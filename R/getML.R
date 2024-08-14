@@ -88,7 +88,7 @@ getML <- function(expData,
                   filterFeatures=NULL,
                   filterSizes = seq(2,100, by = 2),
                   rerank=FALSE,
-                  continue_on_fail = TRUE,
+                  #continue_on_fail = TRUE,
                   positiveClass=NULL,
                   saveLogFile = NULL){
   if (!is.null(saveLogFile)) {
@@ -522,22 +522,40 @@ getML <- function(expData,
 if (colnames(stats)[1] == "nnet" & outcomeClass == "character"){
   maxNW<-((length(Finalfeatures) + 1)*bestTune$.size[1]) + 
         ((bestTune$.size[1] + 1)* length(unique(newData$group)))
-  additional_params <- list(MaxNWts = round(maxNW * 1.5,digits=0))
-} else {
-  additional_params <- list()
-}
+  #additional_params <- list(MaxNWts = round(maxNW * 1.5,digits=0))
 
-  
-  if (continue_on_fail == TRUE) {
-    fit.model <- withCallingHandlers(tryCatch(pathMED:::.removeOutText(caret::train(group ~ ., data = newData, 
-                                                                                    method = colnames(stats)[1], 
-                                                                                    tuneGrid = bestTune,
-                                                                                    ... = additional_params)), 
+  fit.model <- withCallingHandlers(tryCatch(pathMED:::.removeOutText(caret::train(group ~ ., data = newData, 
+                                                                                  method = colnames(stats)[1], 
+                                                                                   tuneGrid = bestTune, 
+                                                                                   MaxNWts = round(maxNW * 2,digits=0))), 
                                               error = function(e) {
                                                 message(paste0("Error fitting the best model (", colnames(stats)[1], ") in all samples. NULL model returned. Try manually selecting a subset of samples and use the optimal parameters provided."))
                                                 NULL
                                               }))
-  }
+  
+} else {
+
+    fit.model <- withCallingHandlers(tryCatch(pathMED:::.removeOutText(caret::train(group ~ ., data = newData, 
+                                                                                  method = colnames(stats)[1], 
+                                                                                   tuneGrid = bestTune)), 
+                                              error = function(e) {
+                                                message(paste0("Error fitting the best model (", colnames(stats)[1], ") in all samples. NULL model returned. Try manually selecting a subset of samples and use the optimal parameters provided."))
+                                                NULL
+                                              }))
+  
+}
+
+  
+  #if (continue_on_fail == TRUE) {
+    #fit.model <- withCallingHandlers(tryCatch(pathMED:::.removeOutText(caret::train(group ~ ., data = newData, 
+    #                                                                                method = colnames(stats)[1], 
+    #                                                                                tuneGrid = bestTune,
+    #                                                                                ... = additional_params)), 
+    #                                          error = function(e) {
+    #                                             message(paste0("Error fitting the best model (", colnames(stats)[1], ") in all samples. NULL model returned. Try manually selecting a subset of samples and use the optimal parameters provided."))
+    #                                            NULL
+    #                                          }))
+  #}
   message("Done")
   
   return(list(model=fit.model, stats=stats, bestTune=bestTune, subsample.preds = predsTable))
