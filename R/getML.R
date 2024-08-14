@@ -88,7 +88,7 @@ getML <- function(expData,
                   filterFeatures=NULL,
                   filterSizes = seq(2,100, by = 2),
                   rerank=FALSE,
-                  #continue_on_fail = TRUE,
+                  continue_on_fail = TRUE,
                   positiveClass=NULL,
                   saveLogFile = NULL){
   if (!is.null(saveLogFile)) {
