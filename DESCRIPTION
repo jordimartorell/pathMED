@@ -32,6 +32,7 @@ Imports:
     randomForest,
     stats,
     stringi,
+    dplyr,
     xgboost
 VignetteBuilder: knitr
 biocViews: Pathways,
