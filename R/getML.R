@@ -140,6 +140,10 @@ getML <- function(expData,
   if(is.factor(expData$group)){
     expData$group<-as.character(expData$group)
   }
+  if(expData %>% summarise(across(everything(), ~ any(is.na(.) | is.infinite(.)))) %>% any()){
+    stop("There are NA and/or Infinite values in your data, please replace or remove them before running getML")
+  }
+  
   outcomeClass <- class(expData$group)
   if (methods::is(expData$group, "character")){
     prior <- "MCC"
