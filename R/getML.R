@@ -531,7 +531,7 @@ if (colnames(stats)[1] == "nnet" & outcomeClass == "character"){
   fit.model <- withCallingHandlers(tryCatch(pathMED:::.removeOutText(caret::train(group ~ ., data = newData, 
                                                                                   method = colnames(stats)[1], 
                                                                                    tuneGrid = bestTune, 
-                                                                                   MaxNWts = round(maxNW * 2,digits=0))), 
+                                                                                   MaxNWts = round(maxNW * 10,digits=0))), 
                                               error = function(e) {
                                                 message(paste0("Error fitting the best model (", colnames(stats)[1], ") in all samples. NULL model returned. Try manually selecting a subset of samples and use the optimal parameters provided."))
                                                 NULL
