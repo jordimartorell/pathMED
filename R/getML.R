@@ -104,10 +104,10 @@ getML <- function(expData,
   if(!is.null(filterFeatures)){
     if(!filterFeatures %in% c("sbf","rfe")){
       stop("filterFeatures must be 'sbf', 'rfe', or NULL")
-    }
-  }else{
-    if(filterFeatures=="rfe"){
-      filterSizes <- filterSizes[filterSizes <= nrow(expData)]
+    }else{
+      if(filterFeatures=="rfe"){
+        filterSizes <- filterSizes[filterSizes <= nrow(expData)]
+      }
     }
   }
   ## 1. Formatting data input
