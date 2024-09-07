@@ -134,8 +134,8 @@ getML <- function(expData,
   expData <- data.frame('group'=metadata[,var2predict],
                         as.data.frame(t(expData)))
   colnames(expData) <- stringi::stri_replace_all_regex(
-    colnames(expData), pattern = c('/',' ','-'),
-    replacement = c('.','.','.'), vectorize=FALSE)
+    colnames(expData), pattern = c('/',' ','-',':'),
+    replacement = c('.','.','.','.'), vectorize=FALSE)
   expData <- expData[!is.na(expData$group),]
   if(is.factor(expData$group)){
     expData$group<-as.character(expData$group)
