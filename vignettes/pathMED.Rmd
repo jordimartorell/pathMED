@@ -143,7 +143,7 @@ molecular pathways between patients and healthy controls.
 This approach permits to compare the obtained results with the M-scores from 
 new data, even when the measured genes do not completely overlap.
 
-_getMscoresRef()_ function uses this **refData** object as input and calculates
+_createReference()_ function uses this **refData** object as input and calculates
 the M-scores for each gene set of the specified database. By default, Reactome
 is the used database, but the **genesets** parameter can be modified to use 
 KEGG ("kegg"),  transcriptional modules related with immune functions (“tmod”)
@@ -155,8 +155,8 @@ with a multi-core processor, use the **cores** parameter to specify the number
 of workers to be used (most of the pathMED functions include this parameter).
 
 ```{r, eval=TRUE, warning=FALSE, message=FALSE, results='hide'}
-refMscore <- getMscoresRef(data=refData,
-                           genesets="tmod",
+refMscore <- createReference(data=refData,
+                           geneSetsDB="tmod",
                            cores=1)
 ```
 
@@ -193,10 +193,8 @@ may be specified with the **nk** parameter. The output is a matrix with the
 M-score of each gene set (rows) and sample (columns).
 
 ```{r, warning=FALSE}
-MScoresExample <- getMscores(genesets = relevantPaths,
-                            Patient = exampleData,
-                            Healthy = NULL,
-                            nk = 5)
+MScoresExample <- getMscores(geneSets = relevantPaths,
+                            inputData = exampleData)
 MScoresExample[1:5, 1:5]
 ```
 

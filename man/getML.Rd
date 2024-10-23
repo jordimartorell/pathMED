@@ -9,9 +9,13 @@ getML(
   metadata,
   models = methodsML(outcomeClass = "character"),
   var2predict,
+  paired = NULL,
   Koutter = 5,
   Kinner = 4,
   repeatsCV = 5,
+  filterFeatures = NULL,
+  filterSizes = seq(2, 100, by = 2),
+  rerank = FALSE,
   continue_on_fail = TRUE,
   positiveClass = NULL,
   saveLogFile = NULL
@@ -30,13 +34,28 @@ this list}
 
 \item{var2predict}{character with the column name of the @metadata to predict}
 
-\item{Koutter}{number of Outter folds in which exp.data is split for neasted cold validation.
-A list of integer with elements for each resampling iteration is admitted. 
-Each list element is a vector of integers corresponding to the rows used for training at that iteration.}
+\item{paired}{character with the column name of the @metadata with paired information.
+Paired information is used to always asign samples from the same source (i.e. patient)
+to the same group (train or test). paired = NULL by default}
+
+\item{Koutter}{number of Outter folds in which exp.data is split for neasted
+cold validation.
+A list of integer with elements for each resampling iteration is admitted.
+Each list element is a vector of integers corresponding to the rows used for
+training at that iteration.}
 
 \item{Kinner}{number of cross-validation folds (for parameter tuning)}
 
 \item{repeatsCV}{number of repetitions of the parameter tuning process}
+
+\item{filterFeatures}{"rfe" (Recursive Feature Elimination), "sbf" (Selection
+By Filtering) or NULL (no feature selection)}
+
+\item{filterSizes}{Only for filterFeatures = "rfe". A numeric vector of integers
+corresponding to the number of features that should be retained}
+
+\item{rerank}{Only for filterFeatures = "rfe". A logical: should variable importance be
+re-calculated each time features are removed?}
 
 \item{continue_on_fail}{whether or not to continue training the models if any of them fail}
 
@@ -57,7 +76,7 @@ Build machine-learning based on gene-expression/mscores data
 \examples{
 data(refData, exampleData, exampleMetadata)
 \donttest{
-exampleRefMScore <- getMscoresRef(data=refData, genesets="tmod")
+exampleRefMScore <- createReference(data=refData, genesets="tmod")
 relevantPaths <- diseasePaths(MRef=exampleRefMScore,
 min_datasets=3,
 perc_samples=10)

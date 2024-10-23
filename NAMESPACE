@@ -2,11 +2,11 @@
 
 export(ann2term)
 export(buildRefData)
+export(createReference)
 export(diseasePaths)
 export(dissectDB)
 export(getML)
-export(getMscores)
-export(getMscoresRef)
+export(getScores)
 export(methodsML)
 export(splitPathways)
 import(ada)

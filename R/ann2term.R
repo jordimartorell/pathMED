@@ -7,7 +7,7 @@
 #' @author Daniel Toro-Dominguez, \email{daniel.toro@@genyo.es}
 #' @author Jordi Martorell-Marugan, \email{jordi.martorell@@genyo.es}
 #'
-#' @seealso \code{\link{getMscoresRef}}
+#' @seealso \code{\link{createReference}}
 #'
 #' @references Toro-Domínguez, D. et al (2022). \emph{Scoring personalized
 #' molecular portraits identify Systemic Lupus Erythematosus subtypes and
@@ -18,7 +18,7 @@
 #' @examples
 #' data(refData, exampleData, exampleMetadata)
 #' \donttest{
-#' exampleRefMScore <- getMscoresRef(data=refData, genesets="tmod")
+#' exampleRefMScore <- createReference(data=refData, genesets="tmod")
 #' relevantPaths <- diseasePaths(MRef=exampleRefMScore,
 #' min_datasets=3,
 #' perc_samples=10)

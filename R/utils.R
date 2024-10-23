@@ -2,22 +2,20 @@
 ## control distribution
 .getMscorePath <- function(path,
                            Patient,
-                           Healthy, 
-                           sqrtZmean = FALSE) {
-  genes.path <- Reduce(intersect, list(rownames(Healthy),
+                           HealthyMeanSD) {
+  genes.path <- Reduce(intersect, list(rownames(HealthyMeanSD),
                                        names(Patient),
                                        as.character(unlist(path))))
   path.mscore <- 0 # default
-  
+
   if (length(genes.path) > 2) {
     # at least 3 genes in each path
-    tmpRef <- Healthy[genes.path, ]
+    tmpRef <- HealthyMeanSD[genes.path, ]
     tmpPat <- Patient[genes.path]
-    
+
     # Zscore by path
     Zscore.genes <- (tmpPat - tmpRef[, 1]) / tmpRef[, 2]
-    if (sqrtZmean){path.mscore <- sum(Zscore.genes, na.rm = TRUE)/sqrt(length(Zscore.genes))
-    } else {path.mscore <- mean(Zscore.genes, na.rm = TRUE)}
+    path.mscore <- mean(Zscore.genes, na.rm = TRUE)
   }
   names(path.mscore) <- names(path)
   return(path.mscore)
@@ -40,16 +38,16 @@
                            k = 5) {
   patient <- .normSamples(patient[intersect(names(patient),
                                             rownames(Ref.norm))])
-  
+
   distances <- apply(Ref.norm, 2, function(x) {
     stats::dist(rbind(patient, x))
   })
   names(distances) <- colnames(Ref.norm)
-  
+
   distances <- distances[order(distances, decreasing = FALSE)]
   tmp.mscore <- Ref.mscore[, names(distances)[seq_len(k)]]
   tmp.mscore <- apply(tmp.mscore, 1, mean)
-  
+
   return(list(
     "mscores" = tmp.mscore,
     "distance" = mean(distances[seq_len(k)], na.rm = T)
@@ -82,7 +80,7 @@
     })
   all.genes$geneset <- unique(as.character(unlist(geneset.list)))
   common.genes <- Reduce(intersect, all.genes)
-  
+
   ## Reference gene-expression
   names(expr.list) <- NULL
   Reference <-
@@ -91,13 +89,13 @@
     })
   Reference <- do.call(cbind, Reference)
   Reference.normalized <- apply(Reference, 2, .normSamples)
-  
+
   ## Reference M-score
   Reference.mscore <- lapply(mscore.list, function(x) {
     return(x[names(geneset.list), ])
   })
   Reference.mscore <- do.call(cbind, Reference.mscore)
-  
+
   return(
     list(
       Reference.mscore = Reference.mscore,
@@ -122,13 +120,13 @@
 
 ## Function to created class-balanced fold
 .makeClassBalancedFolds <- function(y, kfold, repeats, varType, paired) {
-    
+
   ## kfolds by samples (only one sample by patient) ····························
-    if(is.null(paired)){ 
+    if(is.null(paired)){
       if (varType == "character") {
         y <- data.frame("value" = y, index = 1:length(y))
         y <- split(y, y$value)
-        
+
         splittedFolds <- lapply(y, function(x) {
           folds <- caret::createMultiFolds(x$index, k = kfold, repeats)
           res <- lapply(folds, function(i) { x[i, ]$index })
@@ -138,7 +136,7 @@
             as.integer(unname(splittedFolds[[r]][k])[[1]])
           })))
         })
-        
+
       } else{
         y <- data.frame("value" = y, index = 1:length(y))
         folds <- caret::createMultiFolds(y$index, k = kfold, repeats)
@@ -147,18 +145,18 @@
         })
       }
       return(listFolds)
-      
+
     ## kfolds by patients (several samples for each patient) ···················
-    }else{ 
-    
+    }else{
+
       if(varType=="character"){
-        
+
         groups<-unique(y)
         ids<-lapply(groups,function(x){
           return(unique(paired[y==x]))
         })
         names(ids)<-groups
-  
+
         subsets<-lapply(1:repeats,function(rp){
           ## Random initiation
           tmp.ids<-lapply(ids, sample)
@@ -167,12 +165,12 @@
                             "fold"=cut(seq_along(gr), breaks = kfold, labels = FALSE)))
           }))
           rownames(tmp.ids)<-NULL
-          
+
           ## Get folds of patients
           res<-list()
           for (f in unique(tmp.ids$fold)) {
             filtered_indices <- tmp.ids$index[tmp.ids$fold != f]
-            
+
             sampleSel<-1:length(paired)
             res[[as.character(f)]] <- sampleSel[paired %in% filtered_indices]
           }
@@ -181,10 +179,10 @@
         subsets<-unlist(subsets, recursive = FALSE)
         names(subsets)<-NULL
         return(subsets)
-    
+
       }else{
         ids<-unique(paired)
-    
+
         subsets<-lapply(1:repeats,function(rp){
           gr=ids[sample(1:length(ids),length(ids),replace = F)]
           tmp.ids<-data.frame("index"=gr,
@@ -193,7 +191,7 @@
           res<-list()
           for (f in unique(tmp.ids$fold)) {
             filtered_indices <- tmp.ids$index[tmp.ids$fold != f]
-            
+
             sampleSel<-1:length(paired)
             res[[as.character(f)]] <- sampleSel[paired %in% filtered_indices]
           }
@@ -201,8 +199,8 @@
         })
         subsets<-unlist(subsets, recursive = FALSE)
         names(subsets)<-NULL
-        
-        return(subsets) 
+
+        return(subsets)
       }
     }
   }
@@ -220,21 +218,21 @@
     if (all(is.na(pca_eig$`cumulative percentage of variance`))) {
       npcas = 0
     }
-    
+
     if (npcas > 1) {
       if (!is.null(maxSplits)) {
         if (npcas > maxSplits) {
           npcas = maxSplits
         }
       }
-      
+
       clust <- stats::kmeans(data, npcas)
       #data.sc <- scale(data)
-      
+
       if (!all(table(clust$cluster) >= minSplitSize)) {
         ## Check if here are small clusters
         pca <- stats::prcomp(data, scale = FALSE, center = FALSE)
-        
+
         ind <-
           factoextra::facto_summarize(pca,
                                       element = "ind",
@@ -242,10 +240,10 @@
                                       axes = c(1, 2))
         ind$cluster <- as.factor(clust$cluster)
         colnames(ind) <- c("name", "x", "y", "cood", "cluster")
-        
+
         clusterPaths <- ind
         distance <- NULL
-        
+
         # Distance between clusters (x,y)
         clusters <- as.numeric(unique(clusterPaths$cluster))
         clusters <- clusters[order(clusters, decreasing = F)]
@@ -265,7 +263,7 @@
           ))
         diag(distance) = NA
         rownames(distance) <- as.character(clusters)
-        
+
         ## Joint small clusters
         for (iter in 1:minSplitSize) {
           clusters <- table(clusterPaths$cluster)
@@ -283,7 +281,7 @@
           clusterPaths$cluster <-
             factor(clusterPaths$cluster, levels = unique(clusterPaths$cluster))
         }
-        
+
       } else{
         clusterPaths <- data.frame("name" = names(clust$cluster),
                                    "cluster" = as.numeric(clust$cluster))
@@ -291,12 +289,12 @@
         clusterPaths$cluster <-
           factor(clusterPaths$cluster, levels = unique(clusterPaths$cluster))
       }
-      
+
       if (cooccurrence) {
         p.list <- data.frame("cluster" = clusterPaths$cluster)
         rownames(p.list) <- clusterPaths$name
         return(p.list)
-        
+
       } else{
         paths <- split(clusterPaths, clusterPaths$cluster)
         p.list <- lapply(1:length(paths), function(pi) {
@@ -306,14 +304,14 @@
           paste0(path_name, ".split", seq(1:length(p.list)))
         return(p.list)
       }
-      
+
     } else{
       ## Only one K
       if (cooccurrence) {
         p.list <- data.frame("cluster" = rep(1, nrow(data)))
         rownames(p.list) <- rownames(data)
         return(p.list)
-        
+
       } else{
         p.list <- list(rownames(data))
         names(p.list) <- path_name

@@ -11,12 +11,12 @@ dissectDB(
   minPathSize = 10,
   minSplitSize = 3,
   maxSplits = NULL,
-  explainedvariance = 50,
+  explainedvariance = 60,
   percSharedgenes = 90
 )
 }
 \arguments{
-\item{data}{A refData object structure: a list of lists, each one with a 
+\item{data}{A refData object structure: a list of lists, each one with a
 cases expression matrix and controls expression matrix (named as Disease and Healthy)}
 
 \item{genesets}{character, name of the preloaded database (gobp, gomf, gocc,
@@ -48,6 +48,7 @@ Cluster pathways into pathway-components
 }
 \examples{
 data(refData)
+set.seed(1234)
 custom.tmod <- dissectDB(data=refData,
 genesets="tmod",
 customGeneset = NULL,
