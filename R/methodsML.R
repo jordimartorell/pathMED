@@ -1,14 +1,15 @@
-#' Prepare ML models
+#' Prepare the models parameter for getML the function
 #'
 #' @importFrom caretEnsemble caretModelSpec
-#' @param algorithms 'glm','lm','lda','xgbTree','rf','knn','svmLinear','nnet',
-#' 'svmRadial','nb','lars','rpart', 'gamboost', 'ada', 'brnn', 'enet' or 'all'
-#' (all algorithms are used)
+#' @param algorithms Vector with one or more of these methods: 'glm', 'lm',
+#' 'lda', 'xgbTree', 'rf', 'knn', 'svmLinear', 'nnet', 'svmRadial', 'nb',
+#' 'lars','rpart', 'gamboost', 'ada', 'brnn', 'enet', or 'all' to use all
+#' algorithms
 #' @param outcomeClass Predicted variable type ('character' or 'numeric')
 #' @param tuneLength maximum number of tuning parameter combinations
 #'
 #' @return A list with the selected models ready to use as the 'models'
-#' parameter in the getml() function
+#' parameter in the getML function
 #'
 #' @author Daniel Toro-Dominguez, \email{daniel.toro@@genyo.es}
 #' @author Jordi Martorell-Marugan, \email{jordi.martorell@@genyo.es}
@@ -24,13 +25,13 @@
 #' @examples
 #' methodsML(c('rf', 'knn'), tuneLength=20)
 #' @export
-methodsML <- function(algorithms = c("glm", "lm", "lda", "xgbTree", "rf",
-                                     "knn", "svmLinear", "svmRadial", "nnet", "nb", "lars",
-                                     "rpart", "ada", "gamboost"),
+methodsML <- function(algorithms = c('rf', 'knn', 'nb'),
                        outcomeClass = NULL,
-                       tuneLength = 15){
+                       tuneLength = 20){
+
     if (is.null(outcomeClass)) {
-      stop("outcomeClass is missing, please specify whether the variable to predict is character or numeric.")
+      stop('outcomeClass is missing, please specify whether the variable to
+           predict is character or numeric.')
     }
     if('all' %in% algorithms){
         algorithms <- c('glm', 'lm', 'lda', 'xgbTree', 'rf', 'knn', 'svmLinear',
@@ -76,16 +77,21 @@ methodsML <- function(algorithms = c("glm", "lm", "lda", "xgbTree", "rf",
 
     algorithmsGood <- algorithms[algorithms %in% unlist(
         availableMethods[outcomeClass])]
+
     if (length(algorithmsGood) < 1) {
         stop(paste0('Selected algorithms do not work with ', outcomeClass,
                     ' outcome variables.'))
     }
+
     removedAlg <- setdiff(algorithms, algorithmsGood)
+
     if (length(removedAlg) > 0 & !('all' %in% algorithms)) {
         warning(paste0('Methods ', paste(removedAlg, collapse=", "),
                        ' have been removed. Not suitable for ', outcomeClass,
                        ' outcome variables.'))
     }
+
     methodList <- methodList[algorithmsGood]
+
     return(methodList)
 }

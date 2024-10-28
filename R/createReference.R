@@ -70,7 +70,8 @@ createReference <- function(datasetsList,
         geneSets=geneSets,
         HealthyMeanSD=HealthyMeanSD,
         .getMscorePath = .getMscorePath,
-        BPPARAM=BiocParallel::SnowParam(workers=workers, progressbar=TRUE))
+        BPPARAM=BiocParallel::SnowParam(workers=workers, progressbar=TRUE,
+                                        exportglobals = FALSE))
 
         res <- do.call("cbind", res)
         colnames(res) <- colnames(PatientData)
