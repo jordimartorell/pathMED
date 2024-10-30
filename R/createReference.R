@@ -34,7 +34,7 @@ createReference <- function(datasetsList,
         geneSets <- genesetsData[[geneSets]]
     }
 
-    nDatasets <- length(data)
+    nDatasets <- length(datasetsList)
 
     mscores <- lapply(seq_len(nDatasets), function (i) {
         dataset <- datasetsList[[i]]
