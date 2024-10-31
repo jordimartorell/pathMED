@@ -78,7 +78,7 @@ createReference <- function(datasetsList,
         return(res)
     })
     if(!is.null(names(input))){
-      names(mscores)<-names(input
+      names(mscores)<-names(input)
     }
     return(list(mscores=mscores, geneSets=geneSets, input=datasetsList))
 }
