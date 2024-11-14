@@ -94,7 +94,8 @@ diseasePaths <- function(MRef,
        geom_vline(xintercept = perc_samples, linetype = "dashed", color = "grey")+
        scale_x_continuous(breaks = round(seq(min(all$perc_samples), max(all$perc_samples), by = 5),1)) +
        scale_y_continuous(breaks = round(seq(min(all$selected_paths), max(all$selected_paths), by = as.integer(max(all$selected_paths)/10)),1))
-      if (any(endsWith(names(MRef[["genesets"]]), ".split1"))) {
+      plot2<-FALSE # For the moment, plot2 is not needed
+      if (grepl("\\.split",names(MRef[["genesets"]])) & plot2) {  # any(endsWith(names(MRef[["genesets"]]), ".split1"))
         splitted_annotations.pre = names(MRef[["genesets"]])
         splitted_annotations.post = names(genesets)
 
