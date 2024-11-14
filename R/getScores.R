@@ -57,7 +57,7 @@ getScores <- function(inputData,
         inputData <- as.matrix(inputData)
     }
 
-    if(!is(geneSets, list)) {
+    if(!is(geneSets, "list")) {
         geneSets <- genesetsData[[geneSetsDB]]
     }
 
