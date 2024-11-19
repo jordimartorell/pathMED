@@ -63,7 +63,7 @@ getScores <- function(inputData,
 
     if (method %in% c("GSVA", "ssGSEA", "Z-score", "Plage")) {
         if (method == "GSVA") {
-            paramMatrix <- GSVA::gsvaParam(inputData, geneSets, kcdf = "auto",
+            paramMatrix <- GSVA::gsvaParam(inputData, geneSets, kcdf = "Gaussian",
                                            ...)
         }
         else if (method == "ssGSEA") {
