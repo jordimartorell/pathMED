@@ -98,12 +98,13 @@ dissectDB<-function(data,genesets,customGeneset = NULL, minPathSize = 10,
   new.path.list<-list()
   for(p in 1:length(path.list)){ ## Loop for each pathway
     path_name <- names(path.list)[p]
-    if(verbose){
-      cat(paste0("Dissecting path: ",path_name,". Nº genes: ",length(path.list[p])), "\r")
-    }
     if(length(path.list)>1){setTxtProgressBar(pb,p)}
     if(length(z.data)==1){ ## One dataset - kmeans clustering ··················
       genes <- intersect(path.list[[path_name]], rownames(z.data[[1]]))
+
+      if(verbose){
+         cat(paste0("Dissecting path: ",path_name,". Nº genes: ",length(genes)), "\r")
+      }
       
       if(length(genes) > minPathSize){
         tmp<-z.data[[1]][genes,]
@@ -127,6 +128,10 @@ dissectDB<-function(data,genesets,customGeneset = NULL, minPathSize = 10,
       
       clusters.p<-lapply(1:length(z.data),function(d){ ## lapply loop - datasets
         genes <- intersect(path.list[[path_name]], rownames(z.data[[d]]))
+
+        if(verbose){
+           cat(paste0("Dissecting path: ",path_name,". Nº genes: ",length(genes)), "\r")
+        }
         
         if(length(genes) > minPathSize){
           tmp<-z.data[[d]][genes,]
