@@ -16,8 +16,8 @@
 #' within a pathway. This parameter is used to select the number of subdivisions
 #' of a pathway that manage to explain at least the percentage of variance
 #' defined by explainedvariance.
-#' @param verbose boolean, this parameters is used to print more information
-#' of the status of the process
+## @param verbose boolean, this parameters is used to print more information
+## of the status of the process
 #'
 #' @return A list with all pathways and pathway-subdivisions and their involved
 #' genes
@@ -47,7 +47,7 @@
 
 dissectDB<-function(data,genesets,customGeneset = NULL, minPathSize = 10,
                     minSplitSize = 3, maxSplits=NULL,explainedvariance = 60,
-                    percSharedgenes = 90, verbose = FALSE){
+                    percSharedgenes = 90){ #, verbose = FALSE){
   
   ## 1. Get zscores by gene
   z.data<-lapply(data,function(x){
@@ -102,9 +102,7 @@ dissectDB<-function(data,genesets,customGeneset = NULL, minPathSize = 10,
     if(length(z.data)==1){ ## One dataset - kmeans clustering ··················
       genes <- intersect(path.list[[path_name]], rownames(z.data[[1]]))
 
-      if(verbose){
-         cat(paste0("Dissecting path: ",path_name,". Nº genes: ",length(genes)), "\r")
-      }
+      # if(verbose){ cat(paste0("Dissecting path: ",path_name,". Nº genes: ",length(genes)), "\r") }
       
       if(length(genes) > minPathSize){
         tmp<-z.data[[1]][genes,]
@@ -129,9 +127,7 @@ dissectDB<-function(data,genesets,customGeneset = NULL, minPathSize = 10,
       clusters.p<-lapply(1:length(z.data),function(d){ ## lapply loop - datasets
         genes <- intersect(path.list[[path_name]], rownames(z.data[[d]]))
 
-        if(verbose){
-           cat(paste0("Dissecting path: ",path_name,". Nº genes: ",length(genes)), "\r")
-        }
+        # if(verbose){ cat(paste0("Dissecting path: ",path_name,". Nº genes: ",length(genes)), "\r") }
         
         if(length(genes) > minPathSize){
           tmp<-z.data[[d]][genes,]
