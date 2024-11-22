@@ -99,7 +99,7 @@ dissectDB<-function(data,genesets,customGeneset = NULL, minPathSize = 10,
   for(p in 1:length(path.list)){ ## Loop for each pathway
     path_name <- names(path.list)[p]
     if(verbose){
-      cat(paste0("Dissecting path: ",path_name,". Nº genes: ",length(path.list[p])))
+      cat(paste0("Dissecting path: ",path_name,". Nº genes: ",length(path.list[p])), "\r")
     }
     if(length(path.list)>1){setTxtProgressBar(pb,p)}
     if(length(z.data)==1){ ## One dataset - kmeans clustering ··················
