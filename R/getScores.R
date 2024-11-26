@@ -58,7 +58,7 @@ getScores <- function(inputData,
     }
 
     if(!is(geneSets, "list")) {
-        geneSets <- genesetsData[[geneSetsDB]]
+        geneSets <- genesetsData[[geneSets]]
     }
 
     if (method %in% c("GSVA", "ssGSEA", "Z-score", "Plage")) {
