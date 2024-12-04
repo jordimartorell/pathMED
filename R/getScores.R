@@ -43,19 +43,6 @@ getScores <- function(inputData,
         inputData <- as.matrix(inputData)
     }
 
-    if (is.null(externalReference)) {
-        if (is.null(geneSets)) {
-            stop("If externalReference is not provided, geneSets must be specified")
-        }
-        if(!is(geneSets, "list")) {
-            geneSets <- genesetsData[[geneSets]]
-        }
-    }
-    else {
-        geneSets <- externalReference[["geneSets"]]
-    }
-
-
 
     if (method %in% c("GSVA", "ssGSEA", "Z-score", "Plage")) {
         if (method == "GSVA") {
@@ -63,8 +50,7 @@ getScores <- function(inputData,
             params<-params[names(params) %in% c("minSize","maxSize","kcdfNoneMinSampleSize",
                                      "tau","maxDiff","absRanking","sparse","checkNA","use")]
 
-            paramMatrix <-  do.call(GSVA::gsvaParam, 
-                                    c(list(inputData, geneSets, kcdf = "Gaussian"), params))
+            paramMatrix <-  do.call(GSVA::gsvaParam, c(list(inputData, geneSets, kcdf = "Gaussian"), params))
         }
         else if (method == "ssGSEA") {
             paramMatrix <- GSVA::ssgseaParam(inputData, geneSets, ...)
