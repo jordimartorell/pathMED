@@ -4,14 +4,7 @@
 \alias{getScores}
 \title{Calculate pathways scores for a dataset}
 \usage{
-getScores(
-  inputData,
-  geneSets = NULL,
-  method = "GSVA",
-  labels = NULL,
-  cores = 1,
-  ...
-)
+getScores(inputData, geneSets, method = "GSVA", labels = NULL, cores = 1, ...)
 }
 \arguments{
 \item{inputData}{Data matrix or data frame.}

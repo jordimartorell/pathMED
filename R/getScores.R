@@ -33,7 +33,7 @@
 #' MScoresExample <- getScores(exampleData, geneSets = "tmod")
 #' @export
 getScores <- function(inputData,
-                      geneSets = NULL,
+                      geneSets,
                       method = "GSVA",
                       labels = NULL,
                       cores = 1,
