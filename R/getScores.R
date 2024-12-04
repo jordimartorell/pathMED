@@ -59,8 +59,12 @@ getScores <- function(inputData,
 
     if (method %in% c("GSVA", "ssGSEA", "Z-score", "Plage")) {
         if (method == "GSVA") {
-            paramMatrix <- GSVA::gsvaParam(inputData, geneSets, kcdf = "Gaussian",
-                                           ...)
+            params<-list(...)
+            params<-params[names(params) %in% c("minSize","maxSize","kcdfNoneMinSampleSize",
+                                     "tau","maxDiff","absRanking","sparse","checkNA","use")]
+
+            paramMatrix <-  do.call(GSVA::gsvaParam, 
+                                    c(list(inputData, geneSets, kcdf = "Gaussian"), params))
         }
         else if (method == "ssGSEA") {
             paramMatrix <- GSVA::ssgseaParam(inputData, geneSets, ...)
