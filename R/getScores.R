@@ -142,7 +142,7 @@ getScores <- function(inputData,
 
         else if (method %in% c("FGSEA", "norm_FGSEA")) {
             scoreMatrix <- decoupleR::run_fgsea(mat=inputData, network=net,
-                                                nproc=cores, ...)
+                                                nproc=cores, times = 1, ...)
             if (method == "fGSEA") {
                 scoreMatrix <- as.data.frame(
                     scoreMatrix[scoreMatrix$statistic=="fgsea",
