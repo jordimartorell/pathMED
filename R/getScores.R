@@ -3,12 +3,12 @@
 #' @param inputData Data matrix or data frame.
 #' @param geneSets A named list with each
 #' gene set or the name of one preloaded database (gobp, gomf, gocc,
-#' kegg, reactome, tmod)
+#' kegg, reactome, tmod).
 #' @param method Scoring method: M-score, GSVA, ssGSEA, singscore, Z-score,
 #' Plage, AUCell, MDT, MLM, ORA, UDT, ULM, FGSEA, norm_FGSEA, WMEAN, norm_WMEAN,
 #' corr_WMEAN, WSUM, norm_WSUM or corr_WSUM.
 #' @param externalReference (Only for M-Score) External reference created with
-#' the createReference function. Optional.
+#' the createReference function. It is used  Optional.
 #' @param labels (Only for M-Score) Vector with the samples class labels (0 or
 #' "Healthy" for control samples). Optional.
 #' @param nk (Only for M-Score) If no reference samples are supplied, number of
@@ -40,11 +40,11 @@
 #' exampleRefMScore <- createReference(data=refData, geneSets="tmod")
 #' relevantPaths <- diseasePaths(MRef=exampleRefMScore, min_datasets=3,
 #' perc_samples=10)
-#' MScoresExample <- getMscores(geneSets = relevantPaths, Patient = exampleData,
+#' MScoresExample <- getScores(geneSets = relevantPaths, Patient = exampleData,
 #' Healthy = NULL, nk = 5)
 #' @export
 getScores <- function(inputData,
-                      geneSets,
+                      geneSets = NULL,
                       method = "GSVA",
                       externalReference = NULL,
                       labels = NULL,
@@ -57,9 +57,19 @@ getScores <- function(inputData,
         inputData <- as.matrix(inputData)
     }
 
-    if(!is(geneSets, "list")) {
-        geneSets <- genesetsData[[geneSets]]
+    if (is.null(externalReference)) {
+        if (is.null(geneSets)) {
+            stop("If externalReference is not provided, geneSets must be specified")
+        }
+        if(!is(geneSets, "list")) {
+            geneSets <- genesetsData[[geneSets]]
+        }
     }
+    else {
+        geneSets <- externalReference[["geneSets"]]
+    }
+
+
 
     if (method %in% c("GSVA", "ssGSEA", "Z-score", "Plage")) {
         if (method == "GSVA") {
@@ -112,32 +122,32 @@ getScores <- function(inputData,
             if (method == "AUCell") {
                 scoreMatrix <- decoupleR::run_aucell(mat=inputData, network=net,
                                                      nproc=cores,
-                                                     minsize=1, ...)
+                                                     ...)
             }
 
             else if (method == "MDT") {
                 scoreMatrix <- decoupleR::run_mdt(mat=inputData, network=net,
-                                                  nproc=cores, minsize=1, ...)
+                                                  nproc=cores, ...)
             }
 
             else if (method == "MLM") {
                 scoreMatrix <- decoupleR::run_mlm(mat=inputData, network=net,
-                                                  minsize=1, ...)
+                                                  ...)
             }
 
             else if (method == "ORA") {
                 scoreMatrix <- decoupleR::run_ora(mat=inputData, network=net,
-                                                  minsize=1, ...)
+                                                  ...)
             }
 
             else if (method == "UDT") {
                 scoreMatrix <- decoupleR::run_udt(mat=inputData, network=net,
-                                                  minsize=1, ...)
+                                                  ...)
             }
 
             else if (method == "ULM") {
                 scoreMatrix <- decoupleR::run_ulm(mat=inputData, network=net,
-                                                  minsize=1, ...)
+                                                  ...)
             }
 
             scoreMatrix <- as.data.frame(scoreMatrix[,c("source","condition",
@@ -146,7 +156,7 @@ getScores <- function(inputData,
 
         else if (method %in% c("FGSEA", "norm_FGSEA")) {
             scoreMatrix <- decoupleR::run_fgsea(mat=inputData, network=net,
-                                                nproc=cores, minsize=1, ...)
+                                                nproc=cores, ...)
             if (method == "fGSEA") {
                 scoreMatrix <- as.data.frame(
                     scoreMatrix[scoreMatrix$statistic=="fgsea",
@@ -161,7 +171,7 @@ getScores <- function(inputData,
 
         else if (method %in% c("WMEAN", "norm_WMEAN", "corr_WMEAN")) {
             scoreMatrix <- decoupleR::run_wmean(mat=inputData, network=net,
-                                                minsize=1, ...)
+                                                ...)
             if (method == "WMEAN") {
                 scoreMatrix <- as.data.frame(
                     scoreMatrix[scoreMatrix$statistic=="wmean",
@@ -181,7 +191,7 @@ getScores <- function(inputData,
 
         else if (method %in% c("WSUM", "norm_WSUM", "corr_WSUM")) {
             scoreMatrix <- decoupleR::run_wsum(mat=inputData, network=net,
-                                               minsize=1, ...)
+                                               ...)
             if (method == "WSUM") {
                 scoreMatrix <- as.data.frame(
                     scoreMatrix[scoreMatrix$statistic=="wsum",
@@ -241,7 +251,7 @@ getScores <- function(inputData,
                     stop("No Healthy controls nor Reference included")
                 }
             }
-        }else{
+        } else{
             if(is.null(HealthyData)){
                 stop("No Healthy controls nor Reference included")
             }

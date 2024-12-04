@@ -69,7 +69,7 @@ createReference <- function(datasetsList,
         geneNames=rownames(PatientData),
         geneSets=geneSets,
         HealthyMeanSD=HealthyMeanSD,
-        .getMscorePath = .getMscorePath,
+        .getMscorePath=.getMscorePath,
         BPPARAM=BiocParallel::SnowParam(workers=workers, progressbar=TRUE,
                                         exportglobals = FALSE))
 
