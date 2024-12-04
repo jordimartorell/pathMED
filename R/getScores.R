@@ -43,32 +43,35 @@ getScores <- function(inputData,
         inputData <- as.matrix(inputData)
     }
 
-
+    params<-list(...)
     if (method %in% c("GSVA", "ssGSEA", "Z-score", "Plage")) {
         if (method == "GSVA") {
-            params<-list(...)
             params<-params[names(params) %in% c("minSize","maxSize","kcdfNoneMinSampleSize",
                                      "tau","maxDiff","absRanking","sparse","checkNA","use")]
-
             paramMatrix <-  do.call(GSVA::gsvaParam, c(list(inputData, geneSets, kcdf = "Gaussian"), params))
         }
         else if (method == "ssGSEA") {
-            paramMatrix <- GSVA::ssgseaParam(inputData, geneSets, ...)
+            params<-params[names(params) %in% c("minSize", "maxSize", "alpha", "normalize",
+                                                "checkNA","use")]
+            paramMatrix <-  do.call(GSVA::ssgseaParam, c(list(inputData, geneSets), params))
         }
         else if (method == "Z-score") {
-            paramMatrix <- GSVA::zscoreParam(inputData, geneSets, ...)
+            params<-params[names(params) %in% c("minSize", "maxSize")]
+            paramMatrix <-  do.call(GSVA::zscoreParam, c(list(inputData, geneSets), params))
         }
         else {
-            paramMatrix <- GSVA::plageParam(inputData, geneSets, ...)
+            params<-params[names(params) %in% c("minSize", "maxSize")]
+            paramMatrix <-  do.call(GSVA::plageParam, c(list(inputData, geneSets), params))
         }
         res <- GSVA::gsva(paramMatrix,
                           BPPARAM=BiocParallel::SnowParam(workers=cores))
     }
 
     else if (method == "singscore") {
+        params<-params[names(params) %in% c("subSamples","centerScore","dispersionFun","knownDirection")]
         rankMatrix <- singscore::rankGenes(inputData, tiesMethod = "average")
         listSing <- lapply(geneSets, function(x) {
-            singscore::simpleScore(rankData = rankMatrix, upSet = x, ...)
+            do.call(singscore::simpleScore, c(list(rankData = rankMatrix, upSet = x), params))
             })
         listScores <- sapply(listSing, function(x) x$TotalScore)
         if(is(listScores, "list")) {
