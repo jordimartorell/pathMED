@@ -2,10 +2,11 @@
 
 export(ann2term)
 export(buildRefObject)
-export(diseasePaths)
 export(dissectDB)
 export(getScores)
 export(mScores_createReference)
+export(mScores_filterPaths)
+export(mScores_imputeFromReference)
 export(methodsML)
 export(predictExternal)
 export(trainModel)

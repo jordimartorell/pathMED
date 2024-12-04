@@ -7,15 +7,8 @@
 #' @param method Scoring method: M-score, GSVA, ssGSEA, singscore, Z-score,
 #' Plage, AUCell, MDT, MLM, ORA, UDT, ULM, FGSEA, norm_FGSEA, WMEAN, norm_WMEAN,
 #' corr_WMEAN, WSUM, norm_WSUM or corr_WSUM.
-#' @param externalReference (Only for M-Score) External reference created with
-#' the createReference function. It is used  Optional.
 #' @param labels (Only for M-Score) Vector with the samples class labels (0 or
 #' "Healthy" for control samples). Optional.
-#' @param nk (Only for M-Score) If no reference samples are supplied, number of
-#' most similar samples from the external reference to impute M-scores.
-#' @param imputeAll (Only for M-Score) By default, only samples that do not
-#' surpass the distance of 30 with the external reference are imputed. If TRUE,
-#' impute all samples.
 #' @param cores Number of cores to be used.
 #' @param ... Additional parameters for the scoring functions.
 #'
@@ -27,7 +20,7 @@
 #' @author Daniel Toro-Dominguez, \email{daniel.toro@@genyo.es}
 #' @author Jordi Martorell-Marugan, \email{jordi.martorell@@genyo.es}
 #'
-#' @seealso \code{\link{diseasePaths}}, \code{\link{getML}}
+#' @seealso \code{\link{mScores_filterPaths }}, \code{\link{getML}}
 #'
 #' @references Toro-Domínguez, D. et al (2022). \emph{Scoring personalized
 #' molecular portraits identify Systemic Lupus Erythematosus subtypes and
@@ -42,10 +35,7 @@
 getScores <- function(inputData,
                       geneSets = NULL,
                       method = "GSVA",
-                      externalReference = NULL,
                       labels = NULL,
-                      nk = 25,
-                      imputeAll = FALSE,
                       cores = 1,
                       ...){
 
@@ -214,122 +204,55 @@ getScores <- function(inputData,
 
     else if (method == "M-score") {
 
-        if (is.null(externalReference) & is.null(labels)) {
-            stop("Either externalReference or labels parameters must be used
+        if (is.null(labels)) {
+            stop("Labels parameter must be used
                  for M-Scores method")
         }
 
-        if (is.null(labels) | length(unique(labels)) == 1) {
-            Patient <- inputData
-            HealthyData <- NULL
+
+        if (0 %in% labels) {
+            HealthyData <- inputData[, labels==0]
+            PatientData <- inputData[, labels!=0]
+        }
+        else if ("Healthy" %in% labels) {
+            HealthyData <- inputData[, labels=="Healthy"]
+            PatientData <- inputData[, labels!="Healthy"]
         }
         else {
-            if (0 %in% labels) {
-                HealthyData <- inputData[, labels==0]
-                PatientData <- inputData[, labels!=0]
-            }
-            else if ("Healthy" %in% labels) {
-                HealthyData <- inputData[, labels=="Healthy"]
-                PatientData <- inputData[, labels!="Healthy"]
-            }
-            else {
-                stop("Reference samples in labels must be specified with 0 or
-                     'Healthy'")
-            }
+            stop("Reference samples in labels must be specified with 0 or
+                 'Healthy'")
         }
 
-        # Review when the geneSets input is clear
-        if(length(geneSets) > 1){
-            if(names(geneSets)[2]=="reference"){
-                externalReference <- geneSets[[2]]
-            }else{
-                if(is.null(HealthyData)){
-                    stop("No Healthy controls nor Reference included")
-                }
-            }
-        } else{
-            if(is.null(HealthyData)){
-                stop("No Healthy controls nor Reference included")
-            }
-        }
 
-        if (is.null(HealthyData)) {
-            message("No healthy samples supplied. Calculating M-Scores by ",
-                    "similarity with samples from external reference for ",
-                    ncol(geneSets), " patients")
+        message("Healthy samples supplied. Calculating M-Scores using ",
+                "healthy samples as reference for ", ncol(PatientData),
+                " patients")
 
-            genes <- intersect(rownames(geneSets),
-                               rownames(externalReference$Reference.normalized))
-            geneSets <- geneSets[genes,]
+        HealthyMean <- rowMeans(HealthyData, na.rm = TRUE)
+        HealthySD <- apply(HealthyData, 1, function(x) {sd(x,
+                                                           na.rm = TRUE)})
+        HealthyMeanSD <- cbind(HealthyMean, HealthySD)
 
-            Mscores <- pbapply::pbapply(geneSets, 2, function(x) {
-                names(x) <- genes
-                res.l <- .getNearSample(patient=x,
-                                        Ref.norm=externalReference$
-                                            Reference.normalized[genes,],
-                                        Ref.mscore=externalReference$
-                                            Reference.mscore,
-                                        k=nk)
-            })
+        HealthyMeanSD <- HealthyMeanSD[HealthyMeanSD[,2] != 0,]
 
-            Mscores <- do.call("cbind",lapply(Mscores,function(m.x){
-                if (imputeAll == TRUE) {
-                    return(m.x$mscores)
-                }
-                else if(m.x$distance <= 30){
-                    return(m.x$mscores)
-                }
-            }))
+        res <- BiocParallel::bplapply(seq_len(ncol(PatientData)),
+                                      function(column, geneSets,
+                                               HealthyMeanSD) {
+            Patient <- PatientData[,column, drop=TRUE]
+            res.i <- lapply(geneSets,
+                            .getMscorePath,
+                            HealthyMeanSD=HealthyMeanSD,
+                            Patient=Patient)
+            res.i <- as.data.frame(do.call("rbind", res.i))
+            return(res.i)
+        },
+        geneSets=geneSets,
+        HealthyMeanSD=HealthyMeanSD,
+        BPPARAM=BiocParallel::SnowParam(workers = cores, progressbar=TRUE))
 
-            if(!is.null(Mscores)){
-                if(ncol(PatientData) != ncol(Mscores)){
-                    message("Distance between expression of ",
-                            abs(ncol(PatientData) - ncol(Mscores))," patients ",
-                            "and k-samples from Patient-reference are higher ",
-                            "than 30. Mscores ",
-                            "for these patients will not be imputed...")
-                }
-            }else{
-                message("Distance between expression of ", ncol(PatientData),
-                        " patients and ",
-                        "k-samples from Patient-reference are higher ",
-                        "than 30. Mscores ",
-                        "for these patients will not be imputed...")
-            }
+        res <- do.call("cbind", res)
+        colnames(res) <- colnames(PatientData)
 
-            res <- Mscores
-
-        }
-        else {
-            message("Healthy samples supplied. Calculating M-Scores using ",
-                    "healthy samples as reference for ", ncol(PatientData),
-                    " patients")
-
-            HealthyMean <- rowMeans(HealthyData, na.rm = TRUE)
-            HealthySD <- apply(HealthyData, 1, function(x) {sd(x,
-                                                               na.rm = TRUE)})
-            HealthyMeanSD <- cbind(HealthyMean, HealthySD)
-
-            HealthyMeanSD <- HealthyMeanSD[HealthyMeanSD[,2] != 0,]
-
-            res <- BiocParallel::bplapply(seq_len(ncol(PatientData)),
-                                          function(column, geneSets,
-                                                   HealthyMeanSD) {
-                Patient <- PatientData[,column, drop=TRUE]
-                res.i <- lapply(geneSets,
-                                .getMscorePath,
-                                HealthyMeanSD=HealthyMeanSD,
-                                Patient=Patient)
-                res.i <- as.data.frame(do.call("rbind", res.i))
-                return(res.i)
-            },
-            geneSets=geneSets,
-            HealthyMeanSD=HealthyMeanSD,
-            BPPARAM=BiocParallel::SnowParam(workers = cores, progressbar=TRUE))
-
-            res <- do.call("cbind", res)
-            colnames(res) <- colnames(PatientData)
-        }
     }
 
     return(res)

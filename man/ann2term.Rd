@@ -19,7 +19,7 @@ Annotate pathways
 data(refData, exampleData, exampleMetadata)
 \donttest{
 exampleRefMScore <- mScores_createReference(data=refData, genesets="tmod")
-relevantPaths <- diseasePaths(MRef=exampleRefMScore,
+relevantPaths <- mScores_filterPaths (MRef=exampleRefMScore,
 min_datasets=3,
 perc_samples=10)
 

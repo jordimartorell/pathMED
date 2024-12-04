@@ -26,10 +26,10 @@
 #' @examples
 #' data(refData)
 #' exampleRefMScore <- mScores_createReference(data=refData, genesets="tmod")
-#' relevantPaths <- diseasePaths(MRef=exampleRefMScore, min_datasets=3,
+#' relevantPaths <- mScores_filterPaths (MRef=exampleRefMScore, min_datasets=3,
 #' perc_samples=10)
 #' @export
-diseasePaths <- function(MRef,
+mScores_filterPaths  <- function(MRef,
                          min_datasets=round(length(MRef[[1]]) * 0.34),
                          perc_samples=10,
                          Pcutoff=0.05,
