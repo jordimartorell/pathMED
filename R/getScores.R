@@ -93,7 +93,17 @@ getScores <- function(inputData,
                               "target"=as.character(geneSets[[x]]),
                               "weight"=rep(1,length(geneSets[[x]])),
                               "mor"=rep(1,length(geneSets[[x]])))
-            return(res)
+            
+          # Filter pathways by collinearity
+          #' @param collinearity_threshold must be a number between 0 and 1
+          if("collinearity_threshold" %in% names(params)){
+              co.lin<-as.data.frame(decoupleR::check_corr(net,.source = "source",.target = "target",
+                                                          .mor = "mor",.likelihood = NULL))
+              net<-net[!net$source %in% as.character(co.lin[co.lin$correlation > 
+                                                            as.numeric(params[["collinearity_threshold"]]),"source"]),]
+          }
+          
+          return(res)
         }))
 
         if (method %in% c("AUCell", "MDT", "MLM", "ORA", "UDT", "ULM")) {
