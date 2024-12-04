@@ -99,38 +99,44 @@ getScores <- function(inputData,
         if (method %in% c("AUCell", "MDT", "MLM", "ORA", "UDT", "ULM")) {
 
             if (method == "AUCell") {
-                scoreMatrix <- decoupleR::run_aucell(mat=inputData, network=net,
-                                                     nproc=cores,
-                                                     ...)
+                params<-params[names(params) %in% c("aucMaxRank","seed","minsize")]
+                scoreMatrix <-do.call(decoupleR::run_aucell, c(list(mat=inputData, network=net,
+                                       nproc=cores,.source="source",.target="tardet"),params))
             }
 
             else if (method == "MDT") {
-                scoreMatrix <- decoupleR::run_mdt(mat=inputData, network=net,
-                                                  nproc=cores, ...)
+                params<-params[names(params) %in% c("center","na.rm","trees","min_n","seed","minsize")]
+                scoreMatrix <-do.call(decoupleR::run_mdt, c(list(mat=inputData, network=net,
+                                       nproc=cores,.source="source",.target="tardet",.mor="mor"),params))
             }
 
             else if (method == "MLM") {
-                scoreMatrix <- decoupleR::run_mlm(mat=inputData, network=net,
-                                                  ...)
+                params<-params[names(params) %in% c("center","na.rm","minsize")]
+                scoreMatrix <-do.call(decoupleR::run_mlm, c(list(mat=inputData, network=net,
+                                       .source="source",.target="tardet",.mor="mor"),params))
             }
 
             else if (method == "ORA") {
-                scoreMatrix <- decoupleR::run_ora(mat=inputData, network=net,
-                                                  ...)
+                params<-params[names(params) %in% c("n_up","n_bottom","n_background","with_ties","seed",
+                                                    "minsize")]
+                scoreMatrix <-do.call(decoupleR::run_ora, c(list(mat=inputData, network=net,
+                                       .source="source",.target="tardet"),params))
             }
 
             else if (method == "UDT") {
-                scoreMatrix <- decoupleR::run_udt(mat=inputData, network=net,
-                                                  ...)
+                params<-params[names(params) %in% c("center","na.rm","min_n","seed","minsize")]
+                scoreMatrix <-do.call(decoupleR::run_udt, c(list(mat=inputData, network=net,
+                                       .source="source",.target="tardet",.mor="mor"),params))
             }
 
             else if (method == "ULM") {
-                scoreMatrix <- decoupleR::run_ulm(mat=inputData, network=net,
-                                                  ...)
+                params<-params[names(params) %in% c("center","na.rm","minsize")]
+                scoreMatrix <-do.call(decoupleR::run_ulm, c(list(mat=inputData, network=net,
+                                       .source="source",.target="tardet",.mor="mor"),params))
             }
 
-            scoreMatrix <- as.data.frame(scoreMatrix[,c("source","condition",
-                                                        "score")])
+            scoreMatrix <- as.data.frame(scoreMatrix[,c("source","condition","score")])
+          
         }
 
         else if (method %in% c("FGSEA", "norm_FGSEA")) {
