@@ -65,7 +65,7 @@ disease progression}
  . Briefings in Bioinformatics. 23(5)
 }
 \seealso{
-\code{\link{diseasePaths}}, \code{\link{getML}}
+\code{\link{diseasePaths}}, \code{\link{trainModel}}
 }
 \author{
 Daniel Toro-Dominguez, \email{daniel.toro@genyo.es}

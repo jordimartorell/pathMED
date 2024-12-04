@@ -24,9 +24,9 @@
 #'
 #' @examples
 #' data(refData)
-#' refMscore <- createReference(datasetsList=refData, geneSets="tmod")
+#' refMscore <- mScores_createReference(datasetsList=refData, geneSets="tmod")
 #' @export
-createReference <- function(datasetsList,
+mScores_createReference <- function(datasetsList,
                           geneSets = "reactome",
                           cores = 1){
 

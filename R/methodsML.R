@@ -1,4 +1,4 @@
-#' Prepare the models parameter for getML the function
+#' Prepare the models parameter for trainModel the function
 #'
 #' @importFrom caretEnsemble caretModelSpec
 #' @param algorithms Vector with one or more of these methods: 'glm', 'lm',
@@ -9,12 +9,12 @@
 #' @param tuneLength maximum number of tuning parameter combinations
 #'
 #' @return A list with the selected models ready to use as the 'models'
-#' parameter in the getML function
+#' parameter in the trainModel function
 #'
 #' @author Daniel Toro-Dominguez, \email{daniel.toro@@genyo.es}
 #' @author Jordi Martorell-Marugan, \email{jordi.martorell@@genyo.es}
 #'
-#' @seealso \code{\link{getML}}
+#' @seealso \code{\link{trainModel}}
 #'
 #' @references Toro-Domínguez, D. et al (2022). \emph{Scoring personalized
 #' molecular portraits identify Systemic Lupus Erythematosus subtypes and

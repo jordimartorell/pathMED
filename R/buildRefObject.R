@@ -1,5 +1,5 @@
 #' Establish reference data structure for input to the pathMED pipeline
-#' 
+#'
 #' @param data A list of data frames or a single data frame with samples in
 #'  columns and features in rows.
 #' @param metadata A list of data frames or a single data frame with information
@@ -8,18 +8,18 @@
 #'  @metadata classifying the samples in control and cases. If several metadatas
 #'   are provided a @groupVar can be specified for each metadata.
 #' @param controlGroup Character or list of characters indicating which @groupVar
-#'  level corresponds to the control group, usually healthy samples. All other 
-#'  samples will be considered as cases, usually disease samples. If 
+#'  level corresponds to the control group, usually healthy samples. All other
+#'  samples will be considered as cases, usually disease samples. If
 #'  several @groupVar are provided a @controlGroup can be specified
-#'  for each @groupVar 
-#' 
+#'  for each @groupVar
+#'
 #' @return A list of reference data frames that serves as input
 #'  for getMscoresRef and splitPathways functions.
 #'
 #' @author Daniel Toro-Dominguez, \email{daniel.toro@@genyo.es}
 #' @author Jordi Martorell-Marugan, \email{jordi.martorell@@genyo.es}
 #'
-#' @seealso \code{\link{buildRefData}}
+#' @seealso \code{\link{buildRefObject}}
 #'
 #' @references Toro-Domínguez, D. et al (2022). \emph{Scoring personalized
 #' molecular portraits identify Systemic Lupus Erythematosus subtypes and
@@ -29,22 +29,22 @@
 #'
 #' @examples
 #' data(reference_datasets)
-#' 
-#' refData <- buildRefData(
+#'
+#' refData <- buildRefObject(
 #'   data = list(dataset1, dataset2, dataset3, dataset4),
 #'   metadata = list(metadata1, metadata2, metadata3, metadata4),
 #'   groupVar = "group",
 #'   controlGroup = "Healthy_sample")
 #'
-#' metadata <- rbind(metadata1, metadata2, metadata3, metadata4) 
-#' refData <- buildRefData(
+#' metadata <- rbind(metadata1, metadata2, metadata3, metadata4)
+#' refData <- buildRefObject(
 #'   data = list(dataset1, dataset2, dataset3, dataset4),
 #'   metadata = metadata, # also works with a metadata for all datasets
 #'   groupVar = "group",
 #'   controlGroup = "Healthy_sample")
 #'
 #' @export
-buildRefData <- function(data, metadata, groupVar, controlGroup){
+buildRefObject <- function(data, metadata, groupVar, controlGroup){
   if (!methods::is(data, "list")) {
     message("Input data is not a list, treating it as a single dataset.")
     data <- list(data)
@@ -61,7 +61,7 @@ buildRefData <- function(data, metadata, groupVar, controlGroup){
 
   notLogDataset <- list()
   for (i in 1:length(data)) { # check log transformation
-    qx <- as.numeric(quantile(data[[i]], c(0., 0.25, 0.5, 0.75, 0.99, 1.0), 
+    qx <- as.numeric(quantile(data[[i]], c(0., 0.25, 0.5, 0.75, 0.99, 1.0),
                               na.rm=TRUE))
     notLog <- (qx[5] > 100) ||(qx[6] - qx[1] > 50 &&
                                  qx[2] > 0) || (qx[2] > 0 &&
@@ -71,12 +71,12 @@ buildRefData <- function(data, metadata, groupVar, controlGroup){
     names(notLogDataset)[[i]] <-  paste0("dataset", i)
   }
   if (any(notLogDataset==TRUE)) {
-    warning(paste0("The following expression datasets do not have a log2 distribution: ", 
-                   paste0(names(notLogDataset[notLogDataset==TRUE]), 
-                          collapse = ", "), 
+    warning(paste0("The following expression datasets do not have a log2 distribution: ",
+                   paste0(names(notLogDataset[notLogDataset==TRUE]),
+                          collapse = ", "),
                    ". Please check that your data is normalized and transformed to log2."))
   }
-  
+
   refData <- list()
   if (length(unique(c(length(data),length(metadata),length(groupVar),length(controlGroup))))==1) {
     for (i in 1:length(data)) {

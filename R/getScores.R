@@ -36,12 +36,8 @@
 #'  . Briefings in Bioinformatics. 23(5)
 #'
 #' @examples
-#' data(refData, exampleData)
-#' exampleRefMScore <- createReference(data=refData, geneSets="tmod")
-#' relevantPaths <- diseasePaths(MRef=exampleRefMScore, min_datasets=3,
-#' perc_samples=10)
-#' MScoresExample <- getScores(geneSets = relevantPaths, Patient = exampleData,
-#' Healthy = NULL, nk = 5)
+#' data(exampleData)
+#' MScoresExample <- getScores(exampleData, geneSets = "tmod")
 #' @export
 getScores <- function(inputData,
                       geneSets = NULL,
@@ -77,13 +73,13 @@ getScores <- function(inputData,
                                            ...)
         }
         else if (method == "ssGSEA") {
-            paramMatrix <- GSVA::ssgseaParam(exMatrix, geneSets, ...)
+            paramMatrix <- GSVA::ssgseaParam(inputData, geneSets, ...)
         }
         else if (method == "Z-score") {
-            paramMatrix <- GSVA::zscoreParam(exMatrix, geneSets, ...)
+            paramMatrix <- GSVA::zscoreParam(inputData, geneSets, ...)
         }
         else {
-            paramMatrix <- GSVA::plageParam(exMatrix, geneSets, ...)
+            paramMatrix <- GSVA::plageParam(inputData, geneSets, ...)
         }
         res <- GSVA::gsva(paramMatrix,
                           BPPARAM=BiocParallel::SnowParam(workers=cores))

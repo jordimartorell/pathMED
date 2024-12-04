@@ -1,6 +1,6 @@
 #' Find relevant pathways from the reference M-scores
 #'
-#' @param MRef output from the createReference function
+#' @param MRef output from the mScores_createReference function
 #' @param min_datasets number of datasets that each pathway must meet the
 #' perc_samples threshold
 #' @param perc_samples minimun percentage of samples in a dataset in which a
@@ -13,7 +13,7 @@
 #' @author Daniel Toro-Dominguez, \email{daniel.toro@@genyo.es}
 #' @author Jordi Martorell-Marugan, \email{jordi.martorell@@genyo.es}
 #'
-#' @seealso \code{\link{createReference}}
+#' @seealso \code{\link{mScores_createReference}}
 #'
 #' @import ggplot2
 #'
@@ -25,7 +25,7 @@
 #'
 #' @examples
 #' data(refData)
-#' exampleRefMScore <- createReference(data=refData, genesets="tmod")
+#' exampleRefMScore <- mScores_createReference(data=refData, genesets="tmod")
 #' relevantPaths <- diseasePaths(MRef=exampleRefMScore, min_datasets=3,
 #' perc_samples=10)
 #' @export

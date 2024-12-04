@@ -13,7 +13,7 @@ diseasePaths(
 )
 }
 \arguments{
-\item{MRef}{output from the createReference function}
+\item{MRef}{output from the mScores_createReference function}
 
 \item{min_datasets}{number of datasets that each pathway must meet the
 perc_samples threshold}
@@ -33,7 +33,7 @@ Find relevant pathways from the reference M-scores
 }
 \examples{
 data(refData)
-exampleRefMScore <- createReference(data=refData, genesets="tmod")
+exampleRefMScore <- mScores_createReference(data=refData, genesets="tmod")
 relevantPaths <- diseasePaths(MRef=exampleRefMScore, min_datasets=3,
 perc_samples=10)
 }
@@ -45,7 +45,7 @@ disease progression}
  . Briefings in Bioinformatics. 23(5)
 }
 \seealso{
-\code{\link{createReference}}
+\code{\link{mScores_createReference}}
 }
 \author{
 Daniel Toro-Dominguez, \email{daniel.toro@genyo.es}

@@ -18,7 +18,7 @@ Annotate pathways
 \examples{
 data(refData, exampleData, exampleMetadata)
 \donttest{
-exampleRefMScore <- createReference(data=refData, genesets="tmod")
+exampleRefMScore <- mScores_createReference(data=refData, genesets="tmod")
 relevantPaths <- diseasePaths(MRef=exampleRefMScore,
 min_datasets=3,
 perc_samples=10)
@@ -38,7 +38,7 @@ disease progression}
  . Briefings in Bioinformatics. 23(5)
 }
 \seealso{
-\code{\link{createReference}}
+\code{\link{mScores_createReference}}
 }
 \author{
 Daniel Toro-Dominguez, \email{daniel.toro@genyo.es}

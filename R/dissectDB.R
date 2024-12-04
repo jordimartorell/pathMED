@@ -25,7 +25,7 @@
 #' @author Daniel Toro-Dominguez, \email{daniel.toro@@genyo.es}
 #' @author Jordi Martorell-Marugan, \email{jordi.martorell@@genyo.es}
 #'
-#' @seealso \code{\link{diseasePaths}}, \code{\link{getML}}
+#' @seealso \code{\link{diseasePaths}}, \code{\link{trainModel}}
 #'
 #' @references Toro-Domínguez, D. et al (2022). \emph{Scoring personalized
 #' molecular portraits identify Systemic Lupus Erythematosus subtypes and
@@ -48,7 +48,7 @@
 dissectDB<-function(data,genesets,customGeneset = NULL, minPathSize = 10,
                     minSplitSize = 3, maxSplits=NULL,explainedvariance = 60,
                     percSharedgenes = 90){ #, verbose = FALSE){
-  
+
   ## 1. Get zscores by gene
   z.data<-lapply(data,function(x){
     Href <- data.frame("mean"=rowMeans(as.matrix(x$Healthy),na.rm = T),
@@ -63,14 +63,14 @@ dissectDB<-function(data,genesets,customGeneset = NULL, minPathSize = 10,
     x.zscore<-x.zscore[apply(x.zscore,1,function(xi){sum(is.na(xi))})==0,]
     return(x.zscore)
   })
-  
+
   ## 2. Getpathway database
   if(genesets == "custom"){
     path.list <- customGeneset
   }else{
     path.list <- genesetsData[[genesets]]
   }
-  
+
   ## Joint all datasets if a certain percentage of genes are shared (i.e. 90%)
   if(length(z.data)>1 & !is.null(percSharedgenes)){
     exp.gr<-utils::combn(1:length(z.data),2)
@@ -80,7 +80,7 @@ dissectDB<-function(data,genesets,customGeneset = NULL, minPathSize = 10,
       return(min(c(length(intersect(rownames(x),rownames(y)))/length(rownames(x)),
                    length(intersect(rownames(x),rownames(y)))/length(rownames(y))))*100)
     }))
-    
+
     if(all(sharedGenes>=percSharedgenes)){ ## Joint all datasets
       genes.sd <- Reduce(intersect,lapply(z.data,function(x){rownames(x)}))
       genes.sd<-genes.sd[!is.na(genes.sd)]
@@ -91,7 +91,7 @@ dissectDB<-function(data,genesets,customGeneset = NULL, minPathSize = 10,
       names(z.data)[1]<-"mergedData"
     }
   }
-  
+
   ## 3. Disect pathways
   cat("This proccess can take time...\n")
   if(length(path.list)>1){pb = txtProgressBar(min = 1, max = length(path.list), initial = 0, style = 3)}
@@ -103,7 +103,7 @@ dissectDB<-function(data,genesets,customGeneset = NULL, minPathSize = 10,
       genes <- intersect(path.list[[path_name]], rownames(z.data[[1]]))
 
       # if(verbose){ cat(paste0("Dissecting path: ",path_name,". Nº genes: ",length(genes)), "\r") }
-      
+
       if(length(genes) > minPathSize){
         tmp<-z.data[[1]][genes,]
         p.list<-.clusterPath(data=tmp,
@@ -120,15 +120,15 @@ dissectDB<-function(data,genesets,customGeneset = NULL, minPathSize = 10,
         #new.path.list[count]<-p.list
         new.path.list<-c(new.path.list,p.list)
       }
-      
-      
+
+
     }else{ ## Multiple datasets - ccooccurrence based kmeans clustering ········
-      
+
       clusters.p<-lapply(1:length(z.data),function(d){ ## lapply loop - datasets
         genes <- intersect(path.list[[path_name]], rownames(z.data[[d]]))
 
         # if(verbose){ cat(paste0("Dissecting path: ",path_name,". Nº genes: ",length(genes)), "\r") }
-        
+
         if(length(genes) > minPathSize){
           tmp<-z.data[[d]][genes,]
           p.list<-.clusterPath(data=tmp,
@@ -144,15 +144,15 @@ dissectDB<-function(data,genesets,customGeneset = NULL, minPathSize = 10,
           return(p.list)
         }
       }) ## lapply loop - datasets
-      
+
       # Cooccurrence_matrix
       allgenes<-unique(unlist(lapply(clusters.p,function(cl){rownames(cl[1])})))
-      
+
       if(length(allgenes)>minPathSize){
-        
+
         cooccurrence_matrix <- matrix(0, nrow = length(allgenes), ncol = length(allgenes),
                                         dimnames = list(allgenes, allgenes))
-          
+
           for(d in seq_along(clusters.p)){
             cls<-unique(as.numeric(clusters.p[[1]][1]$cluster))
             for(cl in cls){
@@ -160,7 +160,7 @@ dissectDB<-function(data,genesets,customGeneset = NULL, minPathSize = 10,
               cooccurrence_matrix[genes,genes]<-cooccurrence_matrix[genes,genes]+1
             }
           }
-        
+
         p.list<-.clusterPath(data=cooccurrence_matrix,
                              path_name = path_name,
                              minSplitSize = minSplitSize,
@@ -178,5 +178,5 @@ dissectDB<-function(data,genesets,customGeneset = NULL, minPathSize = 10,
   } ## Loop for each pathway
   if(length(path.list)>1){close(pb)}
   return(new.path.list)
-  
+
 }

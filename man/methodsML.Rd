@@ -2,19 +2,19 @@
 % Please edit documentation in R/methodsML.R
 \name{methodsML}
 \alias{methodsML}
-\title{Prepare ML models}
+\title{Prepare the models parameter for trainModel the function}
 \usage{
 methodsML(
-  algorithms = c("glm", "lm", "lda", "xgbTree", "rf", "knn", "svmLinear", "svmRadial",
-    "nnet", "nb", "lars", "rpart", "ada", "gamboost"),
+  algorithms = c("rf", "knn", "nb"),
   outcomeClass = NULL,
-  tuneLength = 15
+  tuneLength = 20
 )
 }
 \arguments{
-\item{algorithms}{'glm','lm','lda','xgbTree','rf','knn','svmLinear','nnet',
-'svmRadial','nb','lars','rpart', 'gamboost', 'ada', 'brnn', 'enet' or 'all'
-(all algorithms are used)}
+\item{algorithms}{Vector with one or more of these methods: 'glm', 'lm',
+'lda', 'xgbTree', 'rf', 'knn', 'svmLinear', 'nnet', 'svmRadial', 'nb',
+'lars','rpart', 'gamboost', 'ada', 'brnn', 'enet', or 'all' to use all
+algorithms}
 
 \item{outcomeClass}{Predicted variable type ('character' or 'numeric')}
 
@@ -22,10 +22,10 @@ methodsML(
 }
 \value{
 A list with the selected models ready to use as the 'models'
-parameter in the getml() function
+parameter in the trainModel function
 }
 \description{
-Prepare ML models
+Prepare the models parameter for trainModel the function
 }
 \examples{
 methodsML(c('rf', 'knn'), tuneLength=20)
@@ -38,7 +38,7 @@ disease progression}
  . Briefings in Bioinformatics. 23(5)
 }
 \seealso{
-\code{\link{getML}}
+\code{\link{trainModel}}
 }
 \author{
 Daniel Toro-Dominguez, \email{daniel.toro@genyo.es}

@@ -6,7 +6,7 @@
 \usage{
 getScores(
   inputData,
-  geneSets,
+  geneSets = NULL,
   method = "GSVA",
   externalReference = NULL,
   labels = NULL,
@@ -21,14 +21,14 @@ getScores(
 
 \item{geneSets}{A named list with each
 gene set or the name of one preloaded database (gobp, gomf, gocc,
-kegg, reactome, tmod)}
+kegg, reactome, tmod).}
 
 \item{method}{Scoring method: M-score, GSVA, ssGSEA, singscore, Z-score,
 Plage, AUCell, MDT, MLM, ORA, UDT, ULM, FGSEA, norm_FGSEA, WMEAN, norm_WMEAN,
 corr_WMEAN, WSUM, norm_WSUM or corr_WSUM.}
 
 \item{externalReference}{(Only for M-Score) External reference created with
-the createReference function. Optional.}
+the createReference function. It is used  Optional.}
 
 \item{labels}{(Only for M-Score) Vector with the samples class labels (0 or
 "Healthy" for control samples). Optional.}
@@ -54,12 +54,8 @@ the input methData, pheno and platform objects
 Calculate pathways scores for a dataset
 }
 \examples{
-data(refData, exampleData)
-exampleRefMScore <- createReference(data=refData, geneSets="tmod")
-relevantPaths <- diseasePaths(MRef=exampleRefMScore, min_datasets=3,
-perc_samples=10)
-MScoresExample <- getMscores(geneSets = relevantPaths, Patient = exampleData,
-Healthy = NULL, nk = 5)
+data(exampleData)
+MScoresExample <- getScores(exampleData, geneSets = "tmod")
 }
 \references{
 Toro-Domínguez, D. et al (2022). \emph{Scoring personalized

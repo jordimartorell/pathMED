@@ -57,17 +57,13 @@
 #' @examples
 #' data(refData, exampleData, exampleMetadata)
 #' \donttest{
-#' exampleRefMScore <- createReference(data=refData, genesets="tmod")
-#' relevantPaths <- diseasePaths(MRef=exampleRefMScore,
-#' min_datasets=3,
-#' perc_samples=10)
 #'
 #' MScoresExample <- getMscores(genesets = relevantPaths,
 #' Patient = exampleData,
 #' Healthy = NULL,
 #' nk = 5)
 #'
-#' fit.model <- getML(expData=MScoresExample,
+#' fit.model <- trainModel(expData=MScoresExample,
 #' metadata=exampleMetadata,
 #' var2predict="Response",
 #' models=methodsML("svmLinear"),
@@ -77,7 +73,7 @@
 #' }
 #'
 #' @export
-getML <- function(expData,
+trainModel <- function(expData,
                   metadata,
                   models=methodsML(outcomeClass = "character"),
                   var2predict,
@@ -141,7 +137,7 @@ getML <- function(expData,
     expData$group<-as.character(expData$group)
   }
   if(expData %>% summarise(across(everything(), ~ any(is.na(.) | is.infinite(.)))) %>% any()){
-    stop("There are NA and/or Infinite values in your data, please replace or remove them before running getML")
+    stop("There are NA and/or Infinite values in your data, please replace or remove them before running trainModel")
   }
 
   outcomeClass <- class(expData$group)
