@@ -106,7 +106,7 @@ getScores <- function(inputData,
         }))
         # Filter pathways by collinearity
         #' @param collinearity_threshold must be a number between 0 and 1
-        if("collinearity_threshold" %in% names(params)){
+        if("collinearity_threshold" %in% names(params) & method=="MLM"){
             cat("Filtering collinear pathways...")
             co.lin<-as.data.frame(decoupleR::check_corr(net,.source = "source",.target = "target",.mor = "mor"))
             net<-net[!net$source %in% as.character(co.lin[co.lin$correlation >
