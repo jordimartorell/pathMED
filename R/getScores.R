@@ -176,7 +176,7 @@ getScores <- function(inputData,
         else if (method %in% c("WMEAN", "norm_WMEAN", "corr_WMEAN")) {
             params<-params[names(params) %in% c("seed","minsize","sparse","randomize_type")]
             scoreMatrix <-do.call(decoupleR::run_wmean, c(list(mat=inputData, network=net,
-                                  .source="source",.target="target",.mor="mor", times=1),params))
+                                  .source="source",.target="target",.mor="mor", times=2),params))
 
             if (method == "WMEAN") {
                 scoreMatrix <- as.data.frame(
