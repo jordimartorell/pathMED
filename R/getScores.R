@@ -198,7 +198,7 @@ getScores <- function(inputData,
         else if (method %in% c("WSUM", "norm_WSUM", "corr_WSUM")) {
             params<-params[names(params) %in% c("seed","minsize","sparse","randomize_type")]
             scoreMatrix <-do.call(decoupleR::run_wsum, c(list(mat=inputData, network=net,
-                                  .source="source",.target="target",.mor="mor", times=1),params))
+                                  .source="source",.target="target",.mor="mor", times=2),params))
 
             if (method == "WSUM") {
                 scoreMatrix <- as.data.frame(
