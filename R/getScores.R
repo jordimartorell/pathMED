@@ -97,8 +97,8 @@ getScores <- function(inputData,
           # Filter pathways by collinearity
           #' @param collinearity_threshold must be a number between 0 and 1
           if("collinearity_threshold" %in% names(params)){
-              co.lin<-as.data.frame(decoupleR::check_corr(res,.source = "source",.target = "target",
-                                                          .mor = "mor",.likelihood = NULL))
+              cat("Filtering collinear pathways...")
+              co.lin<-as.data.frame(decoupleR::check_corr(res,.source = "source",.target = "target",.mor = "mor",))
               res<-res[!res$source %in% as.character(co.lin[co.lin$correlation > 
                                                             as.numeric(params[["collinearity_threshold"]]),"source"]),]
           }
@@ -111,7 +111,7 @@ getScores <- function(inputData,
             if (method == "AUCell") {
                 params<-params[names(params) %in% c("aucMaxRank","seed","minsize")]
                 scoreMatrix <-do.call(decoupleR::run_aucell, c(list(mat=inputData, network=net,
-                                       nproc=cores,.source="source",.target="target"),params))
+                                       .source="source",.target="target"),params))
             }
 
             else if (method == "MDT") {
