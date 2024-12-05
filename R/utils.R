@@ -207,7 +207,7 @@
 
 
 ## Function to cluster pathways into co-expressed circuits
-.clusterPath <-function(data,path_name,minSplitSize,explainedvariance,
+.clusterPath <- function(data,path_name,minSplitSize,explainedvariance,
            maxSplits,cooccurrence =  FALSE) {
     #if(!is.null(explainedvariance)){
     pca <- FactoMineR::PCA(t(data), graph = F)
