@@ -43,6 +43,15 @@ getScores <- function(inputData,
         inputData <- as.matrix(inputData)
     }
 
+    if (!is.list(geneSets)) {
+        if(geneSets %in% names(genesetsData)){
+            geneSets<-genesetsData[[geneSets]]
+        }else{
+            stop(paste("geneSets must be a list of genesets or a database name:",
+               names(genesetsData)))
+        }
+    } 
+
     params<-list(...)
     if (method %in% c("GSVA", "ssGSEA", "Z-score", "Plage")) {
         if (method == "GSVA") {
