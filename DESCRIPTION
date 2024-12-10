@@ -1,7 +1,7 @@
 Package: pathMED
 Type: Package
 Title: Scoring Personalized Molecular Portraits
-Version: 0.1.29
+Version: 0.1.30
 Authors@R: person("Jordi", "Martorell-Marugán", email="jmartorellm@gmail.com", role=c("cre", "aut"), comment = c(ORCID = "0000-0002-5186-0735"))
 Description: More about what it does (maybe more than one line)
     Use four spaces when indenting paragraphs within the Description.

@@ -57,7 +57,8 @@ getScores <- function(inputData,
     if (method %in% c("GSVA", "ssGSEA", "Z-score", "Plage")) {
         if (method == "GSVA") {
             params <- params[names(params) %in% c("minSize", "maxSize",
-                                                  "kcdfNoneMinSampleSize", "tau",
+                                                  "kcdfNoneMinSampleSize",
+                                                  "tau",
                                                   "maxDiff", "absRanking",
                                                   "sparse", "checkNA", "use")]
             paramMatrix <-  do.call(GSVA::gsvaParam, c(list(inputData, geneSets,
@@ -66,7 +67,8 @@ getScores <- function(inputData,
         }
         else if (method == "ssGSEA") {
             params <- params[names(params) %in% c("minSize", "maxSize", "alpha",
-                                                  "normalize", "checkNA", "use")]
+                                                  "normalize", "checkNA",
+                                                  "use")]
             paramMatrix <-  do.call(GSVA::ssgseaParam, c(list(inputData,
                                                               geneSets),
                                                          params))
@@ -136,31 +138,31 @@ getScores <- function(inputData,
                                                       "trees", "min_n", "seed",
                                                       "minsize")]
                 scoreMatrix <- do.call(decoupleR::run_mdt, c(list(mat=inputData,
-                                                                  network=net,
-                                                                  nproc=cores,
-                                                                  .source="source",
-                                                                  .target="target",
-                                                                  .mor="mor"),
-                                                             params))
+                                                            network=net,
+                                                            nproc=cores,
+                                                            .source="source",
+                                                            .target="target",
+                                                            .mor="mor"),
+                                                            params))
             }
 
             else if (method == "MLM") {
                 message("Filtering collinear pathways...")
                 co.lin <- as.data.frame(decoupleR::check_corr(net,
-                                                              .source="source",
-                                                              .target = "target",
-                                                              .mor = "mor"))
+                                                            .source="source",
+                                                            .target = "target",
+                                                            .mor = "mor"))
                 net <- net[!net$source %in% as.character(co.lin[
                     co.lin$correlation > 0.75,"source"]),]
 
                 params <- params[names(params) %in% c("center", "na.rm",
                                                       "minsize")]
                 scoreMatrix <- do.call(decoupleR::run_mlm, c(list(mat=inputData,
-                                                                  network=net,
-                                                                  .source="source",
-                                                                  .target="target",
-                                                                  .mor="mor"),
-                                                             params))
+                                                            network=net,
+                                                            .source="source",
+                                                            .target="target",
+                                                            .mor="mor"),
+                                                            params))
             }
 
             else if (method == "ORA") {
@@ -169,32 +171,33 @@ getScores <- function(inputData,
                                                       "with_ties",
                                                       "seed", "minsize")]
                 scoreMatrix <- do.call(decoupleR::run_ora, c(list(mat=inputData,
-                                                                  network=net,
-                                                                  .source="source",
-                                                                  .target="target"),
-                                                             params))
+                                                            network=net,
+                                                            .source="source",
+                                                            .target="target"),
+                                                            params))
             }
 
             else if (method == "UDT") {
-                params <- params[names(params) %in% c("center", "na.rm", "min_n",
-                                                      "seed", "minsize")]
+                params <- params[names(params) %in% c("center", "na.rm",
+                                                      "min_n", "seed",
+                                                      "minsize")]
                 scoreMatrix <- do.call(decoupleR::run_udt, c(list(mat=inputData,
-                                                                  network=net,
-                                                                  .source="source",
-                                                                  .target="target",
-                                                                  .mor="mor"),
-                                                             params))
+                                                            network=net,
+                                                            .source="source",
+                                                            .target="target",
+                                                            .mor="mor"),
+                                                            params))
             }
 
             else if (method == "ULM") {
                 params <- params[names(params) %in% c("center", "na.rm",
                                                       "minsize")]
                 scoreMatrix <- do.call(decoupleR::run_ulm, c(list(mat=inputData,
-                                                                  network=net,
-                                                                  .source="source",
-                                                                  .target="target",
-                                                                  .mor="mor"),
-                                                             params))
+                                                            network=net,
+                                                            .source="source",
+                                                            .target="target",
+                                                            .mor="mor"),
+                                                            params))
             }
 
             scoreMatrix <- as.data.frame(scoreMatrix[,c("source", "condition",
@@ -205,11 +208,11 @@ getScores <- function(inputData,
         else if (method %in% c("FGSEA", "norm_FGSEA")) {
             params <- params[names(params) %in% c("seed", "minsize", "times")]
             scoreMatrix <- do.call(decoupleR::run_fgsea, c(list(mat=inputData,
-                                                                network=net,
-                                                                .source="source",
-                                                                .target="target",
-                                                                nproc=cores),
-                                                           params))
+                                                            network=net,
+                                                            .source="source",
+                                                            .target="target",
+                                                            nproc=cores),
+                                                            params))
 
             if (method == "FGSEA") {
                 scoreMatrix <- as.data.frame(
@@ -227,11 +230,11 @@ getScores <- function(inputData,
             params <- params[names(params) %in% c("seed", "minsize" ,"sparse",
                                                   "randomize_type", "times")]
             scoreMatrix <- do.call(decoupleR::run_wmean, c(list(mat=inputData,
-                                                                network=net,
-                                                                .source="source",
-                                                                .target="target",
-                                                                .mor="mor"),
-                                                           params))
+                                                            network=net,
+                                                            .source="source",
+                                                            .target="target",
+                                                            .mor="mor"),
+                                                            params))
 
             if (method == "WMEAN") {
                 scoreMatrix <- as.data.frame(
@@ -252,13 +255,12 @@ getScores <- function(inputData,
 
         else if (method %in% c("WSUM", "norm_WSUM", "corr_WSUM")) {
             params <- params[names(params) %in% c("seed", "minsize", "sparse",
-                                                  "randomize_type")]
+                                                  "randomize_type", "times")]
             scoreMatrix <- do.call(decoupleR::run_wsum, c(list(mat=inputData,
                                                                network=net,
                                                                .source="source",
                                                                .target="target",
-                                                               .mor="mor",
-                                                               times=2),
+                                                               .mor="mor"),
                                                           params))
 
             if (method == "WSUM") {
@@ -302,8 +304,8 @@ getScores <- function(inputData,
             PatientData <- inputData[, labels!="Healthy"]
         }
         else {
-            stop("Reference samples in labels must be specified with 0 or
-                 'Healthy'")
+            stop(paste("Reference samples in labels must be specified with 0",
+                 "or 'Healthy'"))
         }
 
 
@@ -325,7 +327,8 @@ getScores <- function(inputData,
                                                                  drop=TRUE]
                                           res.i <- lapply(geneSets,
                                                           .getMscorePath,
-                                                          HealthyMeanSD=HealthyMeanSD,
+                                                          HealthyMeanSD=
+                                                              HealthyMeanSD,
                                                           Patient=Patient)
                                           res.i <- as.data.frame(do.call(
                                               "rbind", res.i))

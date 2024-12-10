@@ -1,26 +1,26 @@
-#' Establish reference data structure for input to the pathMED pipeline
+#' Create a reference data object for input to the pathMED functions
 #'
 #' @param data A list of data frames or a single data frame with samples in
 #'  columns and features in rows.
 #' @param metadata A list of data frames or a single data frame with information
 #'  for each sample. Samples in rows and variables in columns.
 #' @param groupVar Character or list of characters indicating the column name of
-#'  @metadata classifying the samples in control and cases. If several metadatas
-#'   are provided a @groupVar can be specified for each metadata.
+#'  @metadata classifying the samples in controls and cases. If several metadata
+#'  objects are provided a @groupVar can be specified for each metadata.
 #' @param controlGroup Character or list of characters indicating which @groupVar
 #'  level corresponds to the control group, usually healthy samples. All other
 #'  samples will be considered as cases, usually disease samples. If
 #'  several @groupVar are provided a @controlGroup can be specified
 #'  for each @groupVar
 #'
-#' @return A list of reference data frames that serves as input
-#'  for getMscoresRef and splitPathways functions.
+#' @return A refData object that serves as input
+#'  for mScores_createReference and dissectDB functions.
 #'
 #' @author Iván Ellson, \email{ivan.ellson.l@@gmail.com }
 #' @author Jordi Martorell-Marugán, \email{jordi.martorell@@genyo.es}
 #' @author Daniel Toro-Dominguez, \email{danieltorodominguez@@gmail.com}
 #'
-#' @seealso \code{\link{buildRefObject}}
+#' @seealso \code{\link{mScores_createReference}}, \code{\link{dissectDB}}
 #'
 #' @references Toro-Domínguez, D. et al (2022). \emph{Scoring personalized
 #' molecular portraits identify Systemic Lupus Erythematosus subtypes and
