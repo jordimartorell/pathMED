@@ -4,8 +4,8 @@
 #'
 #' @return A dataframe with the input IDs and their corresponding annotations
 #'
-#' @author Daniel Toro-Dominguez, \email{daniel.toro@@genyo.es}
-#' @author Jordi Martorell-Marugan, \email{jordi.martorell@@genyo.es}
+#' @author Jordi Martorell-Marugán, \email{jordi.martorell@@genyo.es}
+#' @author Daniel Toro-Dominguez, \email{danieltorodominguez@@gmail.com}
 #'
 #' @seealso \code{\link{mScores_createReference}}
 #'

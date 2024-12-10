@@ -34,8 +34,8 @@
 #' best parameters selected in tuning process. The last element contains data
 #' for AUC plots
 #'
-#' @author Daniel Toro-Dominguez, \email{daniel.toro@@genyo.es}
-#' @author Jordi Martorell-Marugan, \email{jordi.martorell@@genyo.es}
+#' @author Jordi Martorell-Marugán, \email{jordi.martorell@@genyo.es}
+#' @author Daniel Toro-Dominguez, \email{danieltorodominguez@@gmail.com}
 #'
 #' @import caret
 #' @import caretEnsemble

@@ -15,7 +15,7 @@
 
     # Zscore by path
     Zscore.genes <- (tmpPat - tmpRef[, 1]) / tmpRef[, 2]
-    path.mscore <- mean(Zscore.genes, na.rm = TRUE)
+    path.mscore <- mean(Zscore.genes, na.rm=TRUE)
   }
   names(path.mscore) <- names(path)
   return(path.mscore)
@@ -23,19 +23,19 @@
 
 
 
-## Impute m-score for a patient from gene expression based on a gene expression
+## Impute M-score for a patient from gene expression based on a gene expression
 ## reference of patients
 #@ patient: vector of gene expression of a patient (names of vector must be gene
 ## symbols)
 #@ Reference.normalized: gene expression matrix of patients normalized by
 ## z-score (by patient)
-#@ Reference.mscore: matrix with mscores of patients contained in
+#@ Reference.mscore: matrix with M-scores of patients contained in
 ## Reference.normalized
 #@ k: number of neighbours to impute mscore for patient
 .getNearSample <- function(patient,
                            Ref.norm,
                            Ref.mscore,
-                           k = 5) {
+                           k=5) {
   patient <- .normSamples(patient[intersect(names(patient),
                                             rownames(Ref.norm))])
 
@@ -44,21 +44,21 @@
   })
   names(distances) <- colnames(Ref.norm)
 
-  distances <- distances[order(distances, decreasing = FALSE)]
+  distances <- distances[order(distances, decreasing=FALSE)]
   tmp.mscore <- Ref.mscore[, names(distances)[seq_len(k)]]
   tmp.mscore <- apply(tmp.mscore, 1, mean)
 
   return(list(
-    "mscores" = tmp.mscore,
-    "distance" = mean(distances[seq_len(k)], na.rm = T)
+    "mscores"=tmp.mscore,
+    "distance"=mean(distances[seq_len(k)], na.rm=T)
   ))
 }
 
 
-## Normalize quantitative values (expression, mscores) of a patient by z-score
+## Normalize quantitative values (expression, M-scores) of a patient by Z-score
 #@ x: Numeric vector of expression from a sample
 .normSamples <- function(x) {
-  x <- (x - (mean(x, na.rm = TRUE))) / stats::sd(x, na.rm = TRUE)
+  x <- (x - (mean(x, na.rm=TRUE))) / stats::sd(x, na.rm=TRUE)
   return(x)
 }
 
@@ -98,8 +98,8 @@
 
   return(
     list(
-      Reference.mscore = Reference.mscore,
-      Reference.normalized = Reference.normalized
+      Reference.mscore=Reference.mscore,
+      Reference.normalized=Reference.normalized
     )
   )
 }
@@ -124,11 +124,11 @@
   ## kfolds by samples (only one sample by patient) ····························
     if(is.null(paired)){
       if (varType == "character") {
-        y <- data.frame("value" = y, index = 1:length(y))
+        y <- data.frame("value"=y, index=1:length(y))
         y <- split(y, y$value)
 
         splittedFolds <- lapply(y, function(x) {
-          folds <- caret::createMultiFolds(x$index, k = kfold, repeats)
+          folds <- caret::createMultiFolds(x$index, k=kfold, repeats)
           res <- lapply(folds, function(i) { x[i, ]$index })
         })
         listFolds <- lapply(1:length(splittedFolds[[1]]), function(k) {
@@ -138,8 +138,8 @@
         })
 
       } else{
-        y <- data.frame("value" = y, index = 1:length(y))
-        folds <- caret::createMultiFolds(y$index, k = kfold, repeats)
+        y <- data.frame("value"=y, index=1:length(y))
+        folds <- caret::createMultiFolds(y$index, k=kfold, repeats)
         listFolds <- lapply(folds, function(i) {
           y[i, ]$index
         })
@@ -162,7 +162,8 @@
           tmp.ids<-lapply(ids, sample)
           tmp.ids <- do.call("rbind",lapply(tmp.ids,function(gr){
             return(data.frame("index"=gr,
-                            "fold"=cut(seq_along(gr), breaks = kfold, labels = FALSE)))
+                            "fold"=cut(seq_along(gr), breaks=kfold,
+                                       labels=FALSE)))
           }))
           rownames(tmp.ids)<-NULL
 
@@ -176,7 +177,7 @@
           }
           return(res)
         })
-        subsets<-unlist(subsets, recursive = FALSE)
+        subsets<-unlist(subsets, recursive=FALSE)
         names(subsets)<-NULL
         return(subsets)
 
@@ -184,9 +185,10 @@
         ids<-unique(paired)
 
         subsets<-lapply(1:repeats,function(rp){
-          gr=ids[sample(1:length(ids),length(ids),replace = F)]
+          gr=ids[sample(1:length(ids),length(ids),replace=F)]
           tmp.ids<-data.frame("index"=gr,
-                              "fold"=cut(seq_along(gr), breaks = kfold, labels = FALSE))
+                              "fold"=cut(seq_along(gr), breaks=kfold,
+                                         labels=FALSE))
 
           res<-list()
           for (f in unique(tmp.ids$fold)) {
@@ -197,7 +199,7 @@
           }
           return(res)
         })
-        subsets<-unlist(subsets, recursive = FALSE)
+        subsets<-unlist(subsets, recursive=FALSE)
         names(subsets)<-NULL
 
         return(subsets)
@@ -208,21 +210,21 @@
 
 ## Function to cluster pathways into co-expressed circuits
 .clusterPath <- function(data,path_name,minSplitSize,explainedvariance,
-           maxSplits,cooccurrence =  FALSE) {
+           maxSplits,cooccurrence= FALSE) {
     #if(!is.null(explainedvariance)){
-    pca <- FactoMineR::PCA(t(data), graph = F)
+    pca <- FactoMineR::PCA(t(data), graph=FALSE)
     pca_eig <- as.data.frame(pca$eig)
     pca_eig <-
       pca_eig[pca_eig$`cumulative percentage of variance` < explainedvariance, ]
     npcas <- nrow(pca_eig) + 1 ## Get K (npcas)
     if (all(is.na(pca_eig$`cumulative percentage of variance`))) {
-      npcas = 0
+      npcas=0
     }
 
     if (npcas > 1) {
       if (!is.null(maxSplits)) {
         if (npcas > maxSplits) {
-          npcas = maxSplits
+          npcas=maxSplits
         }
       }
 
@@ -231,13 +233,13 @@
 
       if (!all(table(clust$cluster) >= minSplitSize)) {
         ## Check if here are small clusters
-        pca <- stats::prcomp(data, scale = FALSE, center = FALSE)
+        pca <- stats::prcomp(data, scale=FALSE, center=FALSE)
 
         ind <-
           factoextra::facto_summarize(pca,
-                                      element = "ind",
-                                      result = "coord",
-                                      axes = c(1, 2))
+                                      element="ind",
+                                      result="coord",
+                                      axes=c(1, 2))
         ind$cluster <- as.factor(clust$cluster)
         colnames(ind) <- c("name", "x", "y", "cood", "cluster")
 
@@ -246,52 +248,55 @@
 
         # Distance between clusters (x,y)
         clusters <- as.numeric(unique(clusterPaths$cluster))
-        clusters <- clusters[order(clusters, decreasing = F)]
+        clusters <- clusters[order(clusters, decreasing=FALSE)]
         for (cl in clusters) {
           distance <-
             rbind(distance, c(
-              mean(clusterPaths$x[clusterPaths$cluster == cl], na.rm = T),
-              mean(clusterPaths$y[clusterPaths$cluster == cl], na.rm = T)
+              mean(clusterPaths$x[clusterPaths$cluster == cl], na.rm=TRUE),
+              mean(clusterPaths$y[clusterPaths$cluster == cl], na.rm=TRUE)
             ))
         }
         distance <-
           as.matrix(dist(
             distance,
-            diag = NULL,
-            upper = T,
-            method = "euclidean"
+            diag=NULL,
+            upper=T,
+            method="euclidean"
           ))
-        diag(distance) = NA
+        diag(distance)=NA
         rownames(distance) <- as.character(clusters)
 
         ## Joint small clusters
         for (iter in 1:minSplitSize) {
           clusters <- table(clusterPaths$cluster)
           clusters <-
-            as.numeric(names(clusters[order(clusters, decreasing = F)]))
+            as.numeric(names(clusters[order(clusters, decreasing=FALSE)]))
           for (cl in clusters) {
-            if (as.numeric(table(clusterPaths$cluster == cl)["TRUE"]) < minSplitSize) {
-              nearCl <- as.numeric(names(which.min(distance[as.character(cl), ])))
+            if (as.numeric(table(clusterPaths$cluster == cl)["TRUE"]) <
+                minSplitSize) {
+              nearCl <- as.numeric(names(which.min(
+                  distance[as.character(cl), ])))
               clusterPaths[clusterPaths$cluster == cl, "cluster"] <-
                 nearCl
               distance <-
-                distance[!rownames(distance) %in% as.character(cl),!colnames(distance) %in% as.character(cl)]
+                distance[!rownames(distance) %in% as.character(cl),
+                         !colnames(distance) %in% as.character(cl)]
             }
           }
           clusterPaths$cluster <-
-            factor(clusterPaths$cluster, levels = unique(clusterPaths$cluster))
+            factor(clusterPaths$cluster, levels=unique(clusterPaths$cluster))
         }
 
       } else{
-        clusterPaths <- data.frame("name" = names(clust$cluster),
-                                   "cluster" = as.numeric(clust$cluster))
+        clusterPaths <- data.frame("name"=names(clust$cluster),
+                                   "cluster"=as.numeric(clust$cluster))
         rownames(clusterPaths) <- clusterPaths$name
         clusterPaths$cluster <-
-          factor(clusterPaths$cluster, levels = unique(clusterPaths$cluster))
+          factor(clusterPaths$cluster, levels=unique(clusterPaths$cluster))
       }
 
       if (cooccurrence) {
-        p.list <- data.frame("cluster" = clusterPaths$cluster)
+        p.list <- data.frame("cluster"=clusterPaths$cluster)
         rownames(p.list) <- clusterPaths$name
         return(p.list)
 
@@ -308,7 +313,7 @@
     } else{
       ## Only one K
       if (cooccurrence) {
-        p.list <- data.frame("cluster" = rep(1, nrow(data)))
+        p.list <- data.frame("cluster"=rep(1, nrow(data)))
         rownames(p.list) <- rownames(data)
         return(p.list)
 

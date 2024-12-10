@@ -22,8 +22,8 @@
 #' @return A list with all pathways and pathway-subdivisions and their involved
 #' genes
 #'
-#' @author Daniel Toro-Dominguez, \email{daniel.toro@@genyo.es}
-#' @author Jordi Martorell-Marugan, \email{jordi.martorell@@genyo.es}
+#' @author Jordi Martorell-Marugán, \email{jordi.martorell@@genyo.es}
+#' @author Daniel Toro-Dominguez, \email{danieltorodominguez@@gmail.com}
 #'
 #' @seealso \code{\link{diseasePaths}}, \code{\link{trainModel}}
 #'

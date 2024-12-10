@@ -16,8 +16,9 @@
 #' @return A list of reference data frames that serves as input
 #'  for getMscoresRef and splitPathways functions.
 #'
-#' @author Daniel Toro-Dominguez, \email{daniel.toro@@genyo.es}
-#' @author Jordi Martorell-Marugan, \email{jordi.martorell@@genyo.es}
+#' @author Iván Ellson, \email{ivan.ellson.l@@gmail.com }
+#' @author Jordi Martorell-Marugán, \email{jordi.martorell@@genyo.es}
+#' @author Daniel Toro-Dominguez, \email{danieltorodominguez@@gmail.com}
 #'
 #' @seealso \code{\link{buildRefObject}}
 #'

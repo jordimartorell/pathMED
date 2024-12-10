@@ -17,8 +17,8 @@
 #' associated to each region are generated. In addition, this list also contains
 #' the input methData, pheno and platform objects
 #'
-#' @author Daniel Toro-Dominguez, \email{daniel.toro@@genyo.es}
-#' @author Jordi Martorell-Marugan, \email{jordi.martorell@@genyo.es}
+#' @author Jordi Martorell-Marugán, \email{jordi.martorell@@genyo.es}
+#' @author Daniel Toro-Dominguez, \email{danieltorodominguez@@gmail.com}
 #'
 #' @seealso \code{\link{mScores_filterPaths }}, \code{\link{getML}}
 #'
@@ -225,13 +225,12 @@ getScores <- function(inputData,
 
         else if (method %in% c("WMEAN", "norm_WMEAN", "corr_WMEAN")) {
             params <- params[names(params) %in% c("seed", "minsize" ,"sparse",
-                                                  "randomize_type")]
+                                                  "randomize_type", "times")]
             scoreMatrix <- do.call(decoupleR::run_wmean, c(list(mat=inputData,
                                                                 network=net,
                                                                 .source="source",
                                                                 .target="target",
-                                                                .mor="mor",
-                                                                times=2),
+                                                                .mor="mor"),
                                                            params))
 
             if (method == "WMEAN") {

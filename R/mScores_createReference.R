@@ -11,8 +11,8 @@
 #' for each dataset. The second one is the geneset used for the analysis and
 #' the third one is the input data.
 #'
-#' @author Daniel Toro-Dominguez, \email{daniel.toro@@genyo.es}
-#' @author Jordi Martorell-Marugan, \email{jordi.martorell@@genyo.es}
+#' @author Jordi Martorell-Marugán, \email{jordi.martorell@@genyo.es}
+#' @author Daniel Toro-Dominguez, \email{danieltorodominguez@@gmail.com}
 #'
 #' @seealso \code{\link{diseasePaths}}
 #'

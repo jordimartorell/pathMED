@@ -14,8 +14,9 @@
 #' is not provided) or a list with the dataframe with predictions and a
 #' dataframe with the performance metrics (if orig.values is provided)
 #'
+#' @author Iván Ellson, \email{ivan.ellson.l@@gmail.com }
+#' @author Jordi Martorell-Marugán, \email{jordi.martorell@@genyo.es}
 #' @author Daniel Toro-Dominguez, \email{danieltorodominguez@@gmail.com}
-#' @author Jordi Martorell-Marugan, \email{jordi.martorell@@genyo.es}
 #'
 #' @import stringi
 #' @import stats
