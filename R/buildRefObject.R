@@ -37,17 +37,18 @@
 #'   groupVar = "group",
 #'   controlGroup = "Healthy_sample")
 #'
+#' ## Also works with a metadata for all datasets
 #' metadata <- rbind(metadata1, metadata2, metadata3, metadata4)
 #' refData <- buildRefObject(
 #'   data = list(dataset1, dataset2, dataset3, dataset4),
-#'   metadata = metadata, # also works with a metadata for all datasets
+#'   metadata = metadata,
 #'   groupVar = "group",
 #'   controlGroup = "Healthy_sample")
 #'
 #' @export
 buildRefObject <- function(data, metadata, groupVar, controlGroup){
   if (!methods::is(data, "list")) {
-    message("Input data is not a list, treating it as a single dataset.")
+    message("Input data is not a list, processing it as a single dataset.")
     data <- list(data)
   }
   if (!methods::is(metadata, "list")) {
@@ -72,34 +73,70 @@ buildRefObject <- function(data, metadata, groupVar, controlGroup){
     names(notLogDataset)[[i]] <-  paste0("dataset", i)
   }
   if (any(notLogDataset==TRUE)) {
-    warning(paste0("The following expression datasets do not have a log2 distribution: ",
+    warning(paste0("The following expression datasets do not have a log2 ",
+                   "distribution: ",
                    paste0(names(notLogDataset[notLogDataset==TRUE]),
                           collapse = ", "),
-                   ". Please check that your data is normalized and transformed to log2."))
+                   ". Please check that your data is normalized and ",
+                   "transformed to log2."))
   }
 
   refData <- list()
-  if (length(unique(c(length(data),length(metadata),length(groupVar),length(controlGroup))))==1) {
+  if (length(unique(c(length(data), length(metadata), length(groupVar),
+                      length(controlGroup)))) == 1) {
     for (i in 1:length(data)) {
       refData[[length(refData)+1]] <- list(
-        Disease = as.data.frame(data[[i]][,intersect(colnames(data[[i]]), rownames(metadata[[i]])[!metadata[[i]][,groupVar[[i]]]==controlGroup[[i]]])]),
-        Healthy = as.data.frame(data[[i]][,intersect(colnames(data[[i]]), rownames(metadata[[i]])[metadata[[i]][,groupVar[[i]]]==controlGroup[[i]]])]))
+        Disease=as.data.frame(data[[i]][,intersect(colnames(data[[i]]),
+                                                   rownames(metadata[[i]])
+                                                   [!metadata[[i]]
+                                                       [,groupVar[[i]]]==
+                                                           controlGroup[[i]]]
+                                                   )]),
+        Healthy=as.data.frame(data[[i]][,intersect(colnames(data[[i]]),
+                                                   rownames(metadata[[i]])
+                                                   [metadata[[i]]
+                                                       [,groupVar[[i]]]==
+                                                           controlGroup[[i]]]
+                                                   )]))
       names(refData)[i] <- paste0("dataset", i)
     }
   }
-  if (length(metadata)==length(data) & length(metadata)>1 & length(groupVar)==length(controlGroup) & length(groupVar)==1) {
+  if (length(metadata)==length(data) & length(metadata)>1 &
+      length(groupVar)==length(controlGroup) & length(groupVar)==1) {
     for (i in 1:length(data)) {
       refData[[length(refData)+1]] <- list(
-        Disease = as.data.frame(data[[i]][intersect(colnames(data[[i]]),rownames(metadata[[i]])[!metadata[[i]][,groupVar[[1]]]==controlGroup[[1]]])]),
-        Healthy = as.data.frame(data[[i]][intersect(colnames(data[[i]]),rownames(metadata[[i]])[metadata[[i]][,groupVar[[1]]]==controlGroup[[1]]])]))
+        Disease=as.data.frame(data[[i]][intersect(colnames(data[[i]]),
+                                                    rownames(metadata[[i]])
+                                                    [!metadata[[i]]
+                                                        [,groupVar[[1]]]==
+                                                            controlGroup[[1]]]
+                                                    )]),
+        Healthy=as.data.frame(data[[i]][intersect(colnames(data[[i]]),
+                                                  rownames(metadata[[i]])
+                                                  [metadata[[i]]
+                                                      [,groupVar[[1]]]==
+                                                          controlGroup[[1]]]
+                                                  )]))
       names(refData)[i] <- paste0("dataset", i)
     }
   }
-  if (length(metadata)!=length(data) & length(unique(c(length(metadata),length(groupVar),length(controlGroup),1)))==1) {
+  if (length(metadata)!=length(data) &
+      length(unique(c(length(metadata),length(groupVar),
+                      length(controlGroup),1)))==1) {
     for (i in 1:length(data)) {
       refData[[length(refData)+1]] <- list(
-        Disease = as.data.frame(data[[i]][intersect(colnames(data[[i]]),rownames(metadata[[1]])[!metadata[[1]][,groupVar[[1]]]==controlGroup[[1]]])]),
-        Healthy = as.data.frame(data[[i]][intersect(colnames(data[[i]]),rownames(metadata[[1]])[metadata[[1]][,groupVar[[1]]]==controlGroup[[1]]])]))
+        Disease=as.data.frame(data[[i]][intersect(colnames(data[[i]]),
+                                                  rownames(metadata[[1]])
+                                                  [!metadata[[1]]
+                                                      [,groupVar[[1]]]==
+                                                          controlGroup[[1]]]
+                                                  )]),
+        Healthy=as.data.frame(data[[i]][intersect(colnames(data[[i]]),
+                                                  rownames(metadata[[1]])
+                                                  [metadata[[1]]
+                                                      [,groupVar[[1]]]==
+                                                          controlGroup[[1]]]
+                                                  )]))
       names(refData)[i] <- paste0("dataset", i)
     }
   }

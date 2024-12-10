@@ -2,7 +2,7 @@
 % Please edit documentation in R/buildRefObject.R
 \name{buildRefObject}
 \alias{buildRefObject}
-\title{Establish reference data structure for input to the pathMED pipeline}
+\title{Create a reference data object for input to the pathMED functions}
 \usage{
 buildRefObject(data, metadata, groupVar, controlGroup)
 }
@@ -14,8 +14,8 @@ columns and features in rows.}
 for each sample. Samples in rows and variables in columns.}
 
 \item{groupVar}{Character or list of characters indicating the column name of
-@metadata classifying the samples in control and cases. If several metadatas
- are provided a @groupVar can be specified for each metadata.}
+@metadata classifying the samples in controls and cases. If several metadata
+objects are provided a @groupVar can be specified for each metadata.}
 
 \item{controlGroup}{Character or list of characters indicating which @groupVar
 level corresponds to the control group, usually healthy samples. All other
@@ -24,11 +24,11 @@ several @groupVar are provided a @controlGroup can be specified
 for each @groupVar}
 }
 \value{
-A list of reference data frames that serves as input
- for getMscoresRef and splitPathways functions.
+A refData object that serves as input
+ for mScores_createReference and dissectDB functions.
 }
 \description{
-Establish reference data structure for input to the pathMED pipeline
+Create a reference data object for input to the pathMED functions
 }
 \examples{
 data(reference_datasets)
@@ -39,10 +39,11 @@ refData <- buildRefObject(
   groupVar = "group",
   controlGroup = "Healthy_sample")
 
+## Also works with a metadata for all datasets
 metadata <- rbind(metadata1, metadata2, metadata3, metadata4)
 refData <- buildRefObject(
   data = list(dataset1, dataset2, dataset3, dataset4),
-  metadata = metadata, # also works with a metadata for all datasets
+  metadata = metadata,
   groupVar = "group",
   controlGroup = "Healthy_sample")
 
@@ -55,10 +56,12 @@ disease progression}
  . Briefings in Bioinformatics. 23(5)
 }
 \seealso{
-\code{\link{buildRefObject}}
+\code{\link{mScores_createReference}}, \code{\link{dissectDB}}
 }
 \author{
-Daniel Toro-Dominguez, \email{daniel.toro@genyo.es}
+Iván Ellson, \email{ivan.ellson.l@gmail.com }
 
-Jordi Martorell-Marugan, \email{jordi.martorell@genyo.es}
+Jordi Martorell-Marugán, \email{jordi.martorell@genyo.es}
+
+Daniel Toro-Dominguez, \email{danieltorodominguez@gmail.com}
 }

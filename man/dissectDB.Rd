@@ -2,60 +2,57 @@
 % Please edit documentation in R/dissectDB.R
 \name{dissectDB}
 \alias{dissectDB}
-\title{Cluster pathways into pathway-components}
+\title{Split pathways into coexpressed subpathways}
 \usage{
 dissectDB(
-  data,
-  genesets,
-  customGeneset = NULL,
+  refData,
+  geneSets,
   minPathSize = 10,
   minSplitSize = 3,
   maxSplits = NULL,
-  explainedvariance = 60,
-  percSharedgenes = 90
+  explainedVariance = 60,
+  percSharedGenes = 90
 )
 }
 \arguments{
-\item{data}{A refData object structure: a list of lists, each one with a
-cases expression matrix and controls expression matrix (named as Disease and Healthy)}
+\item{refData}{A refData object structure: a list of lists, each one with a
+cases expression matrix and controls expression matrix
+(named as Disease and Healthy). It can be constructed with the buildRefObject
+ function.}
 
-\item{genesets}{character, name of the preloaded database (gobp, gomf, gocc,
-kegg, reactome, tmod) or 'custom' to provide the annotation.}
-
-\item{customGeneset}{Only if genesets == 'custom'. A named list with each
-gene set.}
+\item{geneSets}{A named list with each
+gene set or the name of one preloaded database (gobp, gomf, gocc,
+kegg, reactome, tmod).}
 
 \item{minPathSize}{numeric, minimum number of genes in a pathway to consider
-split the pathway}
+splitting it.}
 
-\item{minSplitSize}{numeric, minimum number of genes in a pathway-split.
-Smaller splits will join the closest split.}
+\item{minSplitSize}{numeric, minimum number of genes in a subpathway.
+Smaller splits will be merged with the closest coexpressed subpathway.}
 
-\item{maxSplits}{numeric, maximum number of subdivisions for a pathway. NULL,
-any restrictions}
+\item{maxSplits}{numeric, maximum number of subpathways for a pathway. If
+NULL (default), there is not limit.}
 
-\item{explainedvariance}{numeric, percentage of cumulative variance explained
+\item{explainedVariance}{numeric, percentage of cumulative variance explained
 within a pathway. This parameter is used to select the number of subdivisions
 of a pathway that manage to explain at least the percentage of variance
-defined by explainedvariance.}
+defined by explainedVariance.}
+
+\item{percSharedGenes}{numeric, minimum percentage of common genes across
+datasets to merge them before clustering. If NULL or this percentage is not
+reached, clustering is performed for each dataset independently and
+consensus subpathways are obtained from co-occurrence across datasets.}
 }
 \value{
-A list with all pathways and pathway-subdivisions and their involved
-genes
+A list with the subpathways.
 }
 \description{
-Cluster pathways into pathway-components
+Split pathways into coexpressed subpathways
 }
 \examples{
 data(refData)
 set.seed(1234)
-custom.tmod <- dissectDB(data=refData,
-genesets="tmod",
-customGeneset = NULL,
-minPathSize = 10,
-minSplitSize = 3,
-maxSplits = 3,
-explainedvariance = 50)
+custom.tmod <- dissectDB(refData, geneSets="tmod")
 }
 \references{
 Toro-Domínguez, D. et al (2022). \emph{Scoring personalized
@@ -65,10 +62,11 @@ disease progression}
  . Briefings in Bioinformatics. 23(5)
 }
 \seealso{
-\code{\link{diseasePaths}}, \code{\link{trainModel}}
+\code{\link{buildRefObject}}, \code{\link{mScores_createReference}},
+ \code{\link{getScores}}
 }
 \author{
-Daniel Toro-Dominguez, \email{daniel.toro@genyo.es}
+Jordi Martorell-Marugán, \email{jordi.martorell@genyo.es}
 
-Jordi Martorell-Marugan, \email{jordi.martorell@genyo.es}
+Daniel Toro-Dominguez, \email{danieltorodominguez@gmail.com}
 }

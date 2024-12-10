@@ -35,7 +35,7 @@ Calculate pathways scores for a dataset
 }
 \examples{
 data(exampleData)
-MScoresExample <- getScores(exampleData, geneSets = "tmod")
+scoresExample <- getScores(exampleData, geneSets="tmod", method="GSVA")
 }
 \references{
 Toro-Domínguez, D. et al (2022). \emph{Scoring personalized
@@ -48,7 +48,7 @@ disease progression}
 \code{\link{mScores_filterPaths }}, \code{\link{getML}}
 }
 \author{
-Daniel Toro-Dominguez, \email{daniel.toro@genyo.es}
+Jordi Martorell-Marugán, \email{jordi.martorell@genyo.es}
 
-Jordi Martorell-Marugan, \email{jordi.martorell@genyo.es}
+Daniel Toro-Dominguez, \email{danieltorodominguez@gmail.com}
 }

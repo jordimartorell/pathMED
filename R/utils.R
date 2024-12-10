@@ -208,14 +208,14 @@
   }
 
 
-## Function to cluster pathways into co-expressed circuits
-.clusterPath <- function(data,path_name,minSplitSize,explainedvariance,
+## Function to cluster pathways into co-expressed subpathways
+.clusterPath <- function(data, path_name, minSplitSize, explainedVariance,
            maxSplits,cooccurrence= FALSE) {
-    #if(!is.null(explainedvariance)){
+    #if(!is.null(explainedVariance)){
     pca <- FactoMineR::PCA(t(data), graph=FALSE)
     pca_eig <- as.data.frame(pca$eig)
     pca_eig <-
-      pca_eig[pca_eig$`cumulative percentage of variance` < explainedvariance, ]
+      pca_eig[pca_eig$`cumulative percentage of variance` < explainedVariance, ]
     npcas <- nrow(pca_eig) + 1 ## Get K (npcas)
     if (all(is.na(pca_eig$`cumulative percentage of variance`))) {
       npcas=0

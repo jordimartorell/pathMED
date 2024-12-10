@@ -35,7 +35,9 @@ disease progression}
  . Briefings in Bioinformatics. 23(5)
 }
 \author{
-Daniel Toro-Dominguez, \email{danieltorodominguez@gmail.com}
+Iván Ellson, \email{ivan.ellson.l@gmail.com }
 
-Jordi Martorell-Marugan, \email{jordi.martorell@genyo.es}
+Jordi Martorell-Marugán, \email{jordi.martorell@genyo.es}
+
+Daniel Toro-Dominguez, \email{danieltorodominguez@gmail.com}
 }

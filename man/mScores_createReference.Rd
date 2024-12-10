@@ -39,7 +39,7 @@ disease progression}
 \code{\link{diseasePaths}}
 }
 \author{
-Daniel Toro-Dominguez, \email{daniel.toro@genyo.es}
+Jordi Martorell-Marugán, \email{jordi.martorell@genyo.es}
 
-Jordi Martorell-Marugan, \email{jordi.martorell@genyo.es}
+Daniel Toro-Dominguez, \email{danieltorodominguez@gmail.com}
 }
