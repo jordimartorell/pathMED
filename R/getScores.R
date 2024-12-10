@@ -47,41 +47,55 @@ getScores <- function(inputData,
         if(geneSets %in% names(genesetsData)){
             geneSets<-genesetsData[[geneSets]]
         }else{
-            stop(paste("geneSets must be a list of genesets or a database name:",
-               names(genesetsData)))
+            stop(paste("geneSets must be a list of genesets or a
+                       database name:",
+                       names(genesetsData)))
         }
     }
 
-    params<-list(...)
+    params <- list(...)
     if (method %in% c("GSVA", "ssGSEA", "Z-score", "Plage")) {
         if (method == "GSVA") {
-            params<-params[names(params) %in% c("minSize","maxSize","kcdfNoneMinSampleSize",
-                                     "tau","maxDiff","absRanking","sparse","checkNA","use")]
-            paramMatrix <-  do.call(GSVA::gsvaParam, c(list(inputData, geneSets, kcdf = "Gaussian"), params))
+            params <- params[names(params) %in% c("minSize", "maxSize",
+                                                "kcdfNoneMinSampleSize", "tau",
+                                                "maxDiff", "absRanking",
+                                                "sparse", "checkNA", "use")]
+            paramMatrix <-  do.call(GSVA::gsvaParam, c(list(inputData, geneSets,
+                                                            kcdf="Gaussian"),
+                                                       params))
         }
         else if (method == "ssGSEA") {
-            params<-params[names(params) %in% c("minSize", "maxSize", "alpha", "normalize",
-                                                "checkNA","use")]
-            paramMatrix <-  do.call(GSVA::ssgseaParam, c(list(inputData, geneSets), params))
+            params <- params[names(params) %in% c("minSize", "maxSize", "alpha",
+                                                "normalize", "checkNA", "use")]
+            paramMatrix <-  do.call(GSVA::ssgseaParam, c(list(inputData,
+                                                              geneSets),
+                                                         params))
         }
         else if (method == "Z-score") {
-            params<-params[names(params) %in% c("minSize", "maxSize")]
-            paramMatrix <-  do.call(GSVA::zscoreParam, c(list(inputData, geneSets), params))
+            params <- params[names(params) %in% c("minSize", "maxSize")]
+            paramMatrix <-  do.call(GSVA::zscoreParam, c(list(inputData,
+                                                              geneSets),
+                                                         params))
         }
         else {
-            params<-params[names(params) %in% c("minSize", "maxSize")]
-            paramMatrix <-  do.call(GSVA::plageParam, c(list(inputData, geneSets), params))
+            params <- params[names(params) %in% c("minSize", "maxSize")]
+            paramMatrix <- do.call(GSVA::plageParam, c(list(inputData,
+                                                             geneSets),
+                                                        params))
         }
         res <- GSVA::gsva(paramMatrix,
                           BPPARAM=BiocParallel::SnowParam(workers=cores))
     }
 
     else if (method == "singscore") {
-        params<-params[names(params) %in% c("subSamples","centerScore","dispersionFun","knownDirection")]
+        params <- params[names(params) %in% c("subSamples", "centerScore",
+                                              "dispersionFun","knownDirection")]
         rankMatrix <- singscore::rankGenes(inputData, tiesMethod = "average")
         listSing <- lapply(geneSets, function(x) {
-            do.call(singscore::simpleScore, c(list(rankData = rankMatrix, upSet = x), params))
-            })
+            do.call(singscore::simpleScore, c(list(rankData=rankMatrix,
+                                                   upSet=x),
+                                              params))
+        })
         listScores <- sapply(listSing, function(x) x$TotalScore)
         if(is(listScores, "list")) {
             res <- do.call(rbind, listScores)
@@ -95,6 +109,7 @@ getScores <- function(inputData,
     else if (method %in% c("AUCell", "MDT", "MLM", "ORA", "UDT", "ULM",
                            "FGSEA", "norm_FGSEA", "WMEAN", "norm_WMEAN",
                            "corr_WMEAN", "WSUM", "norm_WSUM", "corr_WSUM")) {
+
         # Network necesary for these methods
         net <- do.call("rbind", lapply(seq_len(length(geneSets)), function (x) {
             res <- data.frame("source"=rep(names(geneSets)[[x]],
@@ -102,64 +117,100 @@ getScores <- function(inputData,
                               "target"=as.character(geneSets[[x]]),
                               "weight"=rep(1,length(geneSets[[x]])),
                               "mor"=rep(1,length(geneSets[[x]])))
-          return(res)
+            return(res)
         }))
-        # Filter pathways by collinearity
-        #' @param collinearity_threshold must be a number between 0 and 1
-        if("collinearity_threshold" %in% names(params) & method=="MLM"){
-            cat("Filtering collinear pathways...")
-            co.lin<-as.data.frame(decoupleR::check_corr(net,.source = "source",.target = "target",.mor = "mor"))
-            net<-net[!net$source %in% as.character(co.lin[co.lin$correlation >
-                                                            as.numeric(params[["collinearity_threshold"]]),"source"]),]
-        }
 
         if (method %in% c("AUCell", "MDT", "MLM", "ORA", "UDT", "ULM")) {
 
             if (method == "AUCell") {
-                params<-params[names(params) %in% c("aucMaxRank","seed","minsize")]
-                scoreMatrix <-do.call(decoupleR::run_aucell, c(list(mat=inputData, network=net,
-                                       .source="source",.target="target"),params))
+                params <- params[names(params) %in% c("aucMaxRank", "seed",
+                                                      "minsize")]
+                scoreMatrix <- do.call(decoupleR::run_aucell, c(list(
+                    mat=inputData, network=net, .source="source",
+                    .target="target"),
+                    params))
             }
 
             else if (method == "MDT") {
-                params<-params[names(params) %in% c("center","na.rm","trees","min_n","seed","minsize")]
-                scoreMatrix <-do.call(decoupleR::run_mdt, c(list(mat=inputData, network=net,
-                                       nproc=cores,.source="source",.target="target",.mor="mor"),params))
+                params <- params[names(params) %in% c("center", "na.rm",
+                                                      "trees", "min_n", "seed",
+                                                      "minsize")]
+                scoreMatrix <- do.call(decoupleR::run_mdt, c(list(mat=inputData,
+                                                                  network=net,
+                                                                  nproc=cores,
+                                                            .source="source",
+                                                            .target="target",
+                                                            .mor="mor"),
+                                                            params))
             }
 
             else if (method == "MLM") {
-                params<-params[names(params) %in% c("center","na.rm","minsize")]
-                scoreMatrix <-do.call(decoupleR::run_mlm, c(list(mat=inputData, network=net,
-                                       .source="source",.target="target",.mor="mor"),params))
+                message("Filtering collinear pathways...")
+                co.lin <- as.data.frame(decoupleR::check_corr(net,
+                                                        .source="source",
+                                                        .target = "target",
+                                                        .mor = "mor"))
+                net <- net[!net$source %in% as.character(co.lin[
+                    co.lin$correlation > 0.75,"source"]),]
+
+                params <- params[names(params) %in% c("center", "na.rm",
+                                                      "minsize")]
+                scoreMatrix <- do.call(decoupleR::run_mlm, c(list(mat=inputData,
+                                                            network=net,
+                                                            .source="source",
+                                                            .target="target",
+                                                            .mor="mor"),
+                                                            params))
             }
 
             else if (method == "ORA") {
-                params<-params[names(params) %in% c("n_up","n_bottom","n_background","with_ties","seed",
-                                                    "minsize")]
-                scoreMatrix <-do.call(decoupleR::run_ora, c(list(mat=inputData, network=net,
-                                       .source="source",.target="target"),params))
+                params <- params[names(params) %in% c("n_up", "n_bottom",
+                                                      "n_background",
+                                                      "with_ties",
+                                                      "seed", "minsize")]
+                scoreMatrix <- do.call(decoupleR::run_ora, c(list(mat=inputData,
+                                                            network=net,
+                                                            .source="source",
+                                                            .target="target"),
+                                                            params))
             }
 
             else if (method == "UDT") {
-                params<-params[names(params) %in% c("center","na.rm","min_n","seed","minsize")]
-                scoreMatrix <-do.call(decoupleR::run_udt, c(list(mat=inputData, network=net,
-                                       .source="source",.target="target",.mor="mor"),params))
+                params <- params[names(params) %in% c("center", "na.rm", "min_n",
+                                                    "seed", "minsize")]
+                scoreMatrix <- do.call(decoupleR::run_udt, c(list(mat=inputData,
+                                                            network=net,
+                                                            .source="source",
+                                                            .target="target",
+                                                            .mor="mor"),
+                                                            params))
             }
 
             else if (method == "ULM") {
-                params<-params[names(params) %in% c("center","na.rm","minsize")]
-                scoreMatrix <-do.call(decoupleR::run_ulm, c(list(mat=inputData, network=net,
-                                      .source="source",.target="target",.mor="mor"),params))
+                params <- params[names(params) %in% c("center", "na.rm",
+                                                      "minsize")]
+                scoreMatrix <- do.call(decoupleR::run_ulm, c(list(mat=inputData,
+                                                            network=net,
+                                                            .source="source",
+                                                            .target="target",
+                                                            .mor="mor"),
+                                                            params))
             }
 
-            scoreMatrix <- as.data.frame(scoreMatrix[,c("source","condition","score")])
+            scoreMatrix <- as.data.frame(scoreMatrix[,c("source", "condition",
+                                                        "score")])
 
         }
 
         else if (method %in% c("FGSEA", "norm_FGSEA")) {
-            params<-params[names(params) %in% c("seed","minsize")]
-            scoreMatrix <-do.call(decoupleR::run_fgsea, c(list(mat=inputData, network=net,
-                                  .source="source",.target="target", nproc=cores, times=1),params))
+            params <- params[names(params) %in% c("seed","minsize")]
+            scoreMatrix <- do.call(decoupleR::run_fgsea, c(list(mat=inputData,
+                                                            network=net,
+                                                            .source="source",
+                                                            .target="target",
+                                                            nproc=cores,
+                                                            times=1),
+                                                           params))
 
             if (method == "FGSEA") {
                 scoreMatrix <- as.data.frame(
@@ -174,9 +225,15 @@ getScores <- function(inputData,
         }
 
         else if (method %in% c("WMEAN", "norm_WMEAN", "corr_WMEAN")) {
-            params<-params[names(params) %in% c("seed","minsize","sparse","randomize_type")]
-            scoreMatrix <-do.call(decoupleR::run_wmean, c(list(mat=inputData, network=net,
-                                  .source="source",.target="target",.mor="mor", times=2),params))
+            params <- params[names(params) %in% c("seed", "minsize" ,"sparse",
+                                                  "randomize_type")]
+            scoreMatrix <- do.call(decoupleR::run_wmean, c(list(mat=inputData,
+                                                                network=net,
+                                                               .source="source",
+                                                               .target="target",
+                                                               .mor="mor",
+                                                               times=2),
+                                                           params))
 
             if (method == "WMEAN") {
                 scoreMatrix <- as.data.frame(
@@ -196,9 +253,15 @@ getScores <- function(inputData,
         }
 
         else if (method %in% c("WSUM", "norm_WSUM", "corr_WSUM")) {
-            params<-params[names(params) %in% c("seed","minsize","sparse","randomize_type")]
-            scoreMatrix <-do.call(decoupleR::run_wsum, c(list(mat=inputData, network=net,
-                                  .source="source",.target="target",.mor="mor", times=2),params))
+            params <- params[names(params) %in% c("seed", "minsize", "sparse",
+                                                  "randomize_type")]
+            scoreMatrix <- do.call(decoupleR::run_wsum, c(list(mat=inputData,
+                                                               network=net,
+                                                              .source="source",
+                                                              .target="target",
+                                                              .mor="mor",
+                                                              times=2),
+                                                          params))
 
             if (method == "WSUM") {
                 scoreMatrix <- as.data.frame(
@@ -219,7 +282,7 @@ getScores <- function(inputData,
 
         scoreMatrix <- reshape2::dcast(scoreMatrix, source~condition,
                                        value.var = "score")
-        rownames(scoreMatrix)<-scoreMatrix$source
+        rownames(scoreMatrix) <- scoreMatrix$source
         scoreMatrix <- scoreMatrix[,-1]
         res <- scoreMatrix
     }
@@ -260,17 +323,20 @@ getScores <- function(inputData,
         res <- BiocParallel::bplapply(seq_len(ncol(PatientData)),
                                       function(column, geneSets,
                                                HealthyMeanSD) {
-            Patient <- PatientData[,column, drop=TRUE]
-            res.i <- lapply(geneSets,
-                            .getMscorePath,
-                            HealthyMeanSD=HealthyMeanSD,
-                            Patient=Patient)
-            res.i <- as.data.frame(do.call("rbind", res.i))
-            return(res.i)
-        },
-        geneSets=geneSets,
-        HealthyMeanSD=HealthyMeanSD,
-        BPPARAM=BiocParallel::SnowParam(workers = cores, progressbar=TRUE))
+                                          Patient <- PatientData[,column,
+                                                                 drop=TRUE]
+                                          res.i <- lapply(geneSets,
+                                                    .getMscorePath,
+                                                    HealthyMeanSD=HealthyMeanSD,
+                                                    Patient=Patient)
+                                          res.i <- as.data.frame(do.call(
+                                              "rbind", res.i))
+                                          return(res.i)
+                                      },
+                                      geneSets=geneSets,
+                                      HealthyMeanSD=HealthyMeanSD,
+                                      BPPARAM=BiocParallel::SnowParam(
+                                          workers=cores, progressbar=TRUE))
 
         res <- do.call("cbind", res)
         colnames(res) <- colnames(PatientData)
