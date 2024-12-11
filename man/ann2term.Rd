@@ -2,33 +2,23 @@
 % Please edit documentation in R/ann2term.R
 \name{ann2term}
 \alias{ann2term}
-\title{Annotate pathways}
+\title{Annotate the pathways from a scores matrix}
 \usage{
-ann2term(MScores)
+ann2term(scoresMatrix)
 }
 \arguments{
-\item{MScores}{Matrix with pathways IDs as row names}
+\item{scoresMatrix}{Matrix with pathways IDs as row names}
 }
 \value{
-A dataframe with the input IDs and their corresponding annotations
+A data frame with the input IDs and their corresponding terms
 }
 \description{
-Annotate pathways
+Annotate the pathways from a scores matrix
 }
 \examples{
-data(refData, exampleData, exampleMetadata)
-\donttest{
-exampleRefMScore <- mScores_createReference(data=refData, genesets="tmod")
-relevantPaths <- mScores_filterPaths (MRef=exampleRefMScore,
-min_datasets=3,
-perc_samples=10)
-
-MScoresExample <- getMscores(genesets = relevantPaths,
-Patient = exampleData,
-Healthy = NULL,
-nk = 5)
-}
-MScoresAnnotated <- ann2term(MScoresExample)
+data(exampleData)
+scoresExample <- getScores(exampleData, geneSets="tmod", method="GSVA")
+annotatedTerms <- ann2term(scoresExample)
 }
 \references{
 Toro-Domínguez, D. et al (2022). \emph{Scoring personalized
@@ -38,9 +28,11 @@ disease progression}
  . Briefings in Bioinformatics. 23(5)
 }
 \seealso{
-\code{\link{mScores_createReference}}
+\code{\link{getScores}}
 }
 \author{
+Raúl López-Domínguez, \email{raul.lopez@genyo.es}
+
 Jordi Martorell-Marugán, \email{jordi.martorell@genyo.es}
 
 Daniel Toro-Dominguez, \email{danieltorodominguez@gmail.com}

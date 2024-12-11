@@ -2,14 +2,15 @@
 % Please edit documentation in R/trainModel.R
 \name{trainModel}
 \alias{trainModel}
-\title{Build machine-learning based on gene-expression/mscores data}
+\title{Train ML models and perform internal validation}
 \usage{
 trainModel(
-  expData,
+  inputData,
   metadata,
   models = methodsML(outcomeClass = "character"),
   var2predict,
-  paired = NULL,
+  positiveClass = NULL,
+  pairingColumn = NULL,
   Koutter = 5,
   Kinner = 4,
   repeatsCV = 5,
@@ -17,52 +18,54 @@ trainModel(
   filterSizes = seq(2, 100, by = 2),
   rerank = FALSE,
   continue_on_fail = TRUE,
-  positiveClass = NULL,
   saveLogFile = NULL
 )
 }
 \arguments{
-\item{expData}{Feature matrix. Samples in columns and features in
-rows. expData must be a numerical matrix}
+\item{inputData}{Feature matrix. Samples in columns and features in
+rows. inputData must be a numerical matrix}
 
 \item{metadata}{dataframe with information for each sample. Samples in rows
 and variables in columns}
 
 \item{models}{named list with the ML models generated with
 caret::caretModelSpec function. methodsML function may be used to prepare
-this list}
+this list.}
 
 \item{var2predict}{character with the column name of the @metadata to predict}
 
-\item{paired}{character with the column name of the @metadata with paired information.
-Paired information is used to always asign samples from the same source (i.e. patient)
-to the same group (train or test). paired = NULL by default}
+\item{positiveClass}{value that must be considered as positive
+class (only for categoric variables). If NULL, the last class by
+alphabetical order is considered as the positive class.}
 
-\item{Koutter}{number of Outter folds in which exp.data is split for neasted
-cold validation.
+\item{pairingColumn}{Optional. Character with the column name of the
+@metadata with pairing information (e.g. technical replicates). Paired
+samples will always be assigned to the same set (training/test) to avoid
+data leakage.}
+
+\item{Koutter}{number of outter cross-validation folds.
 A list of integer with elements for each resampling iteration is admitted.
 Each list element is a vector of integers corresponding to the rows used for
-training at that iteration.}
+training on that iteration.}
 
-\item{Kinner}{number of cross-validation folds (for parameter tuning)}
+\item{Kinner}{number of innter cross-validation folds (for parameter tuning).}
 
-\item{repeatsCV}{number of repetitions of the parameter tuning process}
+\item{repeatsCV}{number of repetitions of the parameter tuning process.}
 
 \item{filterFeatures}{"rfe" (Recursive Feature Elimination), "sbf" (Selection
-By Filtering) or NULL (no feature selection)}
+By Filtering) or NULL (no feature selection).}
 
-\item{filterSizes}{Only for filterFeatures = "rfe". A numeric vector of integers
-corresponding to the number of features that should be retained}
+\item{filterSizes}{Only for filterFeatures = "rfe". A numeric vector of
+integers corresponding to the number of features that should be retained.}
 
-\item{rerank}{Only for filterFeatures = "rfe". A logical: should variable importance be
-re-calculated each time features are removed?}
+\item{rerank}{Only for filterFeatures = "rfe". A logical indicating if the
+variable importance must be re-calculated each time features are removed.}
 
-\item{continue_on_fail}{whether or not to continue training the models if any of them fail}
+\item{continue_on_fail}{whether or not to continue training the models if any
+of them fail.}
 
-\item{positiveClass}{outcome value that must be considered as positive class
-(for categoric outcomes)}
-
-\item{saveLogFile}{path to a .txt file in which to save error and warning messages}
+\item{saveLogFile}{path to a .txt file in which to save error and warning
+messages.}
 }
 \value{
 A list with four elements. The first one is the model. The second one
@@ -71,24 +74,18 @@ best parameters selected in tuning process. The last element contains data
 for AUC plots
 }
 \description{
-Build machine-learning based on gene-expression/mscores data
+Train ML models and perform internal validation
 }
 \examples{
-data(refData, exampleData, exampleMetadata)
+data(exampleData, exampleMetadata)
 \donttest{
 
-MScoresExample <- getMscores(genesets = relevantPaths,
-Patient = exampleData,
-Healthy = NULL,
-nk = 5)
+scoresExample <- getScores(exampleData, geneSets="tmod", method="GSVA")
 
-fit.model <- trainModel(expData=MScoresExample,
+trainedModel <- trainModel(inputData=scoresExample,
 metadata=exampleMetadata,
 var2predict="Response",
-models=methodsML("svmLinear"),
-Koutter=5,
-Kinner=10,
-repeatsCV=10)
+models=methodsML("svmLinear"))
 }
 
 }

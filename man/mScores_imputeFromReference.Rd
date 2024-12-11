@@ -2,7 +2,7 @@
 % Please edit documentation in R/mScores_imputeFromReference.R
 \name{mScores_imputeFromReference}
 \alias{mScores_imputeFromReference}
-\title{Calculate M-Scores without healthy controls}
+\title{Estimate M-scores for a dataset without healthy controls}
 \usage{
 mScores_imputeFromReference(
   inputData,
@@ -39,7 +39,7 @@ associated to each region are generated. In addition, this list also contains
 the input methData, pheno and platform objects
 }
 \description{
-Calculate M-Scores without healthy controls
+Estimate M-scores for a dataset without healthy controls
 }
 \examples{
 data(exampleData, refData)

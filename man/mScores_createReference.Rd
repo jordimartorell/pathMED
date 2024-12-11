@@ -2,13 +2,15 @@
 % Please edit documentation in R/mScores_createReference.R
 \name{mScores_createReference}
 \alias{mScores_createReference}
-\title{Create a reference of M-Scores}
+\title{Create a reference dataset based on M-scores}
 \usage{
-mScores_createReference(datasetsList, geneSets = "reactome", cores = 1)
+mScores_createReference(refData, geneSets, cores = 1)
 }
 \arguments{
-\item{datasetsList}{A list of lists, each one with a cases data matrix and
-controls data matrix, always in this order.}
+\item{refData}{A refData object structure: a list of lists, each one with a
+cases expression matrix and controls expression matrix
+(named as Disease and Healthy). It can be constructed with the buildRefObject
+ function.}
 
 \item{geneSets}{A named list with each
 gene set or the name of one preloaded database (gobp, gomf, gocc,
@@ -18,15 +20,15 @@ kegg, reactome, tmod)}
 }
 \value{
 A list with three elements. The first one is a list with the M-scores
-for each dataset. The second one is the geneset used for the analysis and
+for each dataset. The second one is the geneSet used for the analysis and
 the third one is the input data.
 }
 \description{
-Create a reference of M-Scores
+Create a reference dataset based on M-scores
 }
 \examples{
 data(refData)
-refMscore <- mScores_createReference(datasetsList=refData, geneSets="tmod")
+refMscore <- mScores_createReference(refData, geneSets="tmod")
 }
 \references{
 Toro-Domínguez, D. et al (2022). \emph{Scoring personalized
@@ -36,7 +38,8 @@ disease progression}
  . Briefings in Bioinformatics. 23(5)
 }
 \seealso{
-\code{\link{diseasePaths}}
+\code{\link{mScores_imputeFromReference}}, \code{\link{dissectDB}},
+\code{\link{mScores_filterPaths}}, \code{\link{trainModel}}
 }
 \author{
 Jordi Martorell-Marugán, \email{jordi.martorell@genyo.es}

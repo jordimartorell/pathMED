@@ -2,7 +2,7 @@
 % Please edit documentation in R/mScores_filterPaths.R
 \name{mScores_filterPaths}
 \alias{mScores_filterPaths}
-\title{Find relevant pathways from the reference M-scores}
+\title{Filter pathways from the reference M-scores dataset}
 \usage{
 mScores_filterPaths(
   MRef,
@@ -23,19 +23,19 @@ pathway must be significant}
 
 \item{Pcutoff}{P-value cutoff for significance}
 
-\item{plotMetrics}{Plot number of significant pathways selected based on the different combination of perc_samples and min_datasets parameters}
+\item{plotMetrics}{Plot number of significant pathways selected based on the
+different combination of perc_samples and min_datasets parameters}
 }
 \value{
 A list with the selected pathways
 }
 \description{
-Find relevant pathways from the reference M-scores
+Filter pathways from the reference M-scores dataset
 }
 \examples{
 data(refData)
-exampleRefMScore <- mScores_createReference(data=refData, genesets="tmod")
-relevantPaths <- mScores_filterPaths (MRef=exampleRefMScore, min_datasets=3,
-perc_samples=10)
+exampleRefMScore <- mScores_createReference(refData, genesets="tmod")
+relevantPaths <- mScores_filterPaths(exampleRefMScore, min_datasets=3)
 }
 \references{
 Toro-Domínguez, D. et al (2022). \emph{Scoring personalized

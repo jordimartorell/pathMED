@@ -2,13 +2,9 @@
 % Please edit documentation in R/methodsML.R
 \name{methodsML}
 \alias{methodsML}
-\title{Prepare the models parameter for trainModel the function}
+\title{Prepare the models parameter for the trainModel function}
 \usage{
-methodsML(
-  algorithms = c("rf", "knn", "nb"),
-  outcomeClass = NULL,
-  tuneLength = 20
-)
+methodsML(algorithms = c("rf", "knn", "nb"), outcomeClass, tuneLength = 20)
 }
 \arguments{
 \item{algorithms}{Vector with one or more of these methods: 'glm', 'lm',
@@ -25,10 +21,10 @@ A list with the selected models ready to use as the 'models'
 parameter in the trainModel function
 }
 \description{
-Prepare the models parameter for trainModel the function
+Prepare the models parameter for the trainModel function
 }
 \examples{
-methodsML(c('rf', 'knn'), tuneLength=20)
+models <- methodsML(c('rf', 'knn'), tuneLength=20)
 }
 \references{
 Toro-Domínguez, D. et al (2022). \emph{Scoring personalized
