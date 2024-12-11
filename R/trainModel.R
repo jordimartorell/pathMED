@@ -1,33 +1,36 @@
-#' Build machine-learning based on gene-expression/mscores data
+#' Train ML models and perform internal validation
 #'
-#' @param expData Feature matrix. Samples in columns and features in
-#' rows. expData must be a numerical matrix
+#' @param inputData Feature matrix. Samples in columns and features in
+#' rows. inputData must be a numerical matrix
 #' @param metadata dataframe with information for each sample. Samples in rows
 #' and variables in columns
 #' @param models named list with the ML models generated with
 #' caret::caretModelSpec function. methodsML function may be used to prepare
-#' this list
+#' this list.
 #' @param var2predict character with the column name of the @metadata to predict
-#' @param paired character with the column name of the @metadata with paired information.
-#' Paired information is used to always asign samples from the same source (i.e. patient)
-#' to the same group (train or test). paired = NULL by default
-#' @param Koutter number of Outter folds in which exp.data is split for neasted
-#' cold validation.
+#' @param positiveClass value that must be considered as positive
+#' class (only for categoric variables). If NULL, the last class by
+#' alphabetical order is considered as the positive class.
+#' @param pairingColumn Optional. Character with the column name of the
+#'  @metadata with pairing information (e.g. technical replicates). Paired
+#'  samples will always be assigned to the same set (training/test) to avoid
+#'  data leakage.
+#' @param Koutter number of outter cross-validation folds.
 #' A list of integer with elements for each resampling iteration is admitted.
 #' Each list element is a vector of integers corresponding to the rows used for
-#' training at that iteration.
-#' @param Kinner number of cross-validation folds (for parameter tuning)
-#' @param repeatsCV number of repetitions of the parameter tuning process
+#' training on that iteration.
+#' @param Kinner number of innter cross-validation folds (for parameter tuning).
+#' @param repeatsCV number of repetitions of the parameter tuning process.
 #' @param filterFeatures "rfe" (Recursive Feature Elimination), "sbf" (Selection
-#' By Filtering) or NULL (no feature selection)
-#' @param filterSizes Only for filterFeatures = "rfe". A numeric vector of integers
-#' corresponding to the number of features that should be retained
-#' @param rerank Only for filterFeatures = "rfe". A logical: should variable importance be
-#' re-calculated each time features are removed?
-#' @param positiveClass outcome value that must be considered as positive class
-#' (for categoric outcomes)
-#' @param continue_on_fail whether or not to continue training the models if any of them fail
-#' @param saveLogFile path to a .txt file in which to save error and warning messages
+#' By Filtering) or NULL (no feature selection).
+#' @param filterSizes Only for filterFeatures = "rfe". A numeric vector of
+#' integers corresponding to the number of features that should be retained.
+#' @param rerank Only for filterFeatures = "rfe". A logical indicating if the
+#' variable importance must be re-calculated each time features are removed.
+#' @param continue_on_fail whether or not to continue training the models if any
+#'  of them fail.
+#' @param saveLogFile path to a .txt file in which to save error and warning
+#' messages.
 #'
 #' @return A list with four elements. The first one is the model. The second one
 #' is a table with different metrics obtained. The third one is a list with the
@@ -55,38 +58,32 @@
 #'  . Briefings in Bioinformatics. 23(5)
 #'
 #' @examples
-#' data(refData, exampleData, exampleMetadata)
+#' data(exampleData, exampleMetadata)
 #' \donttest{
 #'
-#' MScoresExample <- getMscores(genesets = relevantPaths,
-#' Patient = exampleData,
-#' Healthy = NULL,
-#' nk = 5)
+#' scoresExample <- getScores(exampleData, geneSets="tmod", method="GSVA")
 #'
-#' fit.model <- trainModel(expData=MScoresExample,
+#' trainedModel <- trainModel(inputData=scoresExample,
 #' metadata=exampleMetadata,
 #' var2predict="Response",
-#' models=methodsML("svmLinear"),
-#' Koutter=5,
-#' Kinner=10,
-#' repeatsCV=10)
+#' models=methodsML("svmLinear"))
 #' }
 #'
 #' @export
-trainModel <- function(expData,
+trainModel <- function(inputData,
                   metadata,
                   models=methodsML(outcomeClass = "character"),
                   var2predict,
-                  paired=NULL,
+                  positiveClass=NULL,
+                  pairingColumn=NULL,
                   Koutter=5,
                   Kinner=4,
                   repeatsCV=5,
                   filterFeatures=NULL,
-                  filterSizes = seq(2,100, by = 2),
+                  filterSizes=seq(2,100, by = 2),
                   rerank=FALSE,
-                  continue_on_fail = TRUE,
-                  positiveClass=NULL,
-                  saveLogFile = NULL){
+                  continue_on_fail=TRUE,
+                  saveLogFile=NULL){
   if (!is.null(saveLogFile)) {
     if (file.exists(saveLogFile)) {
       file.remove(saveLogFile) # reset log file
@@ -102,15 +99,15 @@ trainModel <- function(expData,
       stop("filterFeatures must be 'sbf', 'rfe', or NULL")
     }else{
       if(filterFeatures=="rfe"){
-        filterSizes <- filterSizes[filterSizes <= nrow(expData)]
+        filterSizes <- filterSizes[filterSizes <= nrow(inputData)]
       }
     }
   }
   ## 1. Formatting data input
-  samples <- intersect(rownames(metadata), colnames(expData))
+  samples <- intersect(rownames(metadata), colnames(inputData))
 
   if (length(samples) < 1) {
-    stop("Row names of metadata and column names of expData do not match")
+    stop("Row names of metadata and column names of inputData do not match")
   }
 
   if (is.character(metadata[, var2predict])|is.factor(metadata[, var2predict])) {
@@ -122,26 +119,26 @@ trainModel <- function(expData,
                                                      pattern = c("/", " ", "-"), replacement = c(".", ".","."), vectorize = FALSE)
   }
 
-  expData <- expData[,samples]
+  inputData <- inputData[,samples]
   metadata <- metadata[samples,,drop=FALSE]
 
-  expData <- expData[rowSums(expData) != 0, ] # Remove features with all 0
+  inputData <- inputData[rowSums(inputData) != 0, ] # Remove features with all 0
 
-  expData <- data.frame('group'=metadata[,var2predict],
-                        as.data.frame(t(expData)))
-  colnames(expData) <- stringi::stri_replace_all_regex(
-    colnames(expData), pattern = c('/',' ','-',':'),
+  inputData <- data.frame('group'=metadata[,var2predict],
+                        as.data.frame(t(inputData)))
+  colnames(inputData) <- stringi::stri_replace_all_regex(
+    colnames(inputData), pattern = c('/',' ','-',':'),
     replacement = c('.','.','.','.'), vectorize=FALSE)
-  expData <- expData[!is.na(expData$group),]
-  if(is.factor(expData$group)){
-    expData$group<-as.character(expData$group)
+  inputData <- inputData[!is.na(inputData$group),]
+  if(is.factor(inputData$group)){
+    inputData$group<-as.character(inputData$group)
   }
-  if(expData %>% summarise(across(everything(), ~ any(is.na(.) | is.infinite(.)))) %>% any()){
+  if(inputData %>% summarise(across(everything(), ~ any(is.na(.) | is.infinite(.)))) %>% any()){
     stop("There are NA and/or Infinite values in your data, please replace or remove them before running trainModel")
   }
 
-  outcomeClass <- class(expData$group)
-  if (methods::is(expData$group, "character")){
+  outcomeClass <- class(inputData$group)
+  if (methods::is(inputData$group, "character")){
     prior <- "MCC"
   } else {
     prior <- "Corr"
@@ -171,10 +168,11 @@ trainModel <- function(expData,
   }
 
   if(is.null(positiveClass)){
-    positiveClass <- levels(factor(metadata[,var2predict]))[1]
+    positiveClass <- sort(unique(metadata[,var2predict]),
+                          decreasing=TRUE)[1]
   }
 
-  if(length(unique(expData$group))>2 & outcomeClass == "character"){
+  if(length(unique(inputData$group))>2 & outcomeClass == "character"){
     warning("glm, ada and gamboost models are not available for multi-class models")
     models<-models[!names(models) %in% c('glm', 'ada','gamboost')]
   }
@@ -185,14 +183,14 @@ trainModel <- function(expData,
   ## 2. Koutter
   if(!is.list(Koutter)){
     #sampleSets <- unname(vapply(seq_len(Koutter), function(x){
-    #caret::createDataPartition(y=expData$group, p=splitProp, list=TRUE)},
+    #caret::createDataPartition(y=inputData$group, p=splitProp, list=TRUE)},
     #list(seq_len(Koutter))))
-    if(!is.null(paired)){
-      isPaired<-metadata[rownames(expData),paired]
+    if(!is.null(pairingColumn)){
+      isPaired<-metadata[rownames(inputData),paired]
     }else{
       isPaired<-NULL
     }
-    sampleSets <- .makeClassBalancedFolds(y=expData$group,kfold = Koutter,
+    sampleSets <- .makeClassBalancedFolds(y=inputData$group,kfold = Koutter,
                                           repeats = 1, varType = outcomeClass,
                                           paired = isPaired)
   } else {
@@ -200,17 +198,17 @@ trainModel <- function(expData,
   }
 
   ntest<-sum(unlist(lapply(sampleSets,function(n){
-    nrow(expData[-as.numeric(unlist(n)),])})))
+    nrow(inputData[-as.numeric(unlist(n)),])})))
 
   message("Training models...")
   pb <- txtProgressBar(min = 0, max = length(sampleSets)*length(models), style = 3) # Progress bar starts
 
   resultNested <- lapply(sampleSets, function(x){
-    training <- expData[as.numeric(unlist(x)),]
-    testing <- expData[-as.numeric(unlist(x)),]
+    training <- inputData[as.numeric(unlist(x)),]
+    testing <- inputData[-as.numeric(unlist(x)),]
 
-    if(!is.null(paired)){
-      isPaired<-metadata[rownames(training),paired]
+    if(!is.null(pairingColumn)){
+      isPaired<-metadata[rownames(training),pairingColumn]
     }else{
       isPaired<-NULL
     }
@@ -405,7 +403,7 @@ trainModel <- function(expData,
     metrics <- c("mcc", "balacc", "accuracy", "recall",
                  "specificity", "npv", "precision", "fscore")
     type <- "classification"
-    levels <- c(positiveClass, unique(unique(expData$group))[!unique(expData$group) %in%
+    levels <- c(positiveClass, unique(unique(inputData$group))[!unique(inputData$group) %in%
                                                                positiveClass])
   } else {
     metrics <- c("r", "RMSE", "R2", "MAE", "RMAE", "RSE")
@@ -516,7 +514,7 @@ trainModel <- function(expData,
   gc()
 
   message("Training final model in all samples...")
-  newData<-expData[,colnames(expData) %in% c("group",Finalfeatures)]
+  newData<-inputData[,colnames(inputData) %in% c("group",Finalfeatures)]
 
 ## Add aditional parameters for nnet
 if (colnames(stats)[1] == "nnet" & outcomeClass == "character"){

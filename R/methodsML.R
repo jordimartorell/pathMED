@@ -1,4 +1,4 @@
-#' Prepare the models parameter for trainModel the function
+#' Prepare the models parameter for the trainModel function
 #'
 #' @importFrom caretEnsemble caretModelSpec
 #' @param algorithms Vector with one or more of these methods: 'glm', 'lm',
@@ -23,11 +23,11 @@
 #'  . Briefings in Bioinformatics. 23(5)
 #'
 #' @examples
-#' methodsML(c('rf', 'knn'), tuneLength=20)
+#' models <- methodsML(c('rf', 'knn'), tuneLength=20)
 #' @export
-methodsML <- function(algorithms = c('rf', 'knn', 'nb'),
-                       outcomeClass = NULL,
-                       tuneLength = 20){
+methodsML <- function(algorithms=c('rf', 'knn', 'nb'),
+                       outcomeClass,
+                       tuneLength=20){
 
     if (is.null(outcomeClass)) {
       stop('outcomeClass is missing, please specify whether the variable to
@@ -79,16 +79,16 @@ methodsML <- function(algorithms = c('rf', 'knn', 'nb'),
         availableMethods[outcomeClass])]
 
     if (length(algorithmsGood) < 1) {
-        stop(paste0('Selected algorithms do not work with ', outcomeClass,
-                    ' outcome variables.'))
+        stop(paste('Selected algorithms do not work with', outcomeClass,
+                    'outcome variables.'))
     }
 
     removedAlg <- setdiff(algorithms, algorithmsGood)
 
     if (length(removedAlg) > 0 & !('all' %in% algorithms)) {
-        warning(paste0('Methods ', paste(removedAlg, collapse=", "),
-                       ' have been removed. Not suitable for ', outcomeClass,
-                       ' outcome variables.'))
+        warning(paste('Methods', paste(removedAlg, collapse=", "),
+                       'have been removed. Not suitable for', outcomeClass,
+                       'outcome variables.'))
     }
 
     methodList <- methodList[algorithmsGood]

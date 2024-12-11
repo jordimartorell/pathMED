@@ -1,20 +1,23 @@
-#' Create a reference of M-Scores
+#' Create a reference dataset based on M-scores
 #'
-#' @param datasetsList A list of lists, each one with a cases data matrix and
-#' controls data matrix, always in this order.
+#' @param refData A refData object structure: a list of lists, each one with a
+#' cases expression matrix and controls expression matrix
+#' (named as Disease and Healthy). It can be constructed with the buildRefObject
+#'  function.
 #' @param geneSets A named list with each
 #' gene set or the name of one preloaded database (gobp, gomf, gocc,
 #' kegg, reactome, tmod)
 #' @param cores Number of cores to be used.
 #'
 #' @return A list with three elements. The first one is a list with the M-scores
-#' for each dataset. The second one is the geneset used for the analysis and
+#' for each dataset. The second one is the geneSet used for the analysis and
 #' the third one is the input data.
 #'
 #' @author Jordi Martorell-Marugán, \email{jordi.martorell@@genyo.es}
 #' @author Daniel Toro-Dominguez, \email{danieltorodominguez@@gmail.com}
 #'
-#' @seealso \code{\link{diseasePaths}}
+#' @seealso \code{\link{mScores_imputeFromReference}}, \code{\link{dissectDB}},
+#' \code{\link{mScores_filterPaths}}, \code{\link{trainModel}}
 #'
 #' @references Toro-Domínguez, D. et al (2022). \emph{Scoring personalized
 #' molecular portraits identify Systemic Lupus Erythematosus subtypes and
@@ -24,20 +27,20 @@
 #'
 #' @examples
 #' data(refData)
-#' refMscore <- mScores_createReference(datasetsList=refData, geneSets="tmod")
+#' refMscore <- mScores_createReference(refData, geneSets="tmod")
 #' @export
-mScores_createReference <- function(datasetsList,
-                          geneSets = "reactome",
+mScores_createReference <- function(refData,
+                          geneSets,
                           cores = 1){
 
     if(!is(geneSets, "list")) {
         geneSets <- genesetsData[[geneSets]]
     }
 
-    nDatasets <- length(datasetsList)
+    nDatasets <- length(refData)
 
     mscores <- lapply(seq_len(nDatasets), function (i) {
-        dataset <- datasetsList[[i]]
+        dataset <- refData[[i]]
         PatientData <- as.data.frame(dataset[[1]])
         HealthyData <- as.data.frame(dataset[[2]])
         HealthyData <- HealthyData[apply(HealthyData, 1, stats::sd) != 0,]
@@ -77,8 +80,8 @@ mScores_createReference <- function(datasetsList,
         colnames(res) <- colnames(PatientData)
         return(res)
     })
-    if(!is.null(names(datasetsList))){
-      names(mscores)<-names(datasetsList)
+    if(!is.null(names(refData))){
+      names(mscores) <- names(refData)
     }
-    return(list(mscores=mscores, geneSets=geneSets, input=datasetsList))
+    return(list(mscores=mscores, geneSets=geneSets, input=refData))
 }

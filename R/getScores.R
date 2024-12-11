@@ -344,6 +344,6 @@ getScores <- function(inputData,
 
     }
 
-    return(res)
+    return(as.matrix(res))
 }
 

@@ -1,4 +1,4 @@
-#' Calculate M-Scores without healthy controls
+#' Estimate M-scores for a dataset without healthy controls
 #'
 #' @param inputData Data matrix or data frame.
 #' @param geneSets A named list with each
@@ -35,11 +35,11 @@
 #'                             externalReference=refData)
 #' @export
 mScores_imputeFromReference <- function(inputData,
-                      geneSets,
-                      externalReference,
-                      nk = 25,
-                      imputeAll = FALSE,
-                      cores = 1){
+                                        geneSets,
+                                        externalReference,
+                                        nk=25,
+                                        imputeAll=FALSE,
+                                        cores=1){
 
     if (is(inputData, "data.frame")) {
         inputData <- as.matrix(inputData)
@@ -52,9 +52,9 @@ mScores_imputeFromReference <- function(inputData,
 
     Patient <- inputData
 
-    message("Calculating M-Scores by ",
-            "similarity with samples from external reference for ",
-            ncol(inputData), " patients")
+    message(paste("Calculating M-Scores by",
+                  "similarity with samples from external reference for",
+                  ncol(inputData), "patients"))
 
     genes <- intersect(rownames(geneSets),
                        rownames(externalReference$Reference.normalized))
@@ -81,25 +81,21 @@ mScores_imputeFromReference <- function(inputData,
 
     if(!is.null(Mscores)){
         if(ncol(PatientData) != ncol(Mscores)){
-            message("Distance between expression of ",
-                    abs(ncol(PatientData) - ncol(Mscores))," patients ",
-                    "and k-samples from Patient-reference are higher ",
-                    "than 30. Mscores ",
-                    "for these patients will not be imputed...")
+            message(paste("Distance between expression of",
+                    abs(ncol(PatientData) - ncol(Mscores)), "patients",
+                    "and k-samples from Patient-reference are higher",
+                    "than 30. Mscores",
+                    "for these patients will not be imputed..."))
         }
-    }else{
-        message("Distance between expression of ", ncol(PatientData),
-                " patients and ",
-                "k-samples from Patient-reference are higher ",
-                "than 30. Mscores ",
-                "for these patients will not be imputed...")
+    }
+    else{
+        message(paste("Distance between expression of", ncol(PatientData),
+                "patients and",
+                "k-samples from Patient-reference are higher",
+                "than 30. Mscores",
+                "for these patients will not be imputed..."))
     }
 
-    res <- Mscores
-
-
-
-
-    return(res)
+    return(Mscores)
 }
 
