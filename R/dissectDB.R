@@ -116,15 +116,15 @@ dissectDB <- function(refData,
 
     ## 3. Dissect pathways
     message("This proccess can take time...")
-    if(length(path.list) > 1){
-        pb=txtProgressBar(min=1, max=length(path.list), initial=0, style=3)
+    if(length(geneSets) > 1){
+        pb=txtProgressBar(min=1, max=length(geneSets), initial=0, style=3)
     }
-    new.path.list <- list()
-    for(p in seq_len(length(path.list))) { ## Loop for each pathway
-        path_name <- names(path.list)[p]
-        if(length(path.list) > 1){setTxtProgressBar(pb,p)}
+    new.geneSets <- list()
+    for(p in seq_len(length(geneSets))) { ## Loop for each pathway
+        path_name <- names(geneSets)[p]
+        if(length(geneSets) > 1){setTxtProgressBar(pb,p)}
         if(length(z.data) == 1){ ## One dataset - kmeans clustering
-            genes <- intersect(path.list[[path_name]], rownames(z.data[[1]]))
+            genes <- intersect(geneSets[[path_name]], rownames(z.data[[1]]))
 
             if(length(genes) > minPathSize){
                 tmp <- z.data[[1]][genes,]
@@ -134,14 +134,14 @@ dissectDB <- function(refData,
                                        explainedVariance=explainedVariance,
                                        maxSplits=maxSplits,
                                        cooccurrence=FALSE)
-                new.path.list <- c(new.path.list,p.list)
+                new.geneSets <- c(new.geneSets,p.list)
             }
             else{
                 ## Pathway with small size
                 p.list <- list(genes)
                 names(p.list) <- path_name
-                #new.path.list[count] <- p.list
-                new.path.list <- c(new.path.list,p.list)
+                #new.geneSets[count] <- p.list
+                new.geneSets <- c(new.geneSets,p.list)
             }
 
 
@@ -150,7 +150,7 @@ dissectDB <- function(refData,
 
             clusters.p <- lapply(seq_len(length(z.data)),
                                  function(d){ ## loop - datasets
-                                     genes <- intersect(path.list[[path_name]],
+                                     genes <- intersect(geneSets[[path_name]],
                                                         rownames(z.data[[d]]))
 
                                      if(length(genes) > minPathSize){
@@ -199,18 +199,18 @@ dissectDB <- function(refData,
                                        explainedVariance=explainedVariance,
                                        maxSplits=maxSplits,
                                        cooccurrence=FALSE)
-                new.path.list <- c(new.path.list, p.list)
+                new.geneSets <- c(new.geneSets, p.list)
             }
             else{
                 p.list <- list(allgenes)
                 names(p.list) <- path_name
-                new.path.list <- c(new.path.list, p.list)
+                new.geneSets <- c(new.geneSets, p.list)
             }
         }
     }
-    if(length(path.list) > 1) {
+    if(length(geneSets) > 1) {
         close(pb)
     }
 
-    return(new.path.list)
+    return(new.geneSets)
 }
