@@ -304,12 +304,12 @@ trainModel <- function(inputData,
                      error=function(e) {
                        err <- conditionMessage(e)
                        NULL
-                     }),
+                     },
             warning <- function(w) {
                        warn <<- append(warn, conditionMessage(w))
                        invokeRestart("muffleWarning")
                      }
-          )
+          ))
         )
 
         if (!is.null(saveLogFile) & (!is.null(warn) | !is.null(err))) {
