@@ -49,7 +49,6 @@
 #' @import mboost
 #' @import import
 #' @import kernlab
-#' @import metrica
 #'
 #' @references Toro-Domínguez, D. et al (2022). \emph{Scoring personalized
 #' molecular portraits identify Systemic Lupus Erythematosus subtypes and
@@ -64,9 +63,9 @@
 #' scoresExample <- getScores(exampleData, geneSets="tmod", method="GSVA")
 #'
 #' trainedModel <- trainModel(inputData=scoresExample,
-#' metadata=exampleMetadata,
-#' var2predict="Response",
-#' models=methodsML("svmLinear"))
+#'                             metadata=exampleMetadata,
+#'                             var2predict="Response",
+#'                             models=methodsML("svmLinear"))
 #' }
 #'
 #' @export
