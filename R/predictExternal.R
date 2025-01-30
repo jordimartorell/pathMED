@@ -99,6 +99,10 @@ predictExternal <- function(testData,
                            positiveClass,"'\n"))
                 positiveClassOrder <- length(unique(realValues))
 
+            } else {
+                positiveClassOrder <- which(sort(unique(realValues),
+                                                 decreasing=FALSE) ==
+                                                positiveClass)
             }
             type <- "classification"
             metrics <-c("mcc", "balacc", "accuracy", "recall","specificity",
