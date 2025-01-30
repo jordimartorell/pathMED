@@ -207,7 +207,7 @@ trainModel <- function(inputData,
   if(!is.list(Koutter)){
 
     if(!is.null(pairingColumn)){
-      isPaired <- metadata[rownames(inputData), paired]
+      isPaired <- metadata[rownames(inputData), pairingColumn]
     } else{
       isPaired <- NULL
     }
