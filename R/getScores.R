@@ -4,9 +4,9 @@
 #' @param geneSets A named list with each
 #' gene set or the name of one preloaded database (gobp, gomf, gocc,
 #' kegg, reactome, tmod).
-#' @param method Scoring method: M-score, GSVA, ssGSEA, singscore, Z-score,
-#' Plage, AUCell, MDT, MLM, ORA, UDT, ULM, FGSEA, norm_FGSEA, WMEAN, norm_WMEAN,
-#' corr_WMEAN, WSUM, norm_WSUM or corr_WSUM.
+#' @param method Scoring method: M-score, GSVA, ssGSEA, singscore, Plage,
+#' Z-score, AUCell, MDT, MLM, ORA, UDT, ULM, FGSEA, norm_FGSEA, WMEAN,
+#' norm_WMEAN, corr_WMEAN, WSUM, norm_WSUM or corr_WSUM.
 #' @param labels (Only for M-Score) Vector with the samples class labels (0 or
 #' "Healthy" for control samples). Optional.
 #' @param cores Number of cores to be used.
@@ -344,6 +344,7 @@ getScores <- function(inputData,
 
     }
 
+    # return(as.matrix(labelled::remove_attributes(res)))
     return(as.matrix(res))
 }
 
