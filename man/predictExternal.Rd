@@ -41,7 +41,6 @@ trainedModel <- trainModel(inputData=scoresExample,
 predictions <- predictExternal(externalData, trainedModel)
 }
 
-#' @export
 }
 \references{
 Toro-Domínguez, D. et al (2022). \emph{Scoring personalized
