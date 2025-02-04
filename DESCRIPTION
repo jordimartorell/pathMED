@@ -36,6 +36,7 @@ Imports:
     pbapply,
     randomForest,
     ranger,
+    singscore,
     stats,
     stringi,
     dplyr,
