@@ -13,9 +13,9 @@ getScores(inputData, geneSets, method = "GSVA", labels = NULL, cores = 1, ...)
 gene set or the name of one preloaded database (gobp, gomf, gocc,
 kegg, reactome, tmod).}
 
-\item{method}{Scoring method: M-score, GSVA, ssGSEA, singscore, Z-score,
-Plage, AUCell, MDT, MLM, ORA, UDT, ULM, FGSEA, norm_FGSEA, WMEAN, norm_WMEAN,
-corr_WMEAN, WSUM, norm_WSUM or corr_WSUM.}
+\item{method}{Scoring method: M-score, GSVA, ssGSEA, singscore, Plage,
+Z-score, AUCell, MDT, MLM, ORA, UDT, ULM, FGSEA, norm_FGSEA, WMEAN,
+norm_WMEAN, corr_WMEAN, WSUM, norm_WSUM or corr_WSUM.}
 
 \item{labels}{(Only for M-Score) Vector with the samples class labels (0 or
 "Healthy" for control samples). Optional.}

@@ -58,7 +58,7 @@ By Filtering) or NULL (no feature selection).}
 \item{filterSizes}{Only for filterFeatures = "rfe". A numeric vector of
 integers corresponding to the number of features that should be retained.}
 
-\item{rerank}{Only for filterFeatures = "rfe". A logical indicating if the
+\item{rerank}{Only for filterFeatures = "rfe". A boolean indicating if the
 variable importance must be re-calculated each time features are removed.}
 
 \item{continue_on_fail}{whether or not to continue training the models if any
@@ -83,9 +83,9 @@ data(exampleData, exampleMetadata)
 scoresExample <- getScores(exampleData, geneSets="tmod", method="GSVA")
 
 trainedModel <- trainModel(inputData=scoresExample,
-metadata=exampleMetadata,
-var2predict="Response",
-models=methodsML("svmLinear"))
+                            metadata=exampleMetadata,
+                            var2predict="Response",
+                            models=methodsML("svmLinear"))
 }
 
 }

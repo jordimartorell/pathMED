@@ -87,6 +87,7 @@ getScores <- function(inputData,
         }
         res <- GSVA::gsva(paramMatrix,
                           BPPARAM=BiocParallel::SnowParam(workers=cores))
+        attr(res, "geneSets") <- NULL
     }
 
     else if (method == "singscore") {
@@ -344,7 +345,6 @@ getScores <- function(inputData,
 
     }
 
-    # return(as.matrix(labelled::remove_attributes(res)))
     return(as.matrix(res))
 }
 

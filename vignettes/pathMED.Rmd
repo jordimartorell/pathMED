@@ -204,12 +204,12 @@ pak::pkg_system_requirements(c("metrica", "factoextra", "FactoMineR"),
 # Scoring
 
 The function *getScores()* may be used to calculate a score for each
-geneset and sample. The input is a matrix or data frame with molecular features 
-in rows and samples in columns, as well as a geneset collection. The geneset 
-may be selected from the preloaded ones (Gene Ontology, KEGG, Reactome and 
-tmod), or a custom geneset may be supplied as a named list.
-The function has implemented 22 scoring methods, which may be
-selected with the **method** parameter. The available methods and
+geneset and sample. The input is a matrix or data frame with molecular
+features in rows and samples in columns, as well as a geneset
+collection. The geneset may be selected from the preloaded ones (Gene
+Ontology, KEGG, Reactome and tmod), or a custom geneset may be supplied
+as a named list. The function has implemented 22 scoring methods, which
+may be selected with the **method** parameter. The available methods and
 references are:
 
 -   M-score (@toroDominguez2022)
@@ -225,20 +225,68 @@ references are:
     corr_WMEAN, WSUM, norm_WSUM and corr_WSUM) (@badia2022)
 -   FGSEA and norm_FGSEA (@korotkevich2021)
 
+As genesets, a named list containing the genes associated to each
+geneset may be used in the **geneSets** parameter. Nevertheless, there
+are preloaded databases that can be used using its name in the geneSets
+parameter: Reactome ("reactome"), KEGG ("kegg"), transcriptional modules
+associated with immune functions ("tmod") or Gene Ontology ("gobp",
+"gomf", "gocc"). If you are running the script with a multi-core
+processor, use the **cores** parameter to specify the number of workers
+to be used (most of the pathMED functions include this parameter).
+Furthermore, any specific parameter for the scoring functions may be
+added (see for instance ?GSVA::gsvaParam).
+
 To run this function with the example data:
 
 ```{r, message = FALSE, results='hide', warning=FALSE}
 library(pathMED)
 data(exampleData)
-scoresExample <- getScores(exampleData, geneSets="tmod", method="GSVA")
+scoresExample <- getScores(exampleData, geneSets="kegg", method="GSVA")
+head(scoresExample)
 ```
 
+The result is a matrix with geneset identifiers in rows and samples in
+columns. The function *ann2term()* may be used to annotate the
+identifiers to their description.
 
-# 
+```{r, message = FALSE, results='hide', warning=FALSE}
+annotatedPathways <- ann2term(scoresExample)
+head(annotatedPathways)
+```
 
-# 
+# Training ML models
 
-# 
+The next step in the core pathMED pipeline is using the scores
+calculated in the previous step to train ML models for predicting
+categorical or numerical clinical variables. The *trainModel()* function
+fits and tests several algorithms and selects the one with the best
+performance predicting the specified variable (**var2predict**
+parameter). The input objects are the scores matrix calculated in the
+previous step (**inputData**), and a data frame with the metadata of the
+samples (**metadata**). One or several algorithms may be selected with
+the **algorithms** parameter (see the function help). Nested
+cross-validation is performed using k folds for the outter CV
+(**Koutter**) and inner CV (**Kinner**). The inner k-fold
+cross-validation is repeated several times (**reaptsCV** parameter) for
+hyperparameter tuning.
+
+```{r, warning=FALSE, eval=FALSE}
+trainedModel  <- trainModel(scoresExample,
+                 metadata=exampleMetadata,
+                 var2predict="Response",
+                  models = methodsML(algorithms=c('rf', 'knn'), outcomeClass="character"),
+                  Koutter = 2,
+                  Kinner = 3,
+                  repeatsCV = 1)
+```
+
+# trainedModel \<- trainModel(inputData=scoresExample,
+
+\#' metadata=exampleMetadata,
+
+\#' var2predict="Response",
+
+\#' models=methodsML("svmLinear"))
 
 # 
 
@@ -298,16 +346,7 @@ This approach permits to compare the obtained results with the M-scores
 from new data, even when the measured genes do not completely overlap.
 
 *createReference()* function uses this **refData** object as input and
-calculates the M-scores for each gene set of the specified database. By
-default, Reactome is the used database, but the **genesets** parameter
-can be modified to use KEGG ("kegg"), transcriptional modules related
-with immune functions ("tmod") or Gene Ontology ("gobp", "gomf",
-"gocc"). Furthermore, if "custom" is selected, any geneset with the
-proper format can be introduced to the **customGeneset** parameter. It
-should be a named list with the genes of each gene set. If you are
-running the script with a multi-core processor, use the **cores**
-parameter to specify the number of workers to be used (most of the
-pathMED functions include this parameter).
+calculates the M-scores for each gene set of the specified database.
 
 ```{r, eval=TRUE, warning=FALSE, message=FALSE, results='hide'}
 refMscore <- createReference(data=refData,
@@ -356,30 +395,6 @@ MScoresExample[1:5, 1:5]
 ```
 
 # Step 3: Make predictors
-
-**getML()** function fits and tests several machine learning algorithms
-in order to find which one has the best performance predicting the
-specified variable (**var2predict** parameter). The input objects are
-the M-scores matrix calculated in the step 2 (**expData**), and a data
-frame with the metadata of the samples (**metadata**). One or several
-algorithms may be selected with the **algorithms** parameter (see the
-function help). Nested cross-validation is performed using k folds for
-the outter CV (**Koutter**) and inner CV (**Kinner**). The inner k-fold
-cross-validation is repeated several times (**reaptsCV** parameter) for
-hyperparameter tuning.
-
-```{r, warning=FALSE, eval=FALSE}
-fit.model <- getML(expData=MScoresExample,
-                 metadata=exampleMetadata,
-                 var2predict="Response",
-                  models = methodsML(algorithms = "all", outcomeClass = "character"),
-                  Koutter = 2,
-                  Kinner = 3,
-                  repeatsCV = 1,
-                  continue_on_fail = TRUE,
-                  positiveClass = NULL,
-                  saveLogFile = NULL)
-```
 
 # Session info
 

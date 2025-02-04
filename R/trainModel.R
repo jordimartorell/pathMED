@@ -40,15 +40,7 @@
 #' @author Jordi Martorell-Marugán, \email{jordi.martorell@@genyo.es}
 #' @author Daniel Toro-Dominguez, \email{danieltorodominguez@@gmail.com}
 #'
-#' @import caret
-#' @import caretEnsemble
-#' @import xgboost
-#' @import randomForest
-#' @import klaR
-#' @import ada
-#' @import mboost
-#' @import import
-#' @import kernlab
+#' @importFrom magrittr '%>%'
 #'
 #' @references Toro-Domínguez, D. et al (2022). \emph{Scoring personalized
 #' molecular portraits identify Systemic Lupus Erythematosus subtypes and

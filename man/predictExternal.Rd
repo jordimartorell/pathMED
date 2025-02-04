@@ -2,30 +2,46 @@
 % Please edit documentation in R/predictExternal.R
 \name{predictExternal}
 \alias{predictExternal}
-\title{Apply predictive model to a new dataset}
+\title{Predict conditions in external datasets}
 \usage{
-predictExternal(testData, model, orig.values = NULL, positiveClass = NULL)
+predictExternal(testData, model, realValues = NULL, positiveClass = NULL)
 }
 \arguments{
-\item{testData}{Must be a numerical matrix containing the same features used
-for the model construction in columns, and the samples (new observations) in
-the rows}
+\item{testData}{Numerical matrix with the same features used
+for the model construction in rows, and the samples (new observations) in
+columns}
 
-\item{model}{getML output or a caret-like model object}
+\item{model}{trainModel output or a caret-like model object}
 
-\item{orig.values}{Optional, named vector (for numerical variables) or
+\item{realValues}{Optional, named vector (for numerical variables) or
 named factor (for categorical variables) with real values for each sample}
 
 \item{positiveClass}{Optional, positive class to get confusion matrix.
-Only needed when orig.values = TRUE and for categorical variables}
+Only needed when realValues = TRUE and for categorical variables}
 }
 \value{
-A dataframe with prediction for the new observations (if orig.values
+A dataframe with predictions (if realValues
 is not provided) or a list with the dataframe with predictions and a
-dataframe with the performance metrics (if orig.values is provided)
+dataframe with the performance metrics (if realValues is provided)
 }
 \description{
-Apply predictive model to a new dataset
+Predict conditions in external datasets
+}
+\examples{
+data(exampleData, exampleMetadata)
+\donttest{
+
+scoresExample <- getScores(exampleData, geneSets="tmod", method="GSVA")
+
+trainedModel <- trainModel(inputData=scoresExample,
+                            metadata=exampleMetadata,
+                            var2predict="Response",
+                            models=methodsML("svmLinear"))
+
+predictions <- predictExternal(externalData, trainedModel)
+}
+
+#' @export
 }
 \references{
 Toro-Domínguez, D. et al (2022). \emph{Scoring personalized
