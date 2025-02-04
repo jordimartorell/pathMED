@@ -38,7 +38,7 @@
 #' predictions <- predictExternal(externalData, trainedModel)
 #' }
 #'
-#' #' @export
+#' @export
 predictExternal <- function(testData,
                   model,
                   realValues=NULL,
