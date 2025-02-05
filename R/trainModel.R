@@ -518,6 +518,21 @@ trainModel <- function(inputData,
 
     names(stats) <- names(models)
 
+
+    if (sum(is.na(stats)) > 0) {
+        message("Some metrics could not be calculated and are returned as 0.0")
+        stats <- apply(stats, 2, function(x) {
+            if (sum(is.na(x)) > 0) {
+                corrCol <- x
+                corrCol[is.na(corrCol)] <- 0.0
+                return(corrCol)
+            } else {
+                return(x)
+            }
+
+        })
+    }
+
     if(length(models) > 1){
         switch(prior,
                "MCC"={stats <- stats[,order(as.numeric(stats["mcc",]),
