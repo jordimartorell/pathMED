@@ -87,12 +87,6 @@ predictExternal <- function(testData,
                                       decreasing=TRUE)[1]
                 cat(paste0("Positive class not provided, selected: '",
                            positiveClass,"'\n"))
-                positiveClassOrder <- length(unique(realValues))
-
-            } else {
-                positiveClassOrder <- which(sort(unique(realValues),
-                                                 decreasing=FALSE) ==
-                                                positiveClass)
             }
             type <- "classification"
             metrics <-c("mcc", "balacc", "accuracy", "recall","specificity",
@@ -115,7 +109,7 @@ predictExternal <- function(testData,
 
         stats <- metrica::metrics_summary(obs = obs, pred = preds,
                                           type = type,
-                                          pos_level = positiveClassOrder,
+                                          pos_level = 1,
                                           metrics_list = metrics)
 
         test.predictions <- data.frame("Obs"=names(test.predictions),

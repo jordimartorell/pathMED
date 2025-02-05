@@ -82,10 +82,12 @@ data(exampleData, exampleMetadata)
 
 scoresExample <- getScores(exampleData, geneSets="tmod", method="GSVA")
 
+modelsList <- methodsML("svmLinear", outcomeClass="character")
+
 trainedModel <- trainModel(inputData=scoresExample,
                             metadata=exampleMetadata,
                             var2predict="Response",
-                            models=methodsML("svmLinear"))
+                            models=modelsList)
 }
 
 }
