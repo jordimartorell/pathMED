@@ -267,17 +267,27 @@ samples (**metadata**). One or several algorithms may be selected with
 the **algorithms** parameter (see the function help). Nested
 cross-validation is performed using k folds for the outter CV
 (**Koutter**) and inner CV (**Kinner**). The inner k-fold
-cross-validation is repeated several times (**reaptsCV** parameter) for
-hyperparameter tuning.
+cross-validation may be repeated several times (**repeatsCV** parameter)
+for hyperparameter tuning.
+
+In the example data, the metadata contain the column *Response*
+indicating if the patients responded to a treatment or not. The
+**positiveClass** may be specified to calculate the performance metrics
+considering that the positive class (e.g. diseased) is the indicated.
 
 ```{r, warning=FALSE, eval=FALSE}
+data(exampleMetadata)
+
+modelsList <- methodsML(algorithms=c('rf', 'knn'), outcomeClass="character")
+
 trainedModel  <- trainModel(scoresExample,
-                 metadata=exampleMetadata,
-                 var2predict="Response",
-                  models = methodsML(algorithms=c('rf', 'knn'), outcomeClass="character"),
-                  Koutter = 2,
-                  Kinner = 3,
-                  repeatsCV = 1)
+                            metadata=exampleMetadata,
+                            var2predict="Response",
+                            positiveClass = "YES",
+                            models = modelsList,
+                            Koutter = 3,
+                            Kinner = 3,
+                            repeatsCV = 1)
 ```
 
 # trainedModel \<- trainModel(inputData=scoresExample,

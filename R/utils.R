@@ -210,26 +210,24 @@
 
 ## Function to cluster pathways into co-expressed subpathways
 .clusterPath <- function(data, path_name, minSplitSize, explainedVariance,
-           maxSplits,cooccurrence= FALSE) {
-    #if(!is.null(explainedVariance)){
+           maxSplits, cooccurrence= FALSE) {
     pca <- FactoMineR::PCA(t(data), graph=FALSE)
     pca_eig <- as.data.frame(pca$eig)
     pca_eig <-
       pca_eig[pca_eig$`cumulative percentage of variance` < explainedVariance, ]
     npcas <- nrow(pca_eig) + 1 ## Get K (npcas)
     if (all(is.na(pca_eig$`cumulative percentage of variance`))) {
-      npcas=0
+      npcas <- 0
     }
 
     if (npcas > 1) {
       if (!is.null(maxSplits)) {
         if (npcas > maxSplits) {
-          npcas=maxSplits
+          npcas <- maxSplits
         }
       }
 
       clust <- stats::kmeans(data, npcas)
-      #data.sc <- scale(data)
 
       if (!all(table(clust$cluster) >= minSplitSize)) {
         ## Check if here are small clusters
@@ -260,7 +258,7 @@
           as.matrix(dist(
             distance,
             diag=NULL,
-            upper=T,
+            upper=TRUE,
             method="euclidean"
           ))
         diag(distance)=NA

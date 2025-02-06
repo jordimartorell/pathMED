@@ -3,7 +3,8 @@
 #' @param refData A refData object structure: a list of lists, each one with a
 #' cases expression matrix and controls expression matrix
 #' (named as Disease and Healthy). It can be constructed with the buildRefObject
-#'  function.
+#'  function. A list with one or more expression matrices, without controls, can
+#'  also be used.
 #' @param geneSets A named list with each
 #' gene set or the name of one preloaded database (gobp, gomf, gocc,
 #' kegg, reactome, tmod).
@@ -51,26 +52,36 @@ dissectDB <- function(refData,
                       percSharedGenes=90){
 
     ## 1. Get Z-scores by gene
-    z.data <- lapply(refData, function(x) {
-        Href <- data.frame("mean"=rowMeans(as.matrix(x$Healthy), na.rm=TRUE),
-                           "sd"=matrixStats::rowSds(as.matrix(x$Healthy),
-                                                    na.rm=TRUE))
-        x.zscore <- as.data.frame(do.call("cbind",
-                                          lapply(seq_len(ncol(x$Disease)),
-                                                 function(pat) {
-                                                     pat.i <- x$Disease[,pat]
-                                                     names(pat.i) <- rownames(
-                                                         x$Disease)
-                                                     pat.i <- pat.i[
-                                                         rownames(Href)]
-                                                     return((pat.i - Href$mean)
-                                                            / Href$sd)
-                                                 })))
-        colnames(x.zscore) <- colnames(x$Disease)
-        x.zscore <- x.zscore[apply(x.zscore, 1, function(xi) {
-            sum(is.na(xi))}) == 0,]
-        return(x.zscore)
-    })
+    if (is(refData[[1]], "list")) {
+        z.data <- lapply(refData, function(x) {
+            Href <- data.frame("mean"=rowMeans(as.matrix(x$Healthy), na.rm=TRUE),
+                               "sd"=matrixStats::rowSds(as.matrix(x$Healthy),
+                                                        na.rm=TRUE))
+            x.zscore <- as.data.frame(do.call("cbind",
+                                              lapply(seq_len(ncol(x$Disease)),
+                                                     function(pat) {
+                                                         pat.i <- x$Disease[,pat]
+                                                         names(pat.i) <- rownames(
+                                                             x$Disease)
+                                                         pat.i <- pat.i[
+                                                             rownames(Href)]
+                                                         return((pat.i - Href$mean)
+                                                                / Href$sd)
+                                                     })))
+            colnames(x.zscore) <- colnames(x$Disease)
+            x.zscore <- x.zscore[apply(x.zscore, 1, function(xi) {
+                sum(is.na(xi))}) == 0,]
+            return(x.zscore)
+        })
+    } else {
+        z.data <- lapply(refData, function(x) {
+            x.zscore <- t(scale(t(x)))
+            x.zscore <- x.zscore[apply(x.zscore, 1, function(xi) {
+                sum(is.na(xi))}) == 0,]
+            return(x.zscore)
+        })
+    }
+
 
     ## 2. Getpathway database
     if (!is.list(geneSets)) {
