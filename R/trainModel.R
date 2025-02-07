@@ -186,7 +186,8 @@ trainModel <- function(inputData,
 
 
     if(length(unique(inputData$group)) > 2 &
-       methods::is(outcomeClass, "character")){
+        methods::is(outcomeClass, "character") &
+        any(names(models) %in% c('glm', 'ada','gamboost'))){
         message("glm, ada and gamboost models are not available for
             multi-class models")
         models <- models[!names(models) %in% c('glm', 'ada','gamboost')]
@@ -340,7 +341,7 @@ trainModel <- function(inputData,
         for (m in seq_len(length(modelResults))) {
             if (methods::is(outcomeClass, "character")) {
                 classLabels <- levels(as.factor(training$group))
-                predTest <- stats::predict(modelResults[[m]], newdata = testing,
+                predTest <- stats::predict(modelResults[[m]], newdata=testing,
                                            type = "prob")[, classLabels]
                 sel <- unlist(lapply(seq_len(nrow(predTest)), function(n) {
                     ifelse(sum(!is.na(predTest[n,])) == 0, FALSE,
@@ -364,6 +365,7 @@ trainModel <- function(inputData,
                     cm <- append(cm, list(cmModel))
                     names(cm)[m] <- names(modelResults)[m]
                     predTest <- data.frame(predTest, obs=y)
+                    rownames(predTest) <- rownames(testing)
                 }
             } else { ## Continuous variable
                 predTest <- stats::predict(modelResults[[m]], newdata=testing)
@@ -547,7 +549,7 @@ trainModel <- function(inputData,
     }))
 
     ## Table of prediction from subsets
-    predsTable <- do.call("rbind",lapply(resultNested,function(x){
+    predsTable <- do.call("rbind",lapply(resultNested, function(x){
         x$preds[colnames(stats)[1]][[1]]
     }))
 

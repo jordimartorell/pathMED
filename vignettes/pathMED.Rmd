@@ -201,16 +201,56 @@ pak::pkg_system_requirements(c("metrica", "factoextra", "FactoMineR"),
                              "ubuntu", "20.04")
 ```
 
-# Scoring
+# 1. Core pipeline
 
-The function *getScores()* may be used to calculate a score for each
-geneset and sample. The input is a matrix or data frame with molecular
-features in rows and samples in columns, as well as a geneset
-collection. The geneset may be selected from the preloaded ones (Gene
-Ontology, KEGG, Reactome and tmod), or a custom geneset may be supplied
-as a named list. The function has implemented 22 scoring methods, which
-may be selected with the **method** parameter. The available methods and
-references are:
+(Add figure)
+
+## 1.1 (Optional) Decomposing gene sets into coexpressed subsets
+
+Gene sets often contain genes associated with a specific biological
+function, but their expression can be heterogeneous, sometimes even
+exhibiting opposing directions when the function is altered (e.g., in
+disease). The *dissectDB* function clusters the genes within each set
+into subsets based on coordinated expression patterns. This clustering
+can be performed using one or more molecular datasets, which may include
+control samples or not. The same dataset used in the following sections
+can also be used for this purpose. Both preloaded and custom gene sets
+can be used (see the next section for details). The following code
+splits KEGG pathways into subpathways using the example dataset:
+
+The output is a gene set that can be used with the getScores function.
+In the new gene set, subpathways are labeled with the suffix \_splitx.
+For example, for the pathway hsa04714, the resulting subpathways will
+include this suffix.
+
+```{r, message = FALSE, results='hide', warning=FALSE}
+library(pathMED)
+data(exampleData)
+
+customKEGG <- dissectDB(list(exampleData), geneSets = "kegg")
+```
+
+The output is a gene set that can be used with the getScores function.
+In the new gene set, subpathways are labeled with the suffix splitx. For
+example, for the pathway hsa04714:
+
+```{r, message = FALSE, warning=FALSE}
+# Before splitting
+print(genesetsData[["kegg"]][["hsa04714"]])
+
+# After splitting
+print(customKEGG[grep("hsa04714", names(customKEGG))])
+
+```
+
+## 1.2 Scoring
+
+The `getScores()` function calculates a score for each gene set and
+sample. It takes as input a matrix or data frame with molecular features
+in rows and samples in columns, along with a gene set collection. The
+function supports 22 different scoring methods, which can be specified
+using the `method` parameter. The available methods and their references
+are:
 
 -   M-score (@toroDominguez2022)
 -   GSVA (@hanzelman2013)
@@ -225,16 +265,27 @@ references are:
     corr_WMEAN, WSUM, norm_WSUM and corr_WSUM) (@badia2022)
 -   FGSEA and norm_FGSEA (@korotkevich2021)
 
-As genesets, a named list containing the genes associated to each
-geneset may be used in the **geneSets** parameter. Nevertheless, there
-are preloaded databases that can be used using its name in the geneSets
-parameter: Reactome ("reactome"), KEGG ("kegg"), transcriptional modules
-associated with immune functions ("tmod") or Gene Ontology ("gobp",
-"gomf", "gocc"). If you are running the script with a multi-core
-processor, use the **cores** parameter to specify the number of workers
-to be used (most of the pathMED functions include this parameter).
-Furthermore, any specific parameter for the scoring functions may be
-added (see for instance ?GSVA::gsvaParam).
+Gene sets can be provided as a named list, where each entry contains the
+genes associated with a specific gene set, using the `geneSets`
+parameter. Alternatively, preloaded databases can be used by specifying
+their name in the `geneSets` parameter:
+
+-   Reactome ("reactome")
+-   KEGG ("kegg")
+-   Transcriptional modules associated with immune functions ("tmod")
+-   Gene Ontology BP, MF and CC ("go_bp", "go_mf", "go_cc")
+-   Disgenet ("disgenet")
+-   Human Phenotype Ontology ("hpo")
+-   WikiPathways ("wikipathways")
+-   PharmGKB ("pharmgkb")
+-   LINCS ("lincs")
+-   Comparative Toxicogenomics Database ("ctd")
+
+If running the script on a multi-core processor, you can use the `cores`
+parameter to specify the number of workers (most `pathMED` functions
+include this parameter). Additionally, specific parameters for the
+scoring functions can be customized (see, for example,
+`?GSVA::gsvaParam`).
 
 To run this function with the example data:
 
@@ -245,35 +296,36 @@ scoresExample <- getScores(exampleData, geneSets="kegg", method="GSVA")
 head(scoresExample)
 ```
 
-The result is a matrix with geneset identifiers in rows and samples in
-columns. The function *ann2term()* may be used to annotate the
-identifiers to their description.
+The result is a matrix with gene set identifiers as rows and samples as
+columns. To annotate the identifiers with their corresponding
+descriptions, you can use the `ann2term()` function.
 
 ```{r, message = FALSE, results='hide', warning=FALSE}
 annotatedPathways <- ann2term(scoresExample)
 head(annotatedPathways)
 ```
 
-# Training ML models
+## 1.3. Training ML models
 
-The next step in the core pathMED pipeline is using the scores
-calculated in the previous step to train ML models for predicting
-categorical or numerical clinical variables. The *trainModel()* function
-fits and tests several algorithms and selects the one with the best
-performance predicting the specified variable (**var2predict**
-parameter). The input objects are the scores matrix calculated in the
-previous step (**inputData**), and a data frame with the metadata of the
-samples (**metadata**). One or several algorithms may be selected with
-the **algorithms** parameter (see the function help). Nested
-cross-validation is performed using k folds for the outter CV
-(**Koutter**) and inner CV (**Kinner**). The inner k-fold
-cross-validation may be repeated several times (**repeatsCV** parameter)
-for hyperparameter tuning.
+The next step in the core `pathMED` pipeline is to use the scores
+calculated in the previous step to train machine learning (ML) models
+for predicting categorical or numerical clinical variables. The
+`trainModel()` function fits and tests multiple algorithms, selecting
+the one with the best performance for predicting the specified variable
+(`var2predict` parameter). The input objects are `inputData` (the scores
+matrix obtained in the previous step), and `metadata` (a data frame
+containing sample metadata).
 
-In the example data, the metadata contain the column *Response*
-indicating if the patients responded to a treatment or not. The
-**positiveClass** may be specified to calculate the performance metrics
-considering that the positive class (e.g. diseased) is the indicated.
+One or more algorithms can be selected using the `algorithms` parameter
+(see the function help for details). Nested cross-validation is
+performed using `Koutter` folds for the outer cross-validation (CV) and
+`Kinner` folds for the inner CV. The inner k-fold CV can be repeated
+multiple times (`repeatsCV` parameter) for hyperparameter tuning.
+
+In the example dataset, the metadata include a column called `Response`,
+indicating whether patients responded to a treatment. The
+`positiveClass` parameter can be specified to calculate performance
+metrics based on the chosen positive class (e.g., diseased).
 
 ```{r, warning=FALSE, eval=FALSE}
 data(exampleMetadata)
@@ -290,17 +342,9 @@ trainedModel  <- trainModel(scoresExample,
                             repeatsCV = 1)
 ```
 
-# trainedModel \<- trainModel(inputData=scoresExample,
+# 2. Additional functionalities
 
-\#' metadata=exampleMetadata,
-
-\#' var2predict="Response",
-
-\#' models=methodsML("svmLinear"))
-
-# 
-
-# M-Scores
+# 3. M-Scores
 
 This methodology was used in a previous work that used personalized
 scoring to predict the drug response, symptoms and progression of
@@ -308,9 +352,9 @@ Systemic Lupus Erythematosus patients from gene expression data
 @toroDominguez2022. pathMED has been developed to be applicable to any
 disease or biological context.
 
-# Step 1: Prepare the reference data
+## Step 1: Prepare the reference data
 
-## 1.1. Build the reference data object
+### 1.1. Build the reference data object
 
 ```{r, message = FALSE, results='hide', warning=FALSE}
 data(reference_datasets, exampleMetadata)
@@ -347,7 +391,7 @@ Note that all the gene expression datasets should be log2 transformed
 and with a normal distribution. All gene names must be annotated as Gene
 Symbol in all reference and test datasets.
 
-## 1.2. Calculate the M-scores for reference data
+### 1.2. Calculate the M-scores for reference data
 
 After creating a **refData** object, the next step is to calculate
 M-scores for the reference datasets. M-scores measure the level of
@@ -364,7 +408,7 @@ refMscore <- createReference(data=refData,
                            cores=1)
 ```
 
-## 1.3. Filter gene sets
+### 1.3. Filter gene sets
 
 It is necessary to find the gene sets that are more relevant for the
 studied phenotype. With the **diseasePaths** function, you can perform
@@ -386,7 +430,7 @@ relevantPaths <- diseasePaths(MRef=refMscore,
                        perc_samples=10)
 ```
 
-# Step 2: Calculate the M-scores
+## Step 2: Calculate the M-scores
 
 Once the reference data is ready, you can calculate the M-scores for
 your test samples, which is a necessary step to construct the machine
@@ -404,7 +448,7 @@ MScoresExample <- getMscores(geneSets = relevantPaths,
 MScoresExample[1:5, 1:5]
 ```
 
-# Step 3: Make predictors
+## Step 3: Make predictors
 
 # Session info
 
