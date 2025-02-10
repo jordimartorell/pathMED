@@ -60,14 +60,14 @@ dissectDB <- function(refData,
             x.zscore <- as.data.frame(do.call("cbind",
                                               lapply(seq_len(ncol(x$Disease)),
                                                      function(pat) {
-                                                         pat.i <- x$Disease[,pat]
-                                                         names(pat.i) <- rownames(
-                                                             x$Disease)
-                                                         pat.i <- pat.i[
-                                                             rownames(Href)]
-                                                         return((pat.i - Href$mean)
-                                                                / Href$sd)
-                                                     })))
+                                                     pat.i <- x$Disease[,pat]
+                                                     names(pat.i) <- rownames(
+                                                         x$Disease)
+                                                     pat.i <- pat.i[
+                                                         rownames(Href)]
+                                                     return((pat.i - Href$mean)
+                                                            / Href$sd)
+                                                 })))
             colnames(x.zscore) <- colnames(x$Disease)
             x.zscore <- x.zscore[apply(x.zscore, 1, function(xi) {
                 sum(is.na(xi))}) == 0,]
