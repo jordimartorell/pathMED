@@ -201,16 +201,16 @@ pak::pkg_system_requirements(c("metrica", "factoextra", "FactoMineR"),
                              "ubuntu", "20.04")
 ```
 
-# 1. Core pipeline
+# Core pipeline
 
 (Add figure)
 
-## 1.1 (Optional) Decomposing gene sets into coexpressed subsets
+## (Optional) Decomposing gene sets into coexpressed subsets
 
 Gene sets often contain genes associated with a specific biological
 function, but their expression can be heterogeneous, sometimes even
 exhibiting opposing directions when the function is altered (e.g., in
-disease). The *dissectDB* function clusters the genes within each set
+disease). The `dissectDB()` function clusters the genes within each set
 into subsets based on coordinated expression patterns. This clustering
 can be performed using one or more molecular datasets, which may include
 control samples or not. The same dataset used in the following sections
@@ -218,10 +218,10 @@ can also be used for this purpose. Both preloaded and custom gene sets
 can be used (see the next section for details). The following code
 splits KEGG pathways into subpathways using the example dataset:
 
-The output is a gene set that can be used with the getScores function.
-In the new gene set, subpathways are labeled with the suffix \_splitx.
-For example, for the pathway hsa04714, the resulting subpathways will
-include this suffix.
+The output is a gene set that can be used with the `getScores()`
+function. In the new gene set, subpathways are labeled with the suffix
+\_splitx. For example, for the pathway hsa04714, the resulting
+subpathways will include this suffix.
 
 ```{r, message = FALSE, results='hide', warning=FALSE}
 library(pathMED)
@@ -236,14 +236,17 @@ example, for the pathway hsa04714:
 
 ```{r, message = FALSE, warning=FALSE}
 # Before splitting
-print(genesetsData[["kegg"]][["hsa04714"]])
+print(head(pathMED:::genesetsData[["kegg"]][["hsa04714"]]))
 
 # After splitting
 print(customKEGG[grep("hsa04714", names(customKEGG))])
 
 ```
 
-## 1.2 Scoring
+Only the genes available in the input dataset are included in this
+object.
+
+## Scoring
 
 The `getScores()` function calculates a score for each gene set and
 sample. It takes as input a matrix or data frame with molecular features
@@ -305,7 +308,7 @@ annotatedPathways <- ann2term(scoresExample)
 head(annotatedPathways)
 ```
 
-## 1.3. Training ML models
+## Training ML models
 
 The next step in the core `pathMED` pipeline is to use the scores
 calculated in the previous step to train machine learning (ML) models
@@ -361,7 +364,7 @@ The output object is a list with the following elements:
 This object may be used with the `predictExternal()` function to make
 predictions on new data with the same features than the training data.
 
-# 2. M-scores
+# M-scores
 
 In addition to previously developed molecular scoring methods, pathMED
 includes the novel M-score method. M-scores were used in a previous
@@ -379,7 +382,7 @@ multiple datasets to enable clinical predictions on new samples, even
 when healthy control data is unavailable. To achieve this, the following
 steps must be followed.
 
-## 2.1. Build the reference data object
+## Build the reference data object
 
 ```{r, message = FALSE, results='hide', warning=FALSE}
 data(reference_datasets)
@@ -418,19 +421,19 @@ expression datasets are log2 transformed and follow a normal
 distribution. Additionally, gene names must be annotated as Gene Symbols
 in both reference and test datasets.
 
-## 2.2. Calculate the reference M-scores
+## Calculate the reference M-scores
 
 After creating a `refData` object, the next step is to calculate
 M-scores for the reference datasets with the `mScores_createReference()`
 function.
 
 ```{r, eval=TRUE, warning=FALSE, message=FALSE, results='hide'}
-refMscore <- mScores_createReference(refData,
+refMscores <- mScores_createReference(refData,
                            geneSets="tmod",
                            cores=1)
 ```
 
-## 2.3. Filter gene sets
+## Filter gene sets
 
 To identify the most relevant gene sets for the studied phenotype, you
 can use the `mScores_filterPaths()` function. This function selects
@@ -447,12 +450,12 @@ each pathway in each sample is determined using its M-score, as
 described in the original study @toroDominguez2022.
 
 ```{r, warning=FALSE}
-relevantPaths <- mScores_filterPaths(MRef=refMscore,
+relevantPaths <- mScores_filterPaths(MRef=refMscores,
                        min_datasets=3,
                        perc_samples=10)
 ```
 
-## 2.4. Calculate the M-scores
+## Calculate the M-scores
 
 Once the reference data is ready and the relevant gene sets selected,
 you can calculate the M-scores for your dataset without healthy controls
@@ -463,11 +466,11 @@ calculated using the *k* most similar samples of the reference data. *k*
 may be specified with the **nk** parameter. The output is a matrix with
 the M-score of each gene set (rows) and sample (columns).
 
-```{r, warning=FALSE}
+```{r, warning=FALSE, eval=FALSE}
 mScoresExample <- mScores_imputeFromReference(
     inputData=exampleData,
     geneSets=relevantPaths,
-    externalReference=refMscore)
+    externalReference=refMscores)
 
 print(mScoresExample[1:5, 1:5])
 ```
