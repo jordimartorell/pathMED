@@ -45,7 +45,7 @@ disease progression}
  . Briefings in Bioinformatics. 23(5)
 }
 \seealso{
-\code{\link{mScores_filterPaths }}, \code{\link{getML}}
+\code{\link{mScores_filterPaths}}, \code{\link{getML}}
 }
 \author{
 Jordi Martorell-Marugán, \email{jordi.martorell@genyo.es}

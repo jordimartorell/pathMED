@@ -18,7 +18,8 @@ dissectDB(
 \item{refData}{A refData object structure: a list of lists, each one with a
 cases expression matrix and controls expression matrix
 (named as Disease and Healthy). It can be constructed with the buildRefObject
- function.}
+ function. A list with one or more expression matrices, without controls, can
+ also be used.}
 
 \item{geneSets}{A named list with each
 gene set or the name of one preloaded database (gobp, gomf, gocc,
