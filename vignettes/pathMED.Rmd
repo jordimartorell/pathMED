@@ -185,7 +185,7 @@ editor_options:
 
 You can install pathMED from the GitHub repository:
 
-```{r}
+```{r, eval=FALSE}
 devtools::install_github("jordimartorell/pathMED")
 ```
 
@@ -196,7 +196,7 @@ administrator permissions. These system dependencies can be identified
 the following code (adapted to Ubuntu 20.04) and installed by running
 the output in a terminal as administrator:
 
-```{r}
+```{r, eval=FALSE}
 pak::pkg_system_requirements(c("metrica", "factoextra", "FactoMineR"), 
                              "ubuntu", "20.04")
 ```
@@ -316,11 +316,16 @@ the one with the best performance for predicting the specified variable
 matrix obtained in the previous step), and `metadata` (a data frame
 containing sample metadata).
 
-One or more algorithms can be selected using the `algorithms` parameter
-(see the function help for details). Nested cross-validation is
-performed using `Koutter` folds for the outer cross-validation (CV) and
-`Kinner` folds for the inner CV. The inner k-fold CV can be repeated
-multiple times (`repeatsCV` parameter) for hyperparameter tuning.
+The function `methodsML()` should be used to prepare a list of ML
+algorithms to be trained and tested. One or more algorithms can be
+selected using the `algorithms` parameter (see the function help for
+details), and the amount of hyperparameters combinations to be tested is
+specified with the `tuneLength` parameter.
+
+Nested cross-validation is performed using `Koutter` folds for the outer
+cross-validation (CV) and `Kinner` folds for the inner CV. The inner
+k-fold CV can be repeated multiple times (`repeatsCV` parameter) for
+hyperparameter tuning.
 
 In the example dataset, the metadata include a column called `Response`,
 indicating whether patients responded to a treatment. The
@@ -332,7 +337,7 @@ data(exampleMetadata)
 
 modelsList <- methodsML(algorithms=c('rf', 'knn'), outcomeClass="character")
 
-trainedModel  <- trainModel(scoresExample,
+trainedModel <- trainModel(scoresExample,
                             metadata=exampleMetadata,
                             var2predict="Response",
                             positiveClass = "YES",
@@ -340,43 +345,64 @@ trainedModel  <- trainModel(scoresExample,
                             Koutter = 3,
                             Kinner = 3,
                             repeatsCV = 1)
+
+print(trainedModel)
 ```
 
-# 2. Additional functionalities
+The output object is a list with the following elements:
 
-# 3. M-Scores
+-   **model**: The selected algorithm trained with the entire dataset.
+-   **stats**: Performance metrics for each tested algorithms. These
+    metrics are calculated with the testing samples of the outter CV.
+-   **bestTune**: Optimized hyperparameters for the selected algorithm.
+-   **subsample.preds**: The prediction probability for each class and
+    sample.
 
-This methodology was used in a previous work that used personalized
-scoring to predict the drug response, symptoms and progression of
-Systemic Lupus Erythematosus patients from gene expression data
-@toroDominguez2022. pathMED has been developed to be applicable to any
-disease or biological context.
+This object may be used with the `predictExternal()` function to make
+predictions on new data with the same features than the training data.
 
-## Step 1: Prepare the reference data
+# 2. M-scores
 
-### 1.1. Build the reference data object
+In addition to previously developed molecular scoring methods, pathMED
+includes the novel M-score method. M-scores were used in a previous
+study that used personalized scoring to predict drug response, symptoms
+and disease progression in Systemic Lupus Erythematosus patients based
+on gene expression data @toroDominguez2022.
+
+M-scores are calculated by comparing pathway activities between cases
+and healthy controls, requiring the availability of control sample data.
+To use M-scores with the `getScores()` function, the `labels` parameter
+must be used to indicate control samples (using 0 or "Healthy").
+
+Using the M-score method, a reference database can be built from
+multiple datasets to enable clinical predictions on new samples, even
+when healthy control data is unavailable. To achieve this, the following
+steps must be followed.
+
+## 2.1. Build the reference data object
 
 ```{r, message = FALSE, results='hide', warning=FALSE}
-data(reference_datasets, exampleMetadata)
+data(reference_datasets)
 ```
 
-We loaded to our R environment **reference_datasets**, **exampleData**
-and **exampleMetadata**. **reference_datasets** includes 4 gene
-expression datasets and 4 metadata datasets containing clinical
-information for each dataset. These datasets were extracted from NCBI
-GEO and contains lupus and healthy samples, codified in the metadata as
-"Healthy_sample" and "Disease_sample". **exampleData** and
-**exampleMetadata** are the test data for this vignette and they will be
-used in later functions.
+We loaded `reference_datasets` into the environment, which includes four
+gene expression datasets and four corresponding metadata datasets
+containing clinical information. These datasets were extracted from NCBI
+GEO and contain both lupus and healthy samples, encoded in the metadata
+as "Healthy_sample" and "Disease_sample".
 
-*buildRefObject()* function can be used to create a refData object with
-the structure required for the pathMED pipeline. We can input our
-expression datasets as a list (**data**) or as a single dataset if we
-only have one. We can introduce a list of **metadata**, one for each
-expression dataset or a single metadata with information for samples of
-all datasets. The grouping column of metadata (**groupVar**) and the
-level of the control group (**controlGroup**), usually healthy samples,
-must be introduced (or one for each metadata if they are different).
+The `buildRefObject()` function can be used to create a `refData` object
+with the required structure for the following steps. The function
+require:
+
+-   A list of expression datasets (`data`) or a single dataset if only
+    one is available.
+-   A list of metadata files (one per dataset) or a single metadata
+    table containing information for all samples.
+-   The name of the grouping column in the metadata (`groupVar`).
+-   The control group label (`controlGroup`), typically representing
+    healthy samples. If different datasets use different control labels,
+    a separate value should be provided for each metadata file.
 
 ```{r, message = FALSE, results='hide', warning=FALSE}
 refData <- buildRefObject(
@@ -386,69 +412,65 @@ refData <- buildRefObject(
   controlGroup = "Healthy_sample")
 ```
 
-You should use as many datasets as possible to create the **refData**.
-Note that all the gene expression datasets should be log2 transformed
-and with a normal distribution. All gene names must be annotated as Gene
-Symbol in all reference and test datasets.
+To create the `refData` object, it is recommended to include as many
+datasets as possible to improve robustness. Ensure that all gene
+expression datasets are log2 transformed and follow a normal
+distribution. Additionally, gene names must be annotated as Gene Symbols
+in both reference and test datasets.
 
-### 1.2. Calculate the M-scores for reference data
+## 2.2. Calculate the reference M-scores
 
-After creating a **refData** object, the next step is to calculate
-M-scores for the reference datasets. M-scores measure the level of
-disturbance of molecular pathways between patients and healthy controls.
-This approach permits to compare the obtained results with the M-scores
-from new data, even when the measured genes do not completely overlap.
-
-*createReference()* function uses this **refData** object as input and
-calculates the M-scores for each gene set of the specified database.
+After creating a `refData` object, the next step is to calculate
+M-scores for the reference datasets with the `mScores_createReference()`
+function.
 
 ```{r, eval=TRUE, warning=FALSE, message=FALSE, results='hide'}
-refMscore <- createReference(data=refData,
-                           geneSetsDB="tmod",
+refMscore <- mScores_createReference(refData,
+                           geneSets="tmod",
                            cores=1)
 ```
 
-### 1.3. Filter gene sets
+## 2.3. Filter gene sets
 
-It is necessary to find the gene sets that are more relevant for the
-studied phenotype. With the **diseasePaths** function, you can perform
-such selection specifying the percentage of samples that in which the
-pathways should be statistically significant (**perc_samples**
-parameter) and the minimum number of datasets that must pass this
-threshold (**min_datasets** parameter). These two parameters are used to
-extract pathways that may be significant in small subgroups of patients
-(something very common when dealing with patients with heterogeneous
-diseases), but at the same time that these pathways appear deregulated
-in different studies (to filter possible biases from individual
-studies). The significance of each route in each sample of the different
-studies is calculated based on its M-score, as in the original article
-@toroDominguez2022.
+To identify the most relevant gene sets for the studied phenotype, you
+can use the `mScores_filterPaths()` function. This function selects
+pathways based on two key parameters: `perc_samples`, which defines the
+percentage of samples in which a pathway must be statistically
+significant, and `min_datasets`, which sets the minimum number of
+datasets that must meet this th
+
+These parameters help identify pathways that may be significant in small
+patient subgroups—a common scenario in heterogeneous diseases—while also
+ensuring that the selected pathways appear deregulated across multiple
+studies, reducing the risk of study-specific biases. The significance of
+each pathway in each sample is determined using its M-score, as
+described in the original study @toroDominguez2022.
 
 ```{r, warning=FALSE}
-relevantPaths <- diseasePaths(MRef=refMscore,
+relevantPaths <- mScores_filterPaths(MRef=refMscore,
                        min_datasets=3,
                        perc_samples=10)
 ```
 
-## Step 2: Calculate the M-scores
+## 2.4. Calculate the M-scores
 
-Once the reference data is ready, you can calculate the M-scores for
-your test samples, which is a necessary step to construct the machine
-learning predictors. **getMscores()** function takes as input an
-expression matrix with the cases samples, an optional expression matrix
-with healthy controls and the output of the **diseasePaths** function.
-If no healthy controls are provided, the M-scores are calculated using
-the *k* most similar samples of the reference data. *k* may be specified
-with the **nk** parameter. The output is a matrix with the M-score of
-each gene set (rows) and sample (columns).
+Once the reference data is ready and the relevant gene sets selected,
+you can calculate the M-scores for your dataset without healthy controls
+with the `mScores_imputeFromReference()` function. The input objects are
+a matrix with the cases samples, the output of the **diseasePaths**
+function. If no healthy controls are provided, the M-scores are
+calculated using the *k* most similar samples of the reference data. *k*
+may be specified with the **nk** parameter. The output is a matrix with
+the M-score of each gene set (rows) and sample (columns).
 
 ```{r, warning=FALSE}
-MScoresExample <- getMscores(geneSets = relevantPaths,
-                            inputData = exampleData)
-MScoresExample[1:5, 1:5]
-```
+mScoresExample <- mScores_imputeFromReference(
+    inputData=exampleData,
+    geneSets=relevantPaths,
+    externalReference=refMscore)
 
-## Step 3: Make predictors
+print(mScoresExample[1:5, 1:5])
+```
 
 # Session info
 

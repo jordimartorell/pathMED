@@ -465,7 +465,7 @@ trainModel <- function(inputData,
                            names(which.max(tmp[n, !colnames(tmp) %in%
                                                    "obs"]))
                        }))
-                       lab.pred <- factor(lab.pred, levels = levels)
+                       lab.pred <- factor(lab.pred, levels=levels)
                    } else {
                        obs <- tmp$obs
                        lab.pred <- tmp$pred
