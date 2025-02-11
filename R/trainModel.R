@@ -41,6 +41,10 @@
 #' @author Daniel Toro-Dominguez, \email{danieltorodominguez@@gmail.com}
 #'
 #' @importFrom magrittr '%>%'
+#' @importFrom methods 'is'
+#' @importFrom magrittr '%>%'
+#' @import stats
+#' @import utils
 #'
 #' @references Toro-Domínguez, D. et al (2022). \emph{Scoring personalized
 #' molecular portraits identify Systemic Lupus Erythematosus subtypes and
@@ -513,7 +517,7 @@ trainModel <- function(inputData,
                                                }))
         sum.model.all <- data.frame(results=apply(sum.model.x, 1,
                                                   function(metr) {
-            mean(metr, na.rm = T)
+            mean(metr, na.rm=TRUE)
         }))
         return(sum.model.all)
     }))

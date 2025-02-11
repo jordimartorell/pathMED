@@ -50,7 +50,7 @@
 
   return(list(
     "mscores"=tmp.mscore,
-    "distance"=mean(distances[seq_len(k)], na.rm=T)
+    "distance"=mean(distances[seq_len(k)], na.rm=TRUE)
   ))
 }
 
@@ -185,7 +185,7 @@
         ids<-unique(paired)
 
         subsets<-lapply(1:repeats,function(rp){
-          gr=ids[sample(1:length(ids),length(ids),replace=F)]
+          gr=ids[sample(1:length(ids),length(ids),replace=FALSE)]
           tmp.ids<-data.frame("index"=gr,
                               "fold"=cut(seq_along(gr), breaks=kfold,
                                          labels=FALSE))

@@ -42,9 +42,21 @@ the input methData, pheno and platform objects
 Estimate M-scores for a dataset without healthy controls
 }
 \examples{
-data(exampleData, refData)
-MScoresExample <- mScores_imputeFromReference(exampleData, geneSets = "tmod",
+\donttest{
+data(reference_datasets, exampleData)
+
+refData <- buildRefObject(
+            data = list(dataset1, dataset2, dataset3, dataset4),
+            metadata = list(metadata1, metadata2, metadata3, metadata4),
+            groupVar = "group",
+            controlGroup = "Healthy_sample")
+
+refMScores <- mScores_createReference(refData,
+                                     geneSets="tmod", cores=1)
+
+exampleMScores <- mScores_imputeFromReference(exampleData, geneSets = "tmod",
                             externalReference=refData)
+}
 }
 \references{
 Toro-Domínguez, D. et al (2022). \emph{Scoring personalized
