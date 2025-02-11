@@ -34,80 +34,90 @@
 #' data(reference_datasets, exampleData)
 #'
 #' refData <- buildRefObject(
-#'             data = list(dataset1, dataset2, dataset3, dataset4),
-#'             metadata = list(metadata1, metadata2, metadata3, metadata4),
-#'             groupVar = "group",
-#'             controlGroup = "Healthy_sample")
+#'     data = list(dataset1, dataset2, dataset3, dataset4),
+#'     metadata = list(metadata1, metadata2, metadata3, metadata4),
+#'     groupVar = "group",
+#'     controlGroup = "Healthy_sample"
+#' )
 #'
 #' refMScores <- mScores_createReference(refData,
-#'                                      geneSets="tmod", cores=1)
+#'     geneSets = "tmod", cores = 1
+#' )
 #'
-#' exampleMScores <- mScores_imputeFromReference(exampleData, geneSets = "tmod",
-#'                             externalReference=refData)
+#' exampleMScores <- mScores_imputeFromReference(exampleData,
+#'     geneSets = "tmod",
+#'     externalReference = refData
+#' )
 #' }
 #' @export
 mScores_imputeFromReference <- function(inputData,
-                                        geneSets,
-                                        externalReference,
-                                        nk=25,
-                                        imputeAll=FALSE,
-                                        cores=1){
-
+    geneSets,
+    externalReference,
+    nk = 25,
+    imputeAll = FALSE,
+    cores = 1) {
     if (is(inputData, "data.frame")) {
         inputData <- as.matrix(inputData)
     }
 
-    if(!is(geneSets, "list")) {
+    if (!is(geneSets, "list")) {
         geneSets <- genesetsData[[geneSets]]
     }
 
 
     Patient <- inputData
 
-    message(paste("Calculating M-Scores by",
-                  "similarity with samples from external reference for",
-                  ncol(inputData), "patients"))
+    message(paste(
+        "Calculating M-Scores by",
+        "similarity with samples from external reference for",
+        ncol(inputData), "patients"
+    ))
 
-    genes <- intersect(rownames(geneSets),
-                       rownames(externalReference$Reference.normalized))
-    geneSets <- geneSets[genes,]
+    genes <- intersect(
+        rownames(geneSets),
+        rownames(externalReference$Reference.normalized)
+    )
+    geneSets <- geneSets[genes, ]
 
     Mscores <- pbapply::pbapply(geneSets, 2, function(x) {
         names(x) <- genes
-        res.l <- .getNearSample(patient=x,
-                                Ref.norm=externalReference$
-                                    Reference.normalized[genes,],
-                                Ref.mscore=externalReference$
-                                    Reference.mscore,
-                                k=nk)
+        res.l <- .getNearSample(
+            patient = x,
+            Ref.norm = externalReference$
+                Reference.normalized[genes, ],
+            Ref.mscore = externalReference$
+                Reference.mscore,
+            k = nk
+        )
     })
 
-    Mscores <- do.call("cbind",lapply(Mscores,function(m.x){
+    Mscores <- do.call("cbind", lapply(Mscores, function(m.x) {
         if (imputeAll == TRUE) {
             return(m.x$mscores)
-        }
-        else if(m.x$distance <= 30){
+        } else if (m.x$distance <= 30) {
             return(m.x$mscores)
         }
     }))
 
-    if(!is.null(Mscores)){
-        if(ncol(PatientData) != ncol(Mscores)){
-            message(paste("Distance between expression of",
-                    abs(ncol(PatientData) - ncol(Mscores)), "patients",
-                    "and k-samples from Patient-reference are higher",
-                    "than 30. Mscores",
-                    "for these patients will not be imputed..."))
-        }
-    }
-    else{
-        message(paste("Distance between expression of", ncol(PatientData),
-                "patients and",
-                "k-samples from Patient-reference are higher",
+    if (!is.null(Mscores)) {
+        if (ncol(PatientData) != ncol(Mscores)) {
+            message(paste(
+                "Distance between expression of",
+                abs(ncol(PatientData) - ncol(Mscores)), "patients",
+                "and k-samples from Patient-reference are higher",
                 "than 30. Mscores",
-                "for these patients will not be imputed..."))
+                "for these patients will not be imputed..."
+            ))
+        }
+    } else {
+        message(paste(
+            "Distance between expression of", ncol(PatientData),
+            "patients and",
+            "k-samples from Patient-reference are higher",
+            "than 30. Mscores",
+            "for these patients will not be imputed..."
+        ))
     }
 
     return(Mscores)
 }
-

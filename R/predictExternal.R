@@ -32,33 +32,36 @@
 #' dataset1 <- dataset1[commonGenes, ]
 #' dataset2 <- dataset2[commonGenes, ]
 #'
-#' scoresExample <- getScores(dataset1, geneSets="tmod", method="Z-score")
+#' scoresExample <- getScores(dataset1, geneSets = "tmod", method = "Z-score")
 #'
 #' set.seed(123)
-#' trainedModel <- trainModel(inputData=scoresExample,
-#'                             metadata=metadata1,
-#'                             var2predict="group",
-#'                             models=methodsML("svmLinear",
-#'                                              outcomeClass="character"),
-#'                             Koutter=2,
-#'                             Kinner=2,
-#'                             repeatsCV=1)
+#' trainedModel <- trainModel(
+#'     inputData = scoresExample,
+#'     metadata = metadata1,
+#'     var2predict = "group",
+#'     models = methodsML("svmLinear",
+#'         outcomeClass = "character"
+#'     ),
+#'     Koutter = 2,
+#'     Kinner = 2,
+#'     repeatsCV = 1
+#' )
 #'
-#' externalScores <- getScores(dataset2, geneSets="tmod", method="Z-score")
+#' externalScores <- getScores(dataset2, geneSets = "tmod", method = "Z-score")
 #' realValues <- metadata2$group
 #' names(realValues) <- rownames(metadata2)
 #' predictions <- predictExternal(externalScores, trainedModel,
-#'                                realValues=realValues)
+#'     realValues = realValues
+#' )
 #' }
 #'
 #' @export
 predictExternal <- function(testData,
-                  model,
-                  realValues=NULL,
-                  positiveClass=NULL){
-
+    model,
+    realValues = NULL,
+    positiveClass = NULL) {
     ## CHeck if model is contained in a trainModel output object of not
-    if ("model" %in% names(model)){
+    if ("model" %in% names(model)) {
         model <- model$model
     }
 
@@ -66,74 +69,98 @@ predictExternal <- function(testData,
 
     ## Check thepresence of all features needed
     colnames(testData) <- stringi::stri_replace_all_regex(
-        colnames(testData), pattern = c('/',' ','-',':'),
-        replacement = c('.','.','.','.'), vectorize=FALSE)
+        colnames(testData),
+        pattern = c("/", " ", "-", ":"),
+        replacement = c(".", ".", ".", "."), vectorize = FALSE
+    )
 
-    features <- colnames(model$trainingData)[!grepl("outcome",
-                                                    colnames(
-                                                        model$trainingData))]
+    features <- colnames(model$trainingData)[!grepl(
+        "outcome",
+        colnames(
+            model$trainingData
+        )
+    )]
     if (!all(features %in% colnames(testData))) {
         missingFeatures <- setdiff(features, colnames(testData))
         stop("Missing features in testData: ", paste(missingFeatures,
-                                                   collapse=", "))
+            collapse = ", "
+        ))
     }
 
-    testData <- testData[,features]
+    testData <- testData[, features]
 
     ## Get predictions
-    test.predictions <- stats::predict(model, newdata=testData)
+    test.predictions <- stats::predict(model, newdata = testData)
     names(test.predictions) <- rownames(testData)
 
 
     ## Return results (no real Values provided)
-    if(is.null(realValues)){
-        test.predictions <- data.frame("Obs"=names(test.predictions),
-                                       "Prediction"=test.predictions)
+    if (is.null(realValues)) {
+        test.predictions <- data.frame(
+            "Obs" = names(test.predictions),
+            "Prediction" = test.predictions
+        )
         rownames(test.predictions) <- NULL
         return(test.predictions)
-
-    } else{
+    } else {
         ## Get model performance
 
-        if(!is.numeric(model$trainingData[,grepl("outcome",
-                                                 colnames(
-                                                     model$trainingData))])){
-            if(is.null(positiveClass)){
+        if (!is.numeric(model$trainingData[, grepl(
+            "outcome",
+            colnames(
+                model$trainingData
+            )
+        )])) {
+            if (is.null(positiveClass)) {
                 positiveClass <- sort(unique(realValues),
-                                      decreasing=TRUE)[1]
-                cat(paste0("Positive class not provided, selected: '",
-                           positiveClass,"'\n"))
+                    decreasing = TRUE
+                )[1]
+                message(paste0(
+                    "Positive class not provided, selected: '",
+                    positiveClass, "'\n"
+                ))
             }
             type <- "classification"
-            metrics <-c("mcc", "balacc", "accuracy", "recall","specificity",
-                        "npv", "precision", "fscore")
+            metrics <- c(
+                "mcc", "balacc", "accuracy", "recall", "specificity",
+                "npv", "precision", "fscore"
+            )
 
-            levels <- c(positiveClass, setdiff(unique(realValues),
-                                               positiveClass))
+            levels <- c(positiveClass, setdiff(
+                unique(realValues),
+                positiveClass
+            ))
             obs <- factor(realValues, levels = levels)
             preds <- factor(test.predictions, levels = levels)
-
-        } else{
+        } else {
             type <- "regression"
             metrics <- c("r", "RMSE", "R2", "MAE", "RMAE", "RSE")
 
-            levels <- c(positiveClass, setdiff(unique(realValues),
-                                               positiveClass))
+            levels <- c(positiveClass, setdiff(
+                unique(realValues),
+                positiveClass
+            ))
             obs <- obs
             preds <- test.predictions
         }
 
-        stats <- metrica::metrics_summary(obs = obs, pred = preds,
-                                          type = type,
-                                          pos_level = 1,
-                                          metrics_list = metrics)
+        stats <- metrica::metrics_summary(
+            obs = obs, pred = preds,
+            type = type,
+            pos_level = 1,
+            metrics_list = metrics
+        )
 
-        test.predictions <- data.frame("Obs"=names(test.predictions),
-                                       "Prediction"=test.predictions)
+        test.predictions <- data.frame(
+            "Obs" = names(test.predictions),
+            "Prediction" = test.predictions
+        )
         rownames(test.predictions) <- NULL
 
-        res <- list("Predictions"=test.predictions,
-                    "stats"=stats)
+        res <- list(
+            "Predictions" = test.predictions,
+            "stats" = stats
+        )
         return(res)
     }
 }

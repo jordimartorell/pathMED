@@ -33,13 +33,14 @@ abstract: >
 output:
   BiocStyle::html_document
 vignette: >
-  %\VignetteIndexEntry{A comprehensive framework for precision medicine with 
-  omics data}
+  %\VignetteIndexEntry{pathMED}
   %\VignetteEncoding{UTF-8}
   %\VignetteEngine{knitr::rmarkdown}
 references:
 - id: toroDominguez2022
-  title: "Scoring personalized molecular portraits identify Systemic Lupus Erythematosus subtypes and predict individualized drug responses, symptomatology and disease progression"
+  title: "Scoring personalized molecular portraits identify Systemic Lupus 
+  Erythematosus subtypes and predict individualized drug responses, 
+  symptomatology and disease progression"
   author:
   - family: Toro-Domínguez
     given: D
@@ -81,7 +82,8 @@ references:
   volume: 14
   issue: 7
 - id: barbie2009
-  title: "Systematic RNA interference reveals that oncogenic KRAS-driven cancers require TBK1"
+  title: "Systematic RNA interference reveals that oncogenic KRAS-driven 
+  cancers require TBK1"
   author:
   - family: Barbie
     given: DA
@@ -109,7 +111,8 @@ references:
     year: 2018
   volume: 19
 - id: tomfohr2005
-  title: "Pathway level analysis of gene expression using singular value decomposition"
+  title: "Pathway level analysis of gene expression using singular value 
+  decomposition"
   author:
   - family: Tomfohr
     given: J
@@ -151,7 +154,8 @@ references:
     year: 2017
   volume: 14
 - id: badia2022
-  title: "decoupleR: ensemble of computational methods to infer biological activities from omics data"
+  title: "decoupleR: ensemble of computational methods to infer biological 
+  activities from omics data"
   author:
   - family: Badia-i-Mompel
     given: P
@@ -197,8 +201,10 @@ the following code (adapted to Ubuntu 20.04) and installed by running
 the output in a terminal as administrator:
 
 ```{r, eval=FALSE}
-pak::pkg_system_requirements(c("metrica", "factoextra", "FactoMineR"), 
-                             "ubuntu", "20.04")
+pak::pkg_system_requirements(
+    c("metrica", "factoextra", "FactoMineR"),
+    "ubuntu", "20.04"
+)
 ```
 
 # Core pipeline
@@ -240,7 +246,6 @@ print(head(pathMED:::genesetsData[["kegg"]][["hsa04714"]]))
 
 # After splitting
 print(customKEGG[grep("hsa04714", names(customKEGG))])
-
 ```
 
 Only the genes available in the input dataset are included in this
@@ -295,7 +300,7 @@ To run this function with the example data:
 ```{r, message = FALSE, results='hide', warning=FALSE}
 library(pathMED)
 data(exampleData)
-scoresExample <- getScores(exampleData, geneSets="kegg", method="GSVA")
+scoresExample <- getScores(exampleData, geneSets = "kegg", method = "GSVA")
 head(scoresExample)
 ```
 
@@ -338,16 +343,17 @@ metrics based on the chosen positive class (e.g., diseased).
 ```{r, warning=FALSE, eval=FALSE}
 data(exampleMetadata)
 
-modelsList <- methodsML(algorithms=c('rf', 'knn'), outcomeClass="character")
+modelsList <- methodsML(algorithms = c("rf", "knn"), outcomeClass = "character")
 
 trainedModel <- trainModel(scoresExample,
-                            metadata=exampleMetadata,
-                            var2predict="Response",
-                            positiveClass = "YES",
-                            models = modelsList,
-                            Koutter = 3,
-                            Kinner = 3,
-                            repeatsCV = 1)
+    metadata = exampleMetadata,
+    var2predict = "Response",
+    positiveClass = "YES",
+    models = modelsList,
+    Koutter = 3,
+    Kinner = 3,
+    repeatsCV = 1
+)
 
 print(trainedModel)
 ```
@@ -409,10 +415,11 @@ require:
 
 ```{r, message = FALSE, results='hide', warning=FALSE}
 refData <- buildRefObject(
-  data = list(dataset1, dataset2, dataset3, dataset4),
-  metadata = list(metadata1, metadata2, metadata3, metadata4),
-  groupVar = "group",
-  controlGroup = "Healthy_sample")
+    data = list(dataset1, dataset2, dataset3, dataset4),
+    metadata = list(metadata1, metadata2, metadata3, metadata4),
+    groupVar = "group",
+    controlGroup = "Healthy_sample"
+)
 ```
 
 To create the `refData` object, it is recommended to include as many
@@ -429,8 +436,9 @@ function.
 
 ```{r, eval=TRUE, warning=FALSE, message=FALSE, results='hide'}
 refMscores <- mScores_createReference(refData,
-                           geneSets="tmod",
-                           cores=1)
+    geneSets = "tmod",
+    cores = 1
+)
 ```
 
 ## Filter gene sets
@@ -450,9 +458,11 @@ each pathway in each sample is determined using its M-score, as
 described in the original study @toroDominguez2022.
 
 ```{r, warning=FALSE}
-relevantPaths <- mScores_filterPaths(MRef=refMscores,
-                       min_datasets=3,
-                       perc_samples=10)
+relevantPaths <- mScores_filterPaths(
+    MRef = refMscores,
+    min_datasets = 3,
+    perc_samples = 10
+)
 ```
 
 ## Calculate the M-scores
@@ -468,9 +478,10 @@ the M-score of each gene set (rows) and sample (columns).
 
 ```{r, warning=FALSE, eval=FALSE}
 mScoresExample <- mScores_imputeFromReference(
-    inputData=exampleData,
-    geneSets=relevantPaths,
-    externalReference=refMscores)
+    inputData = exampleData,
+    geneSets = relevantPaths,
+    externalReference = refMscores
+)
 
 print(mScoresExample[1:5, 1:5])
 ```

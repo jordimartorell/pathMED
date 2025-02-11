@@ -18,32 +18,40 @@
 #'
 #' @examples
 #' data(exampleData)
-#' scoresExample <- getScores(exampleData, geneSets="tmod", method="GSVA")
+#' scoresExample <- getScores(exampleData, geneSets = "tmod", method = "GSVA")
 #' annotatedTerms <- ann2term(scoresExample)
 #' @export
-ann2term <- function(scoresMatrix){
-    '%>%' <- magrittr::`%>%`
+ann2term <- function(scoresMatrix) {
+    "%>%" <- magrittr::`%>%`
     scoresMatrix_df <- as.data.frame(scoresMatrix)
     anns <- rownames(scoresMatrix)
-    splits <- sapply(strsplit(anns,split = ".split"),"[",2)
-    splits <- unlist(lapply(splits, function(x){
-        if (!is.na(x)){
-            x = paste0(".split",x)
-        } else{
-            x = ""
+    splits <- vapply(strsplit(anns, split = ".split"), "[", 2,
+                    FUN.VALUE = character(1))
+    splits <- unlist(lapply(splits, function(x) {
+        if (!is.na(x)) {
+            x <- paste0(".split", x)
+        } else {
+            x <- ""
         }
         return(x)
     }))
-    anns_prev <- sapply(strsplit(anns,split = ".split"),"[",1)
-    anns_df <- data.frame(ann_prev=anns_prev, split=splits,
-                          full=paste0(anns_prev,splits))
-    anns_merge <- ann_info %>% dplyr::inner_join(anns_df,
-                                                 by= c("annotation_id" =
-                                                           "ann_prev")) %>%
+    anns_prev <- vapply(strsplit(anns, split = ".split"), "[", 1,
+                        FUN.VALUE = character(1))
+    anns_df <- data.frame(
+        ann_prev = anns_prev, split = splits,
+        full = paste0(anns_prev, splits)
+    )
+    anns_merge <- ann_info %>%
+        dplyr::inner_join(anns_df,
+            by = c(
+                "annotation_id" =
+                    "ann_prev"
+            )
+        ) %>%
         as.data.frame()
     rownames(anns_merge) <- anns_merge$full
-    anns_merge <- anns_merge[anns,]
-    anns_merge <- paste0(anns_merge$term,anns_merge$split)
+    anns_merge <- anns_merge[anns, ]
+    anns_merge <- paste0(anns_merge$term, anns_merge$split)
     tableOut <- data.frame(ID = rownames(scoresMatrix), term = anns_merge)
     return(tableOut)
 }

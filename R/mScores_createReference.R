@@ -27,61 +27,67 @@
 #'
 #' @examples
 #' data(refData)
-#' refMscore <- mScores_createReference(refData, geneSets="tmod")
+#' refMscore <- mScores_createReference(refData, geneSets = "tmod")
 #' @export
 mScores_createReference <- function(refData,
-                          geneSets,
-                          cores = 1){
-
-    if(!is(geneSets, "list")) {
+    geneSets,
+    cores = 1) {
+    if (!is(geneSets, "list")) {
         geneSets <- genesetsData[[geneSets]]
     }
 
     nDatasets <- length(refData)
 
-    mscores <- lapply(seq_len(nDatasets), function (i) {
+    mscores <- lapply(seq_len(nDatasets), function(i) {
         dataset <- refData[[i]]
         PatientData <- as.data.frame(dataset[[1]])
         HealthyData <- as.data.frame(dataset[[2]])
-        HealthyData <- HealthyData[apply(HealthyData, 1, stats::sd) != 0,]
-        HealthyData <- HealthyData[!is.na(rownames(HealthyData)),]
+        HealthyData <- HealthyData[apply(HealthyData, 1, stats::sd) != 0, ]
+        HealthyData <- HealthyData[!is.na(rownames(HealthyData)), ]
         HealthyMean <- rowMeans(HealthyData, na.rm = TRUE)
-        HealthySD <- apply(HealthyData, 1, function(x) {sd(x,
-                                                           na.rm = TRUE)})
+        HealthySD <- apply(HealthyData, 1, function(x) {
+            sd(x,
+                na.rm = TRUE
+            )
+        })
         HealthyMeanSD <- cbind(HealthyMean, HealthySD)
-        HealthyMeanSD <- HealthyMeanSD[HealthyMeanSD[,2] != 0,]
+        HealthyMeanSD <- HealthyMeanSD[HealthyMeanSD[, 2] != 0, ]
         message("Running dataset ", i, " of ", nDatasets)
 
         # Avoid using more cores than samples
         workers <- min(cores, ncol(PatientData))
 
         res <- BiocParallel::bplapply(seq_len(ncol(PatientData)),
-                                      function(column, PatientData, geneNames,
-                                               geneSets, HealthyMeanSD,
-                                               .getMscorePath) {
-            Patient <- PatientData[,column]
-            names(Patient) <- geneNames
-            res.i <- lapply(geneSets,
-                            .getMscorePath,
-                            HealthyMeanSD=HealthyMeanSD,
-                            Patient=Patient)
-            res.i <- as.data.frame(do.call("rbind", res.i))
-            return(res.i)
-        },
-        PatientData=PatientData,
-        geneNames=rownames(PatientData),
-        geneSets=geneSets,
-        HealthyMeanSD=HealthyMeanSD,
-        .getMscorePath=.getMscorePath,
-        BPPARAM=BiocParallel::SnowParam(workers=workers, progressbar=TRUE,
-                                        exportglobals = FALSE))
+            function(column, PatientData, geneNames,
+    geneSets, HealthyMeanSD,
+    .getMscorePath) {
+                Patient <- PatientData[, column]
+                names(Patient) <- geneNames
+                res.i <- lapply(geneSets,
+                    .getMscorePath,
+                    HealthyMeanSD = HealthyMeanSD,
+                    Patient = Patient
+                )
+                res.i <- as.data.frame(do.call("rbind", res.i))
+                return(res.i)
+            },
+            PatientData = PatientData,
+            geneNames = rownames(PatientData),
+            geneSets = geneSets,
+            HealthyMeanSD = HealthyMeanSD,
+            .getMscorePath = .getMscorePath,
+            BPPARAM = BiocParallel::SnowParam(
+                workers = workers, progressbar = TRUE,
+                exportglobals = FALSE
+            )
+        )
 
         res <- do.call("cbind", res)
         colnames(res) <- colnames(PatientData)
         return(res)
     })
-    if(!is.null(names(refData))){
-      names(mscores) <- names(refData)
+    if (!is.null(names(refData))) {
+        names(mscores) <- names(refData)
     }
-    return(list(mscores=mscores, geneSets=geneSets, input=refData))
+    return(list(mscores = mscores, geneSets = geneSets, input = refData))
 }
