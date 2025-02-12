@@ -62,7 +62,7 @@
 ## Normalize quantitative values (expression, M-scores) of a patient by Z-score
 # @ x: Numeric vector of expression from a sample
 .normSamples <- function(x) {
-    x <- (x - (mean(x, na.rm = TRUE))) / stats::sd(x, na.rm = TRUE)
+    x <- (x - (median(x, na.rm = TRUE))) / stats::sd(x, na.rm = TRUE)
     return(x)
 }
 
