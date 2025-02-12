@@ -8,9 +8,9 @@
 #' the mScores_createReference function.
 #' @param nk Number of
 #' most similar samples from the external reference to impute M-scores.
-#' @param imputeAll By default, only samples that do not
-#' surpass the distance of 30 with the external reference are imputed. If TRUE,
-#' impute all samples.
+#' @param distance.threshold Only samples that do not
+#' surpass the mean Euclidean distance of distance.threshold (by default = 30) 
+#' with the external reference are imputed. If NULL,impute all samples.
 #' @param cores Number of cores to be used.
 #'
 #' @return A list with the results of each of the analyzed regions. For each
@@ -53,73 +53,78 @@
 #' }
 #' @export
 mScores_imputeFromReference <- function(inputData,
-    geneSets,
-    externalReference,
-    nk = 25,
-    imputeAll = FALSE,
-    cores = 1) {
-    if (is(inputData, "data.frame")) {
-        inputData <- as.matrix(inputData)
-    }
-
-    if (!is(geneSets, "list")) {
-        geneSets <- genesetsData[[geneSets]]
-    }
-
-
-    Patient <- inputData
-
-    message(paste(
-        "Calculating M-Scores by",
-        "similarity with samples from external reference for",
-        ncol(inputData), "patients"
-    ))
-
-    genes <- intersect(
-        rownames(geneSets),
-        rownames(externalReference$Reference.normalized)
-    )
-    geneSets <- geneSets[genes, ]
-
-    Mscores <- pbapply::pbapply(geneSets, 2, function(x) {
-        names(x) <- genes
-        res.l <- .getNearSample(
-            patient = x,
-            Ref.norm = externalReference$
-                Reference.normalized[genes, ],
-            Ref.mscore = externalReference$
-                Reference.mscore,
-            k = nk
-        )
-    })
-
-    Mscores <- do.call("cbind", lapply(Mscores, function(m.x) {
-        if (imputeAll == TRUE) {
-            return(m.x$mscores)
-        } else if (m.x$distance <= 30) {
-            return(m.x$mscores)
-        }
+                                        geneSets,
+                                        externalReference,
+                                        nk = 5,
+                                        distance.threshold = 30,
+                                        cores = 1) {
+  if (is(inputData, "data.frame")) {
+    inputData <- as.matrix(inputData)
+  }
+  
+  if (!is(geneSets, "list")) {
+    geneSets <- genesetsData[[geneSets]]
+  }
+  
+  Patient <- inputData
+  
+  message(paste(
+    "Calculating M-Scores by",
+    "similarity with samples from external reference for",
+    ncol(inputData), "patients"
+  ))
+  
+  ## Get expression and mscores matrices from reference
+  ref.expression <- lapply(externalReference$input, function(x) x$Disease)
+  
+  sharedGenes <- intersect(Reduce(intersect, lapply(ref.expression, rownames)),
+                           as.character(unlist(geneSets)))
+  
+  ref.expression <- as.data.frame(do.call("cbind",lapply(ref.expression, function(m){
+    m[sharedGenes,,drop = FALSE]
+  })))
+  ## normalization by patient to minimize impact of magnitude differences across sets
+  ref.expression<-apply(ref.expression,2,.normSamples)
+  
+  ref.mscores<- as.data.frame(do.call("cbind",lapply(externalReference$mscores, function(m){
+    m[names(geneSets),,drop = FALSE]
+  })))
+  
+  MscoresList <- pbapply::pbapply(Patient, 2, function(x) {
+    names(x) <- rownames(Patient)
+    res.l <- .getNearSample(patient = x,
+                            Ref.norm = ref.expression,
+                            Ref.mscore = ref.mscores,
+                            k = nk )
+  })
+  
+  Mscores <- do.call("cbind", lapply(MscoresList, function(m.x) {
+      return(m.x$mscores)
     }))
-
-    if (!is.null(Mscores)) {
-        if (ncol(PatientData) != ncol(Mscores)) {
-            message(paste(
-                "Distance between expression of",
-                abs(ncol(PatientData) - ncol(Mscores)), "patients",
-                "and k-samples from Patient-reference are higher",
-                "than 30. Mscores",
-                "for these patients will not be imputed..."
-            ))
-        }
-    } else {
-        message(paste(
-            "Distance between expression of", ncol(PatientData),
-            "patients and",
-            "k-samples from Patient-reference are higher",
-            "than 30. Mscores",
-            "for these patients will not be imputed..."
-        ))
+  Distances <-c(unlist(lapply(MscoresList, function(m.x) {
+    return(m.x$distance)
+  }))) 
+  
+  if(!is.null(distance.threshold)){    
+    rem.paths<-unname(ifelse(Distances>distance.threshold,T,F))
+    
+    if(sum(rem.paths)>0){
+      message(paste(
+        "Distance between expression of",
+        sum(rem.paths),"/",length(Distances),"patients",
+        "and k-samples from Patient-reference are higher",
+        "than 30. Mscores",
+        "for these patients will not be imputed..."))
+      
+      if(sum(rem.paths)==length(Distances)){
+        Mscores<-NULL
+      }else{
+        Mscores<-Mscores[,!rem.paths,drop = FALSE]
+      }
     }
-
-    return(Mscores)
+  }
+  
+  return(list("Mscores"=Mscores,
+              "Distances"=data.frame("ID"=names(Distances),
+                                     "Distance"=as.numeric(Distances))))
 }
