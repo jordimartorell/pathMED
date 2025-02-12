@@ -54,19 +54,21 @@
 #'
 #' @examples
 #' data(exampleData, exampleMetadata)
-#' \donttest{
 #'
 #' scoresExample <- getScores(exampleData, geneSets = "tmod", method = "GSVA")
 #'
 #' modelsList <- methodsML("svmLinear", outcomeClass = "character")
 #'
+#' set.seed(123)
 #' trainedModel <- trainModel(
 #'     inputData = scoresExample,
 #'     metadata = exampleMetadata,
 #'     var2predict = "Response",
-#'     models = modelsList
+#'     models = modelsList,
+#'     Koutter = 2,
+#'     Kinner = 2,
+#'     repeatsCV = 1
 #' )
-#' }
 #'
 #' @export
 trainModel <- function(inputData,
@@ -154,8 +156,8 @@ trainModel <- function(inputData,
         inputData$group <- as.character(inputData$group)
     }
 
-    if (inputData %>% dplyr::summarise(across(
-        everything(),
+    if (inputData %>% dplyr::summarise(dplyr::across(
+        dplyr::everything(),
         ~ any(is.na(.) |
             is.infinite(.))
     )) %>% any()) {
@@ -706,7 +708,7 @@ trainModel <- function(inputData,
                 caret::train(group ~ .,
                     data = newData,
                     method = colnames(stats)[1],
-                    trControl = trainControl(method = "none"),
+                    trControl = caret::trainControl(method = "none"),
                     tuneGrid = bestTune
                 )
             ),

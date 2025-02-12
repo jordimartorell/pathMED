@@ -17,7 +17,7 @@ Annotate the pathways from a scores matrix
 }
 \examples{
 data(exampleData)
-scoresExample <- getScores(exampleData, geneSets="tmod", method="GSVA")
+scoresExample <- getScores(exampleData, geneSets = "tmod", method = "GSVA")
 annotatedTerms <- ann2term(scoresExample)
 }
 \references{

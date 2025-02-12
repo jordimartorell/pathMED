@@ -5,7 +5,7 @@
 \title{Split pathways into coexpressed subpathways}
 \usage{
 dissectDB(
-  refData,
+  refObject,
   geneSets,
   minPathSize = 10,
   minSplitSize = 3,
@@ -15,7 +15,7 @@ dissectDB(
 )
 }
 \arguments{
-\item{refData}{A refData object structure: a list of lists, each one with a
+\item{refObject}{A refObject object structure: a list of lists, each one with a
 cases expression matrix and controls expression matrix
 (named as Disease and Healthy). It can be constructed with the buildRefObject
  function. A list with one or more expression matrices, without controls, can
@@ -52,8 +52,18 @@ Split pathways into coexpressed subpathways
 }
 \examples{
 data(refData)
-set.seed(1234)
-custom.tmod <- dissectDB(refData, geneSets="tmod")
+
+refObject <- buildRefObject(
+    data = list(refData$dataset1, refData$dataset2,
+                refData$dataset3, refData$dataset4),
+    metadata = list(refData$metadata1, refData$metadata2,
+                    refData$metadata3, refData$metadata4),
+    groupVar = "group",
+    controlGroup = "Healthy_sample"
+)
+
+set.seed(123)
+custom.tmod <- dissectDB(refObject, geneSets = "tmod")
 }
 \references{
 Toro-Domínguez, D. et al (2022). \emph{Scoring personalized

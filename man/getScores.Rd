@@ -35,7 +35,7 @@ Calculate pathways scores for a dataset
 }
 \examples{
 data(exampleData)
-scoresExample <- getScores(exampleData, geneSets="tmod", method="GSVA")
+scoresExample <- getScores(exampleData, geneSets = "tmod", method = "GSVA")
 }
 \references{
 Toro-Domínguez, D. et al (2022). \emph{Scoring personalized

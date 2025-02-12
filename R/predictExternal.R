@@ -25,8 +25,7 @@
 #'  . Briefings in Bioinformatics. 23(5)
 #'
 #' @examples
-#' data(exampleData, exampleMetadata, reference_datasets)
-#' \donttest{
+#' data(refData)
 #'
 #' commonGenes <- intersect(rownames(dataset1), rownames(dataset2))
 #' dataset1 <- dataset1[commonGenes, ]
@@ -53,7 +52,8 @@
 #' predictions <- predictExternal(externalScores, trainedModel,
 #'     realValues = realValues
 #' )
-#' }
+#'
+#' print(predictions)
 #'
 #' @export
 predictExternal <- function(testData,

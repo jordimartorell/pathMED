@@ -31,22 +31,24 @@
 #'
 #' @examples
 #' \donttest{
-#' data(reference_datasets, exampleData)
+#' data(refData, exampleData)
 #'
-#' refData <- buildRefObject(
-#'     data = list(dataset1, dataset2, dataset3, dataset4),
-#'     metadata = list(metadata1, metadata2, metadata3, metadata4),
+#' refObject <- buildRefObject(
+#'     data = list(refData$dataset1, refData$dataset2,
+#'                 refData$dataset3, refData$dataset4),
+#'     metadata = list(refData$metadata1, refData$metadata2,
+#'                     refData$metadata3, refData$metadata4),
 #'     groupVar = "group",
 #'     controlGroup = "Healthy_sample"
 #' )
 #'
-#' refMScores <- mScores_createReference(refData,
+#' refMScores <- mScores_createReference(refObject,
 #'     geneSets = "tmod", cores = 1
 #' )
 #'
 #' exampleMScores <- mScores_imputeFromReference(exampleData,
 #'     geneSets = "tmod",
-#'     externalReference = refData
+#'     externalReference = refObject
 #' )
 #' }
 #' @export

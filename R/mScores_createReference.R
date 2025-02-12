@@ -1,6 +1,6 @@
 #' Create a reference dataset based on M-scores
 #'
-#' @param refData A refData object structure: a list of lists, each one with a
+#' @param refObject A refObject object structure: a list of lists, each one with a
 #' cases expression matrix and controls expression matrix
 #' (named as Disease and Healthy). It can be constructed with the buildRefObject
 #'  function.
@@ -27,19 +27,29 @@
 #'
 #' @examples
 #' data(refData)
-#' refMscore <- mScores_createReference(refData, geneSets = "tmod")
+#'
+#' refObject <- buildRefObject(
+#'     data = list(refData$dataset1, refData$dataset2,
+#'                 refData$dataset3, refData$dataset4),
+#'     metadata = list(refData$metadata1, refData$metadata2,
+#'                     refData$metadata3, refData$metadata4),
+#'     groupVar = "group",
+#'     controlGroup = "Healthy_sample"
+#' )
+#'
+#' refMscore <- mScores_createReference(refObject, geneSets = "tmod")
 #' @export
-mScores_createReference <- function(refData,
+mScores_createReference <- function(refObject,
     geneSets,
     cores = 1) {
     if (!is(geneSets, "list")) {
         geneSets <- genesetsData[[geneSets]]
     }
 
-    nDatasets <- length(refData)
+    nDatasets <- length(refObject)
 
     mscores <- lapply(seq_len(nDatasets), function(i) {
-        dataset <- refData[[i]]
+        dataset <- refObject[[i]]
         PatientData <- as.data.frame(dataset[[1]])
         HealthyData <- as.data.frame(dataset[[2]])
         HealthyData <- HealthyData[apply(HealthyData, 1, stats::sd) != 0, ]
@@ -86,8 +96,8 @@ mScores_createReference <- function(refData,
         colnames(res) <- colnames(PatientData)
         return(res)
     })
-    if (!is.null(names(refData))) {
-        names(mscores) <- names(refData)
+    if (!is.null(names(refObject))) {
+        names(mscores) <- names(refObject)
     }
-    return(list(mscores = mscores, geneSets = geneSets, input = refData))
+    return(list(mscores = mscores, geneSets = geneSets, input = refObject))
 }

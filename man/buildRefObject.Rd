@@ -17,35 +17,40 @@ for each sample. Samples in rows and variables in columns.}
 @metadata classifying the samples in controls and cases. If several metadata
 objects are provided a @groupVar can be specified for each metadata.}
 
-\item{controlGroup}{Character or list of characters indicating which @groupVar
-level corresponds to the control group, usually healthy samples. All other
-samples will be considered as cases, usually disease samples. If
+\item{controlGroup}{Character or list of characters indicating which
+@groupVar level corresponds to the control group, usually healthy samples.
+All other samples will be considered as cases, usually disease samples. If
 several @groupVar are provided a @controlGroup can be specified
 for each @groupVar}
 }
 \value{
-A refData object that serves as input
+A refObject that serves as input
  for mScores_createReference and dissectDB functions.
 }
 \description{
 Create a reference data object for input to the pathMED functions
 }
 \examples{
-data(reference_datasets)
+data(refData)
 
-refData <- buildRefObject(
-  data = list(dataset1, dataset2, dataset3, dataset4),
-  metadata = list(metadata1, metadata2, metadata3, metadata4),
-  groupVar = "group",
-  controlGroup = "Healthy_sample")
+refObject <- buildRefObject(
+    data = list(refData$dataset1, refData$dataset2,
+                refData$dataset3, refData$dataset4),
+    metadata = list(refData$metadata1, refData$metadata2,
+                    refData$metadata3, refData$metadata4),
+    groupVar = "group",
+    controlGroup = "Healthy_sample"
+)
 
 ## Also works with a metadata for all datasets
-metadata <- rbind(metadata1, metadata2, metadata3, metadata4)
-refData <- buildRefObject(
-  data = list(dataset1, dataset2, dataset3, dataset4),
-  metadata = metadata,
-  groupVar = "group",
-  controlGroup = "Healthy_sample")
+metadata <- rbind(refData$metadata1, refData$metadata2,
+                    refData$metadata3, refData$metadata4)
+refObject <- buildRefObject(
+    data = list(refData$dataset1, refData$dataset2,
+                refData$dataset3, refData$dataset4),#'     metadata = metadata,
+    groupVar = "group",
+    controlGroup = "Healthy_sample"
+)
 
 }
 \references{

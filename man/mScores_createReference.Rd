@@ -4,10 +4,10 @@
 \alias{mScores_createReference}
 \title{Create a reference dataset based on M-scores}
 \usage{
-mScores_createReference(refData, geneSets, cores = 1)
+mScores_createReference(refObject, geneSets, cores = 1)
 }
 \arguments{
-\item{refData}{A refData object structure: a list of lists, each one with a
+\item{refObject}{A refObject object structure: a list of lists, each one with a
 cases expression matrix and controls expression matrix
 (named as Disease and Healthy). It can be constructed with the buildRefObject
  function.}
@@ -28,7 +28,17 @@ Create a reference dataset based on M-scores
 }
 \examples{
 data(refData)
-refMscore <- mScores_createReference(refData, geneSets="tmod")
+
+refObject <- buildRefObject(
+    data = list(refData$dataset1, refData$dataset2,
+                refData$dataset3, refData$dataset4),
+    metadata = list(refData$metadata1, refData$metadata2,
+                    refData$metadata3, refData$metadata4),
+    groupVar = "group",
+    controlGroup = "Healthy_sample"
+)
+
+refMscore <- mScores_createReference(refObject, geneSets = "tmod")
 }
 \references{
 Toro-Domínguez, D. et al (2022). \emph{Scoring personalized

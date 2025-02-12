@@ -26,7 +26,17 @@
 #'
 #' @examples
 #' data(refData)
-#' exampleRefMScore <- mScores_createReference(refData, genesets = "tmod")
+#'
+#' refObject <- buildRefObject(
+#'     data = list(refData$dataset1, refData$dataset2,
+#'                 refData$dataset3, refData$dataset4),
+#'     metadata = list(refData$metadata1, refData$metadata2,
+#'                     refData$metadata3, refData$metadata4),
+#'     groupVar = "group",
+#'     controlGroup = "Healthy_sample"
+#' )
+#'
+#' exampleRefMScore <- mScores_createReference(refObject, genesets = "tmod")
 #' relevantPaths <- mScores_filterPaths(exampleRefMScore, min_datasets = 3)
 #' @export
 mScores_filterPaths <- function(MRef,

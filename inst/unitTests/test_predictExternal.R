@@ -1,5 +1,5 @@
 test_predictExternal <- function() {
-    data(exampleData, exampleMetadata, reference_datasets)
+    data(reference_datasets)
     commonGenes <- intersect(rownames(dataset1), rownames(dataset2))
     dataset1 <- dataset1[commonGenes, ]
     dataset2 <- dataset2[commonGenes, ]

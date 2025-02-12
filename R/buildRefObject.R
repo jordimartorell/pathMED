@@ -13,7 +13,7 @@
 #'  several @groupVar are provided a @controlGroup can be specified
 #'  for each @groupVar
 #'
-#' @return A refData object that serves as input
+#' @return A refObject that serves as input
 #'  for mScores_createReference and dissectDB functions.
 #'
 #' @author Iván Ellson, \email{ivan.ellson.l@@gmail.com }
@@ -29,20 +29,23 @@
 #'  . Briefings in Bioinformatics. 23(5)
 #'
 #' @examples
-#' data(reference_datasets)
+#' data(refData)
 #'
-#' refData <- buildRefObject(
-#'     data = list(dataset1, dataset2, dataset3, dataset4),
-#'     metadata = list(metadata1, metadata2, metadata3, metadata4),
+#' refObject <- buildRefObject(
+#'     data = list(refData$dataset1, refData$dataset2,
+#'                 refData$dataset3, refData$dataset4),
+#'     metadata = list(refData$metadata1, refData$metadata2,
+#'                     refData$metadata3, refData$metadata4),
 #'     groupVar = "group",
 #'     controlGroup = "Healthy_sample"
 #' )
 #'
 #' ## Also works with a metadata for all datasets
-#' metadata <- rbind(metadata1, metadata2, metadata3, metadata4)
-#' refData <- buildRefObject(
-#'     data = list(dataset1, dataset2, dataset3, dataset4),
-#'     metadata = metadata,
+#' metadata <- rbind(refData$metadata1, refData$metadata2,
+#'                     refData$metadata3, refData$metadata4)
+#' refObject <- buildRefObject(
+#'     data = list(refData$dataset1, refData$dataset2,
+#'                 refData$dataset3, refData$dataset4),#'     metadata = metadata,
 #'     groupVar = "group",
 #'     controlGroup = "Healthy_sample"
 #' )
@@ -87,13 +90,13 @@ buildRefObject <- function(data, metadata, groupVar, controlGroup) {
         ))
     }
 
-    refData <- list()
+    refObject <- list()
     if (length(unique(c(
         length(data), length(metadata), length(groupVar),
         length(controlGroup)
     ))) == 1) {
         for (i in seq_len(length(data))) {
-            refData[[length(refData) + 1]] <- list(
+            refObject[[length(refObject) + 1]] <- list(
                 Disease = as.data.frame(data[[i]][, intersect(
                     colnames(data[[i]]),
                     rownames(metadata[[i]])
@@ -109,13 +112,13 @@ buildRefObject <- function(data, metadata, groupVar, controlGroup) {
                             controlGroup[[i]]]
                 )])
             )
-            names(refData)[i] <- paste0("dataset", i)
+            names(refObject)[i] <- paste0("dataset", i)
         }
     }
     if (length(metadata) == length(data) & length(metadata) > 1 &
         length(groupVar) == length(controlGroup) & length(groupVar) == 1) {
         for (i in seq_len(length(data))) {
-            refData[[length(refData) + 1]] <- list(
+            refObject[[length(refObject) + 1]] <- list(
                 Disease = as.data.frame(data[[i]][intersect(
                     colnames(data[[i]]),
                     rownames(metadata[[i]])
@@ -131,7 +134,7 @@ buildRefObject <- function(data, metadata, groupVar, controlGroup) {
                             controlGroup[[1]]]
                 )])
             )
-            names(refData)[i] <- paste0("dataset", i)
+            names(refObject)[i] <- paste0("dataset", i)
         }
     }
     if (length(metadata) != length(data) &
@@ -140,7 +143,7 @@ buildRefObject <- function(data, metadata, groupVar, controlGroup) {
             length(controlGroup), 1
         ))) == 1) {
         for (i in seq_len(length(data))) {
-            refData[[length(refData) + 1]] <- list(
+            refObject[[length(refObject) + 1]] <- list(
                 Disease = as.data.frame(data[[i]][intersect(
                     colnames(data[[i]]),
                     rownames(metadata[[1]])
@@ -156,11 +159,11 @@ buildRefObject <- function(data, metadata, groupVar, controlGroup) {
                             controlGroup[[1]]]
                 )])
             )
-            names(refData)[i] <- paste0("dataset", i)
+            names(refObject)[i] <- paste0("dataset", i)
         }
     }
-    if (length(refData) == 0) {
+    if (length(refObject) == 0) {
         stop("Input elements must be lists of datasets or individual datasets")
     }
-    return(refData)
+    return(refObject)
 }

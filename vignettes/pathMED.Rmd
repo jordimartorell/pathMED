@@ -391,16 +391,16 @@ steps must be followed.
 ## Build the reference data object
 
 ```{r, message = FALSE, results='hide', warning=FALSE}
-data(reference_datasets)
+data(refData)
 ```
 
-We loaded `reference_datasets` into the environment, which includes four
+We loaded `refData` into the environment, which includes four
 gene expression datasets and four corresponding metadata datasets
 containing clinical information. These datasets were extracted from NCBI
 GEO and contain both lupus and healthy samples, encoded in the metadata
 as "Healthy_sample" and "Disease_sample".
 
-The `buildRefObject()` function can be used to create a `refData` object
+The `buildRefObject()` function can be used to create a `refObject` object
 with the required structure for the following steps. The function
 require:
 
@@ -414,15 +414,17 @@ require:
     a separate value should be provided for each metadata file.
 
 ```{r, message = FALSE, results='hide', warning=FALSE}
-refData <- buildRefObject(
-    data = list(dataset1, dataset2, dataset3, dataset4),
-    metadata = list(metadata1, metadata2, metadata3, metadata4),
+refObject <- buildRefObject(
+    data = list(refData$dataset1, refData$dataset2, 
+                refData$dataset3, refData$dataset4),
+    metadata = list(refData$metadata1, refData$metadata2, 
+                    refData$metadata3, refData$metadata4),
     groupVar = "group",
     controlGroup = "Healthy_sample"
 )
 ```
 
-To create the `refData` object, it is recommended to include as many
+To create the `refObject` object, it is recommended to include as many
 datasets as possible to improve robustness. Ensure that all gene
 expression datasets are log2 transformed and follow a normal
 distribution. Additionally, gene names must be annotated as Gene Symbols
@@ -430,12 +432,12 @@ in both reference and test datasets.
 
 ## Calculate the reference M-scores
 
-After creating a `refData` object, the next step is to calculate
+After creating a `refObject` object, the next step is to calculate
 M-scores for the reference datasets with the `mScores_createReference()`
 function.
 
 ```{r, eval=TRUE, warning=FALSE, message=FALSE, results='hide'}
-refMscores <- mScores_createReference(refData,
+refMscores <- mScores_createReference(refObject,
     geneSets = "tmod",
     cores = 1
 )

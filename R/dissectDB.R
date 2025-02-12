@@ -1,6 +1,6 @@
 #' Split pathways into coexpressed subpathways
 #'
-#' @param refData A refData object structure: a list of lists, each one with a
+#' @param refObject A refObject object structure: a list of lists, each one with a
 #' cases expression matrix and controls expression matrix
 #' (named as Disease and Healthy). It can be constructed with the buildRefObject
 #'  function. A list with one or more expression matrices, without controls, can
@@ -39,11 +39,21 @@
 #'
 #' @examples
 #' data(refData)
-#' set.seed(1234)
-#' custom.tmod <- dissectDB(refData, geneSets = "tmod")
+#'
+#' refObject <- buildRefObject(
+#'     data = list(refData$dataset1, refData$dataset2,
+#'                 refData$dataset3, refData$dataset4),
+#'     metadata = list(refData$metadata1, refData$metadata2,
+#'                     refData$metadata3, refData$metadata4),
+#'     groupVar = "group",
+#'     controlGroup = "Healthy_sample"
+#' )
+#'
+#' set.seed(123)
+#' custom.tmod <- dissectDB(refObject, geneSets = "tmod")
 #' @export
 
-dissectDB <- function(refData,
+dissectDB <- function(refObject,
     geneSets,
     minPathSize = 10,
     minSplitSize = 3,
@@ -51,8 +61,8 @@ dissectDB <- function(refData,
     explainedVariance = 60,
     percSharedGenes = 90) {
     ## 1. Get Z-scores by gene
-    if (is(refData[[1]], "list")) {
-        z.data <- lapply(refData, function(x) {
+    if (is(refObject[[1]], "list")) {
+        z.data <- lapply(refObject, function(x) {
             Href <- data.frame(
                 "mean" = rowMeans(as.matrix(x$Healthy), na.rm = TRUE),
                 "sd" = matrixStats::rowSds(as.matrix(x$Healthy),
@@ -83,7 +93,7 @@ dissectDB <- function(refData,
             return(x.zscore)
         })
     } else {
-        z.data <- lapply(refData, function(x) {
+        z.data <- lapply(refObject, function(x) {
             x.zscore <- t(scale(t(x)))
             x.zscore <- x.zscore[apply(x.zscore, 1, function(xi) {
                 sum(is.na(xi))

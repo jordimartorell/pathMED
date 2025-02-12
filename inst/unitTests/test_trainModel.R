@@ -1,7 +1,7 @@
 test_trainModel <- function() {
     data(exampleData, exampleMetadata)
     set.seed(123)
-    scoresExample <- getScores(exampleData, geneSets="tmod", method="GSVA")
+    scoresExample <- getScores(exampleData, geneSets="tmod", method="Z-score")
     modelsList <- methodsML("svmLinear", outcomeClass="character")
     trainedModel <- trainModel(inputData=scoresExample,
                                metadata=exampleMetadata,
@@ -10,5 +10,5 @@ test_trainModel <- function() {
                                Koutter = 2,
                                Kinner = 2,
                                repeatsCV = 1)
-    checkEquals(round(trainedModel$stats[1,1], 5), 0.15119)
+    checkEquals(round(trainedModel$stats[1,1], 5), -0.04167)
 }

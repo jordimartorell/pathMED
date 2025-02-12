@@ -78,17 +78,21 @@ Train ML models and perform internal validation
 }
 \examples{
 data(exampleData, exampleMetadata)
-\donttest{
 
-scoresExample <- getScores(exampleData, geneSets="tmod", method="GSVA")
+scoresExample <- getScores(exampleData, geneSets = "tmod", method = "GSVA")
 
-modelsList <- methodsML("svmLinear", outcomeClass="character")
+modelsList <- methodsML("svmLinear", outcomeClass = "character")
 
-trainedModel <- trainModel(inputData=scoresExample,
-                            metadata=exampleMetadata,
-                            var2predict="Response",
-                            models=modelsList)
-}
+set.seed(123)
+trainedModel <- trainModel(
+    inputData = scoresExample,
+    metadata = exampleMetadata,
+    var2predict = "Response",
+    models = modelsList,
+    Koutter = 2,
+    Kinner = 2,
+    repeatsCV = 1
+)
 
 }
 \references{
