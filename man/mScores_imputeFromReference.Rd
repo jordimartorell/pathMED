@@ -8,8 +8,8 @@ mScores_imputeFromReference(
   inputData,
   geneSets,
   externalReference,
-  nk = 25,
-  imputeAll = FALSE,
+  nk = 5,
+  distance.threshold = 30,
   cores = 1
 )
 }
@@ -26,9 +26,9 @@ the mScores_createReference function.}
 \item{nk}{Number of
 most similar samples from the external reference to impute M-scores.}
 
-\item{imputeAll}{By default, only samples that do not
-surpass the distance of 30 with the external reference are imputed. If TRUE,
-impute all samples.}
+\item{distance.threshold}{Only samples that do not
+surpass the mean Euclidean distance of distance.threshold (by default = 30)
+with the external reference are imputed. If NULL,impute all samples.}
 
 \item{cores}{Number of cores to be used.}
 }
@@ -42,14 +42,17 @@ the input methData, pheno and platform objects
 Estimate M-scores for a dataset without healthy controls
 }
 \examples{
-\donttest{
 data(refData, exampleData)
 
 refObject <- buildRefObject(
-    data = list(refData$dataset1, refData$dataset2,
-                refData$dataset3, refData$dataset4),
-    metadata = list(refData$metadata1, refData$metadata2,
-                    refData$metadata3, refData$metadata4),
+    data = list(
+        refData$dataset1, refData$dataset2,
+        refData$dataset3, refData$dataset4
+    ),
+    metadata = list(
+        refData$metadata1, refData$metadata2,
+        refData$metadata3, refData$metadata4
+    ),
     groupVar = "group",
     controlGroup = "Healthy_sample"
 )
@@ -60,9 +63,9 @@ refMScores <- mScores_createReference(refObject,
 
 exampleMScores <- mScores_imputeFromReference(exampleData,
     geneSets = "tmod",
-    externalReference = refObject
+    externalReference = refMScores,
+    distance.threshold = 50
 )
-}
 }
 \references{
 Toro-Domínguez, D. et al (2022). \emph{Scoring personalized

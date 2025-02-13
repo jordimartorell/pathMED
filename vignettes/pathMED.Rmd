@@ -394,14 +394,14 @@ steps must be followed.
 data(refData)
 ```
 
-We loaded `refData` into the environment, which includes four
-gene expression datasets and four corresponding metadata datasets
-containing clinical information. These datasets were extracted from NCBI
-GEO and contain both lupus and healthy samples, encoded in the metadata
-as "Healthy_sample" and "Disease_sample".
+We loaded `refData` into the environment, which includes four gene
+expression datasets and four corresponding metadata datasets containing
+clinical information. These datasets were extracted from NCBI GEO and
+contain both lupus and healthy samples, encoded in the metadata as
+"Healthy_sample" and "Disease_sample".
 
-The `buildRefObject()` function can be used to create a `refObject` object
-with the required structure for the following steps. The function
+The `buildRefObject()` function can be used to create a `refObject`
+object with the required structure for the following steps. The function
 require:
 
 -   A list of expression datasets (`data`) or a single dataset if only
@@ -472,13 +472,16 @@ relevantPaths <- mScores_filterPaths(
 Once the reference data is ready and the relevant gene sets selected,
 you can calculate the M-scores for your dataset without healthy controls
 with the `mScores_imputeFromReference()` function. The input objects are
-a matrix with the cases samples, the output of the **diseasePaths**
-function. If no healthy controls are provided, the M-scores are
-calculated using the *k* most similar samples of the reference data. *k*
-may be specified with the **nk** parameter. The output is a matrix with
-the M-score of each gene set (rows) and sample (columns).
+a matrix with the cases samples, gene sets or the output of the
+`mScores_filterPaths` function and the output of
+`mScores_createReference()`. The M-scores are calculated using the *k*
+most similar samples of the reference data. *k* may be specified with
+the `nk` parameter. The `distance.threshold` parameter stablish the
+euclidean distance that a sample may have with the reference as maximum
+to impute its M-score. The output is a matrix with the M-score of each
+gene set (rows) and sample (columns).
 
-```{r, warning=FALSE, eval=FALSE}
+```{r, warning=FALSE}
 mScoresExample <- mScores_imputeFromReference(
     inputData = exampleData,
     geneSets = relevantPaths,

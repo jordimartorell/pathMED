@@ -22,7 +22,6 @@
 #' annotatedTerms <- ann2term(scoresExample)
 #' @export
 ann2term <- function(scoresMatrix) {
-    "%>%" <- magrittr::`%>%`
     scoresMatrix_df <- as.data.frame(scoresMatrix)
     anns <- rownames(scoresMatrix)
     splits <- vapply(strsplit(anns, split = ".split"), "[", 2,

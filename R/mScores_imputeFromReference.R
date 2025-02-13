@@ -30,7 +30,6 @@
 #'  . Briefings in Bioinformatics. 23(5)
 #'
 #' @examples
-#' \donttest{
 #' data(refData, exampleData)
 #'
 #' refObject <- buildRefObject(
@@ -52,9 +51,9 @@
 #'
 #' exampleMScores <- mScores_imputeFromReference(exampleData,
 #'     geneSets = "tmod",
-#'     externalReference = refObject
+#'     externalReference = refMScores,
+#'     distance.threshold = 50
 #' )
-#' }
 #' @export
 mScores_imputeFromReference <- function(inputData,
                                         geneSets,
@@ -72,11 +71,11 @@ mScores_imputeFromReference <- function(inputData,
 
     Patient <- inputData
 
-    message(paste(
-        "Calculating M-Scores by",
-        "similarity with samples from external reference for",
-        ncol(inputData), "patients"
-    ))
+    message(
+        "Calculating M-Scores by ",
+        "similarity with samples from external reference for ",
+        ncol(inputData), " patients"
+    )
 
     ## Get expression and mscores matrices from reference
     ref.expression <- lapply(externalReference$input, function(x) x$Disease)
@@ -121,13 +120,13 @@ mScores_imputeFromReference <- function(inputData,
         rem.paths <- unname(ifelse(Distances > distance.threshold, T, F))
 
         if (sum(rem.paths) > 0) {
-            message(paste(
-                "Distance between expression of",
-                sum(rem.paths), "/", length(Distances), "patients",
-                "and k-samples from Patient-reference are higher",
-                "than 30. Mscores",
+            message(
+                "Distance between expression of ",
+                sum(rem.paths), "/", length(Distances), " patients ",
+                "and k-samples from Patient-reference are higher ",
+                "than ", distance.threshold, ". Mscores ",
                 "for these patients will not be imputed..."
-            ))
+            )
 
             if (sum(rem.paths) == length(Distances)) {
                 Mscores <- NULL
