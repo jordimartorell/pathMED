@@ -2,7 +2,7 @@
 #' Calculate pathways scores for a dataset
 #'
 #' @param inputData Data matrix or data frame.
-#' @param geneSets A named list with each gene set, 
+#' @param geneSets A named list with each gene set,
 #' or the name of one preloaded database (gobp, gomf, gocc,
 #' kegg, reactome, tmod), or a data.frame based network including columns:
 #' "source","target","weight" and "mor" (optional, if need it).
@@ -43,22 +43,22 @@ getScores <- function(inputData,
   if (is(inputData, "data.frame")) {
     inputData <- as.matrix(inputData)
   }
-  
+
   if(is.data.frame(geneSets)){
-    
+
     if(method %in% c("GSVA","ssGSEA","singscore","Z-score", "Plage","M-score")){
       stop(
         paste(
           "data.frame based network is not permitted for method selected"
         )
       )
-      
+
     }else{
       if(all(c("source","target","weight") %in% colnames(geneSets))){
         if(!"mor" %in% colnames(geneSets)){
           geneSets$mor<-rep(1, length(geneSets[[x]]))
         }
-        
+
       }else{
         stop(
           paste(
@@ -68,11 +68,11 @@ getScores <- function(inputData,
         )
       }
     }
-    
+
   }else{
-    
+
     if(!is.list(geneSets)){
-      
+
       if (geneSets %in% names(genesetsData)){
         geneSets <- genesetsData[[geneSets]]
       }else{
@@ -86,7 +86,7 @@ getScores <- function(inputData,
       }
     }
   }
-  
+
   params <- list(...)
   if (method %in% c("GSVA", "ssGSEA", "Z-score", "Plage")) {
     if (method == "GSVA") {
@@ -154,8 +154,8 @@ getScores <- function(inputData,
         params
       ))
     })
-    listScores <- vapply(listSing, function(x) x$TotalScore,
-                         FUN.VALUE = numeric(1))
+    listScores <- lapply(listSing, function(x) x$TotalScore)
+
     if (is(listScores, "list")) {
       res <- do.call(rbind, listScores)
     } else {
@@ -184,7 +184,7 @@ getScores <- function(inputData,
     }else{
       net<-geneSets
     }
-    
+
     if (method %in% c("AUCell", "MDT", "MLM", "ORA", "UDT", "ULM")) {
       if (method == "AUCell") {
         params <- params[names(params) %in% c(
@@ -225,7 +225,7 @@ getScores <- function(inputData,
         net <- net[!net$source %in% as.character(co.lin[
           co.lin$correlation > 0.75, "source"
         ]), ]
-        
+
         params <- params[names(params) %in% c(
           "center", "na.rm",
           "minsize"
@@ -288,7 +288,7 @@ getScores <- function(inputData,
           params
         ))
       }
-      
+
       scoreMatrix <- as.data.frame(scoreMatrix[, c(
         "source", "condition",
         "score"
@@ -305,7 +305,7 @@ getScores <- function(inputData,
         ),
         params
       ))
-      
+
       if (method == "FGSEA") {
         scoreMatrix <- as.data.frame(
           scoreMatrix[
@@ -336,7 +336,7 @@ getScores <- function(inputData,
         ),
         params
       ))
-      
+
       if (method == "WMEAN") {
         scoreMatrix <- as.data.frame(
           scoreMatrix[
@@ -374,7 +374,7 @@ getScores <- function(inputData,
         ),
         params
       ))
-      
+
       if (method == "WSUM") {
         scoreMatrix <- as.data.frame(
           scoreMatrix[
@@ -398,7 +398,7 @@ getScores <- function(inputData,
         )
       }
     }
-    
+
     scoreMatrix <- reshape2::dcast(scoreMatrix, source ~ condition,
                                    value.var = "score"
     )
@@ -409,8 +409,8 @@ getScores <- function(inputData,
     if (is.null(labels)) {
       stop("Labels parameter must be used for M-Scores method")
     }
-    
-    
+
+
     if (0 %in% labels) {
       HealthyData <- inputData[, labels == 0]
       PatientData <- inputData[, labels != 0]
@@ -421,14 +421,14 @@ getScores <- function(inputData,
       stop("Reference samples in labels must be specified with 0
                 or 'Healthy'")
     }
-    
-    
+
+
     message(
       "Healthy samples supplied. Calculating M-Scores using ",
       "healthy samples as reference for ", ncol(PatientData),
       " patients"
     )
-    
+
     HealthyMean <- rowMeans(HealthyData, na.rm = TRUE)
     HealthySD <- apply(HealthyData, 1, function(x) {
       sd(x,
@@ -436,9 +436,9 @@ getScores <- function(inputData,
       )
     })
     HealthyMeanSD <- cbind(HealthyMean, HealthySD)
-    
+
     HealthyMeanSD <- HealthyMeanSD[HealthyMeanSD[, 2] != 0, ]
-    
+
     res <- BiocParallel::bplapply(seq_len(ncol(PatientData)),
                                   function(column, geneSets,
                                            HealthyMeanSD) {
@@ -462,10 +462,10 @@ getScores <- function(inputData,
                                     workers = cores, progressbar = TRUE
                                   )
     )
-    
+
     res <- do.call("cbind", res)
     colnames(res) <- colnames(PatientData)
   }
-  
+
   return(as.matrix(res))
 }

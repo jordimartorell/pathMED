@@ -14,6 +14,9 @@ author:
 - name: Iván Ellson
   affiliation:
   - GENYO, Centre for Genomics and Oncological Research
+- name: Raúl López-Domínguez
+  affiliation:
+  - GENYO, Centre for Genomics and Oncological Research
 - name: Pedro Carmona-Sáez
   affiliation:
   - Department of Statistics and Operational Research. University of Granada
@@ -297,18 +300,18 @@ scoring functions can be customized (see, for example,
 
 To run this function with the example data:
 
-```{r, message = FALSE, results='hide', warning=FALSE}
+```{r, message = FALSE, warning = FALSE}
 library(pathMED)
 data(exampleData)
-scoresExample <- getScores(exampleData, geneSets = "kegg", method = "GSVA")
-head(scoresExample)
+scoresExample <- getScores(exampleData, geneSets = "kegg", method = "Z-score")
+print(scoresExample[1:5,1:5])
 ```
 
 The result is a matrix with gene set identifiers as rows and samples as
 columns. To annotate the identifiers with their corresponding
 descriptions, you can use the `ann2term()` function.
 
-```{r, message = FALSE, results='hide', warning=FALSE}
+```{r, message = FALSE}
 annotatedPathways <- ann2term(scoresExample)
 head(annotatedPathways)
 ```
@@ -319,10 +322,11 @@ The next step in the core `pathMED` pipeline is to use the scores
 calculated in the previous step to train machine learning (ML) models
 for predicting categorical or numerical clinical variables. The
 `trainModel()` function fits and tests multiple algorithms, selecting
-the one with the best performance for predicting the specified variable
-(`var2predict` parameter). The input objects are `inputData` (the scores
-matrix obtained in the previous step), and `metadata` (a data frame
-containing sample metadata).
+the one with the best performance for predicting a variable. The input
+objects are `inputData` (the scores matrix obtained in the previous
+step, or any other numerical matrix), and `metadata` (a data frame
+containing sample metadata). The `var2predict` parameter indicates the
+column name of metadata with the variable to be predicted.
 
 The function `methodsML()` should be used to prepare a list of ML
 algorithms to be trained and tested. One or more algorithms can be
@@ -340,18 +344,19 @@ indicating whether patients responded to a treatment. The
 `positiveClass` parameter can be specified to calculate performance
 metrics based on the chosen positive class (e.g., diseased).
 
-```{r, warning=FALSE, eval=FALSE}
+```{r, message=FALSE}
 data(exampleMetadata)
 
 modelsList <- methodsML(algorithms = c("rf", "knn"), outcomeClass = "character")
 
+set.seed(123)
 trainedModel <- trainModel(scoresExample,
     metadata = exampleMetadata,
     var2predict = "Response",
     positiveClass = "YES",
     models = modelsList,
-    Koutter = 3,
-    Kinner = 3,
+    Koutter = 2,
+    Kinner = 2,
     repeatsCV = 1
 )
 
@@ -370,7 +375,17 @@ The output object is a list with the following elements:
 This object may be used with the `predictExternal()` function to make
 predictions on new data with the same features than the training data.
 
-# M-scores
+```{r, message=FALSE}
+data(refData)
+
+scoresExternal <- getScores(refData$dataset1, geneSets = "kegg", 
+                            method = "Z-score")
+
+predictions <- predictExternal(scoresExternal, trainedModel)
+head(predictions)
+```
+
+# Using M-scores to extract disease-relevant information
 
 In addition to previously developed molecular scoring methods, pathMED
 includes the novel M-score method. M-scores were used in a previous
@@ -383,22 +398,21 @@ and healthy controls, requiring the availability of control sample data.
 To use M-scores with the `getScores()` function, the `labels` parameter
 must be used to indicate control samples (using 0 or "Healthy").
 
-Using the M-score method, a reference database can be built from
-multiple datasets to enable clinical predictions on new samples, even
-when healthy control data is unavailable. To achieve this, the following
-steps must be followed.
+As described previously @toroDominguez2022, M-scores can be used to
+identify key pathways associated with the studied disease. To achieve
+this, a reference dataset of patients and healthy controls must be
+constructed, either from a single dataset or by integrating multiple
+datasets, following the steps outlined below. This reference will also
+enable the imputation of M-scores in new cohorts or individual patients
+where healthy controls are not available.
 
 ## Build the reference data object
 
-```{r, message = FALSE, results='hide', warning=FALSE}
-data(refData)
-```
-
-We loaded `refData` into the environment, which includes four gene
-expression datasets and four corresponding metadata datasets containing
-clinical information. These datasets were extracted from NCBI GEO and
-contain both lupus and healthy samples, encoded in the metadata as
-"Healthy_sample" and "Disease_sample".
+We will load `refData` into the environment, which includes four
+log2-normalized gene expression datasets and four corresponding metadata
+datasets containing clinical information. These datasets were extracted
+from NCBI GEO and contain both lupus and healthy samples, encoded in the
+metadata as "Healthy_sample" and "Disease_sample".
 
 The `buildRefObject()` function can be used to create a `refObject`
 object with the required structure for the following steps. The function
@@ -414,6 +428,8 @@ require:
     a separate value should be provided for each metadata file.
 
 ```{r, message = FALSE, results='hide', warning=FALSE}
+data(refData)
+
 refObject <- buildRefObject(
     data = list(refData$dataset1, refData$dataset2, 
                 refData$dataset3, refData$dataset4),
@@ -443,7 +459,7 @@ refMscores <- mScores_createReference(refObject,
 )
 ```
 
-## Filter gene sets
+## Identify key gene sets
 
 To identify the most relevant gene sets for the studied phenotype, you
 can use the `mScores_filterPaths()` function. This function selects
@@ -467,28 +483,34 @@ relevantPaths <- mScores_filterPaths(
 )
 ```
 
-## Calculate the M-scores
+## Calculate the M-scores without healthy controls
 
-Once the reference data is ready and the relevant gene sets selected,
-you can calculate the M-scores for your dataset without healthy controls
-with the `mScores_imputeFromReference()` function. The input objects are
-a matrix with the cases samples, gene sets or the output of the
-`mScores_filterPaths` function and the output of
-`mScores_createReference()`. The M-scores are calculated using the *k*
-most similar samples of the reference data. *k* may be specified with
-the `nk` parameter. The `distance.threshold` parameter stablish the
-euclidean distance that a sample may have with the reference as maximum
-to impute its M-score. The output is a matrix with the M-score of each
-gene set (rows) and sample (columns).
+Once the reference data is prepared and the relevant gene sets are
+selected, you can calculate M-scores for datasets without healthy
+controls using the `mScores_imputeFromReference()` function.
+
+The function requires a matrix containing case samples, gene sets (or
+the output of the `mScores_filterPaths()` function), and the reference
+data generated by `mScores_createReference()`. M-scores are computed
+using the **k** most similar samples from the reference data, with **k**
+specified through the `nk` parameter. The `distance.threshold` parameter
+defines the maximum allowable Euclidean distance between a sample and
+the reference for M-score imputation.
+
+The output is a list containing a matrix of M-scores, where gene sets
+are in rows and samples in columns, along with a dataframe of calculated
+distances between each sample and the reference.
 
 ```{r, warning=FALSE}
 mScoresExample <- mScores_imputeFromReference(
     inputData = exampleData,
     geneSets = relevantPaths,
-    externalReference = refMscores
+    externalReference = refMscores,
+    distance.threshold = 50
 )
 
-print(mScoresExample[1:5, 1:5])
+print(mScoresExample$Mscores[1:5, 1:5])
+print(mScoresExample$Distances[1:5,])
 ```
 
 # Session info
