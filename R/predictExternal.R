@@ -27,16 +27,17 @@
 #' @examples
 #' data(refData)
 #'
-#' commonGenes <- intersect(rownames(dataset1), rownames(dataset2))
-#' dataset1 <- dataset1[commonGenes, ]
-#' dataset2 <- dataset2[commonGenes, ]
+#' commonGenes <- intersect(rownames(refData$dataset1),
+#'                          rownames(refData$dataset2))
+#' dataset1 <- refData$dataset1[commonGenes, ]
+#' dataset2 <- refData$dataset2[commonGenes, ]
 #'
 #' scoresExample <- getScores(dataset1, geneSets = "tmod", method = "Z-score")
 #'
 #' set.seed(123)
 #' trainedModel <- trainModel(
 #'     inputData = scoresExample,
-#'     metadata = metadata1,
+#'     metadata = refData$metadata1,
 #'     var2predict = "group",
 #'     models = methodsML("svmLinear",
 #'         outcomeClass = "character"
@@ -47,8 +48,8 @@
 #' )
 #'
 #' externalScores <- getScores(dataset2, geneSets = "tmod", method = "Z-score")
-#' realValues <- metadata2$group
-#' names(realValues) <- rownames(metadata2)
+#' realValues <- refData$metadata2$group
+#' names(realValues) <- rownames(refData$metadata2)
 #' predictions <- predictExternal(externalScores, trainedModel,
 #'     realValues = realValues
 #' )
@@ -56,10 +57,11 @@
 #' print(predictions)
 #'
 #' @export
-predictExternal <- function(testData,
-    model,
-    realValues = NULL,
-    positiveClass = NULL) {
+predictExternal <- function(
+        testData,
+        model,
+        realValues = NULL,
+        positiveClass = NULL) {
     ## CHeck if model is contained in a trainModel output object of not
     if ("model" %in% names(model)) {
         model <- model$model
@@ -115,10 +117,10 @@ predictExternal <- function(testData,
                 positiveClass <- sort(unique(realValues),
                     decreasing = TRUE
                 )[1]
-                message(paste0(
+                message(
                     "Positive class not provided, selected: '",
                     positiveClass, "'\n"
-                ))
+                )
             }
             type <- "classification"
             metrics <- c(

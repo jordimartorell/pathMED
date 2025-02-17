@@ -28,22 +28,27 @@
 #' data(refData)
 #'
 #' refObject <- buildRefObject(
-#'     data = list(refData$dataset1, refData$dataset2,
-#'                 refData$dataset3, refData$dataset4),
-#'     metadata = list(refData$metadata1, refData$metadata2,
-#'                     refData$metadata3, refData$metadata4),
+#'     data = list(
+#'         refData$dataset1, refData$dataset2,
+#'         refData$dataset3, refData$dataset4
+#'     ),
+#'     metadata = list(
+#'         refData$metadata1, refData$metadata2,
+#'         refData$metadata3, refData$metadata4
+#'     ),
 #'     groupVar = "group",
 #'     controlGroup = "Healthy_sample"
 #' )
 #'
-#' exampleRefMScore <- mScores_createReference(refObject, genesets = "tmod")
+#' exampleRefMScore <- mScores_createReference(refObject, geneSets = "tmod")
 #' relevantPaths <- mScores_filterPaths(exampleRefMScore, min_datasets = 3)
 #' @export
-mScores_filterPaths <- function(MRef,
-    min_datasets = round(length(MRef[[1]]) * 0.34),
-    perc_samples = 10,
-    Pcutoff = 0.05,
-    plotMetrics = TRUE) {
+mScores_filterPaths <- function(
+        MRef,
+        min_datasets = round(length(MRef[[1]]) * 0.34),
+        perc_samples = 10,
+        Pcutoff = 0.05,
+        plotMetrics = TRUE) {
     MScores <- MRef[[1]]
     genesets <- MRef[[2]]
     expr.list <- MRef[[3]]
@@ -73,13 +78,6 @@ mScores_filterPaths <- function(MRef,
 
     genesets <- genesets[selected.path]
 
-    # Build the expression reference
-    reference <- .MReference(
-        expr.list = expr.list,
-        mscore.list = MScores,
-        geneset.list = genesets
-    )
-
     ## plotMetrics
     if (plotMetrics) {
         all <- expand.grid(seq_len(length(MScores)), seq_len(100))
@@ -97,15 +95,17 @@ mScores_filterPaths <- function(MRef,
         }
         all[["selected_paths"]] <- nPaths
 
-        agg <- aggregate(selected_paths ~ perc_samples, all, sum)
+        agg <- aggregate(as.formula("selected_paths ~ perc_samples"), all, sum)
         agg <- agg[agg$selected_paths >= 5, ] ## Minimal significant pathways
         all <- all[all$perc_samples %in% unique(agg$perc_samples), ]
         all[["min_datasets"]] <- paste("min_datasets", all[["min_datasets"]])
 
         if (nrow(all) > 0) {
             P1 <- ggplot(all, aes(
-                x = perc_samples, y = selected_paths,
-                group = min_datasets, color = min_datasets
+                x = .data[["perc_samples"]],
+                y = .data[["selected_paths"]],
+                group = .data[["min_datasets"]],
+                color = .data[["min_datasets"]]
             )) +
                 geom_line() +
                 theme_bw() +

@@ -1,6 +1,7 @@
 #' Create a reference dataset based on M-scores
 #'
-#' @param refObject A refObject object structure: a list of lists, each one with a
+#' @param refObject A refObject object structure: a list of lists, each one
+#' with a
 #' cases expression matrix and controls expression matrix
 #' (named as Disease and Healthy). It can be constructed with the buildRefObject
 #'  function.
@@ -29,19 +30,24 @@
 #' data(refData)
 #'
 #' refObject <- buildRefObject(
-#'     data = list(refData$dataset1, refData$dataset2,
-#'                 refData$dataset3, refData$dataset4),
-#'     metadata = list(refData$metadata1, refData$metadata2,
-#'                     refData$metadata3, refData$metadata4),
+#'     data = list(
+#'         refData$dataset1, refData$dataset2,
+#'         refData$dataset3, refData$dataset4
+#'     ),
+#'     metadata = list(
+#'         refData$metadata1, refData$metadata2,
+#'         refData$metadata3, refData$metadata4
+#'     ),
 #'     groupVar = "group",
 #'     controlGroup = "Healthy_sample"
 #' )
 #'
 #' refMscore <- mScores_createReference(refObject, geneSets = "tmod")
 #' @export
-mScores_createReference <- function(refObject,
-    geneSets,
-    cores = 1) {
+mScores_createReference <- function(
+        refObject,
+        geneSets,
+        cores = 1) {
     if (!is(geneSets, "list")) {
         geneSets <- genesetsData[[geneSets]]
     }
@@ -68,9 +74,10 @@ mScores_createReference <- function(refObject,
         workers <- min(cores, ncol(PatientData))
 
         res <- BiocParallel::bplapply(seq_len(ncol(PatientData)),
-            function(column, PatientData, geneNames,
-    geneSets, HealthyMeanSD,
-    .getMscorePath) {
+            function(
+        column, PatientData, geneNames,
+        geneSets, HealthyMeanSD,
+        .getMscorePath) {
                 Patient <- PatientData[, column]
                 names(Patient) <- geneNames
                 res.i <- lapply(geneSets,

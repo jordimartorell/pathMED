@@ -15,7 +15,8 @@ dissectDB(
 )
 }
 \arguments{
-\item{refObject}{A refObject object structure: a list of lists, each one with a
+\item{refObject}{A refObject object structure: a list of lists, each one
+with a
 cases expression matrix and controls expression matrix
 (named as Disease and Healthy). It can be constructed with the buildRefObject
  function. A list with one or more expression matrices, without controls, can
@@ -54,10 +55,14 @@ Split pathways into coexpressed subpathways
 data(refData)
 
 refObject <- buildRefObject(
-    data = list(refData$dataset1, refData$dataset2,
-                refData$dataset3, refData$dataset4),
-    metadata = list(refData$metadata1, refData$metadata2,
-                    refData$metadata3, refData$metadata4),
+    data = list(
+        refData$dataset1, refData$dataset2,
+        refData$dataset3, refData$dataset4
+    ),
+    metadata = list(
+        refData$metadata1, refData$metadata2,
+        refData$metadata3, refData$metadata4
+    ),
     groupVar = "group",
     controlGroup = "Healthy_sample"
 )

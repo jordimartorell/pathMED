@@ -25,7 +25,8 @@ ann2term <- function(scoresMatrix) {
     scoresMatrix_df <- as.data.frame(scoresMatrix)
     anns <- rownames(scoresMatrix)
     splits <- vapply(strsplit(anns, split = ".split"), "[", 2,
-                    FUN.VALUE = character(1))
+        FUN.VALUE = character(1)
+    )
     splits <- unlist(lapply(splits, function(x) {
         if (!is.na(x)) {
             x <- paste0(".split", x)
@@ -35,7 +36,8 @@ ann2term <- function(scoresMatrix) {
         return(x)
     }))
     anns_prev <- vapply(strsplit(anns, split = ".split"), "[", 1,
-                        FUN.VALUE = character(1))
+        FUN.VALUE = character(1)
+    )
     anns_df <- data.frame(
         ann_prev = anns_prev, split = splits,
         full = paste0(anns_prev, splits)

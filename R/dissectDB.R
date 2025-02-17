@@ -1,6 +1,7 @@
 #' Split pathways into coexpressed subpathways
 #'
-#' @param refObject A refObject object structure: a list of lists, each one with a
+#' @param refObject A refObject object structure: a list of lists, each one
+#' with a
 #' cases expression matrix and controls expression matrix
 #' (named as Disease and Healthy). It can be constructed with the buildRefObject
 #'  function. A list with one or more expression matrices, without controls, can
@@ -41,10 +42,14 @@
 #' data(refData)
 #'
 #' refObject <- buildRefObject(
-#'     data = list(refData$dataset1, refData$dataset2,
-#'                 refData$dataset3, refData$dataset4),
-#'     metadata = list(refData$metadata1, refData$metadata2,
-#'                     refData$metadata3, refData$metadata4),
+#'     data = list(
+#'         refData$dataset1, refData$dataset2,
+#'         refData$dataset3, refData$dataset4
+#'     ),
+#'     metadata = list(
+#'         refData$metadata1, refData$metadata2,
+#'         refData$metadata3, refData$metadata4
+#'     ),
 #'     groupVar = "group",
 #'     controlGroup = "Healthy_sample"
 #' )
@@ -53,13 +58,14 @@
 #' custom.tmod <- dissectDB(refObject, geneSets = "tmod")
 #' @export
 
-dissectDB <- function(refObject,
-    geneSets,
-    minPathSize = 10,
-    minSplitSize = 3,
-    maxSplits = NULL,
-    explainedVariance = 60,
-    percSharedGenes = 90) {
+dissectDB <- function(
+        refObject,
+        geneSets,
+        minPathSize = 10,
+        minSplitSize = 3,
+        maxSplits = NULL,
+        explainedVariance = 60,
+        percSharedGenes = 90) {
     ## 1. Get Z-scores by gene
     if (is(refObject[[1]], "list")) {
         z.data <- lapply(refObject, function(x) {
@@ -149,7 +155,8 @@ dissectDB <- function(refObject,
             })
             merged.datasets <- do.call("cbind", z.data)
             merged.datasets <- merged.datasets[, !colSums(is.na(
-                merged.datasets))
+                merged.datasets
+            ))
             > 0]
             z.data <- list(merged.datasets)
             names(z.data)[1] <- "mergedData"
@@ -159,8 +166,10 @@ dissectDB <- function(refObject,
     ## 3. Dissect pathways
     message("This proccess can take time...")
     if (length(geneSets) > 1) {
-        pb <- txtProgressBar(min = 1, max = length(geneSets), initial = 0,
-                            style = 3)
+        pb <- txtProgressBar(
+            min = 1, max = length(geneSets), initial = 0,
+            style = 3
+        )
     }
     new.geneSets <- list()
     for (p in seq_len(length(geneSets))) { ## Loop for each pathway
@@ -248,7 +257,7 @@ dissectDB <- function(refObject,
                         cooccurrence_matrix[genes, genes] <-
                             cooccurrence_matrix[
                                 genes, genes
-                        ] + 1
+                            ] + 1
                     }
                 }
 

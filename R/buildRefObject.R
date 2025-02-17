@@ -32,20 +32,29 @@
 #' data(refData)
 #'
 #' refObject <- buildRefObject(
-#'     data = list(refData$dataset1, refData$dataset2,
-#'                 refData$dataset3, refData$dataset4),
-#'     metadata = list(refData$metadata1, refData$metadata2,
-#'                     refData$metadata3, refData$metadata4),
+#'     data = list(
+#'         refData$dataset1, refData$dataset2,
+#'         refData$dataset3, refData$dataset4
+#'     ),
+#'     metadata = list(
+#'         refData$metadata1, refData$metadata2,
+#'         refData$metadata3, refData$metadata4
+#'     ),
 #'     groupVar = "group",
 #'     controlGroup = "Healthy_sample"
 #' )
 #'
 #' ## Also works with a metadata for all datasets
-#' metadata <- rbind(refData$metadata1, refData$metadata2,
-#'                     refData$metadata3, refData$metadata4)
+#' metadata <- rbind(
+#'     refData$metadata1, refData$metadata2,
+#'     refData$metadata3, refData$metadata4
+#' )
 #' refObject <- buildRefObject(
-#'     data = list(refData$dataset1, refData$dataset2,
-#'                 refData$dataset3, refData$dataset4),#'     metadata = metadata,
+#'     data = list(
+#'         refData$dataset1, refData$dataset2,
+#'         refData$dataset3, refData$dataset4
+#'     ),
+#'     metadata = metadata,
 #'     groupVar = "group",
 #'     controlGroup = "Healthy_sample"
 #' )

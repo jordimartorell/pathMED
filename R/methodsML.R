@@ -23,11 +23,13 @@
 #'  . Briefings in Bioinformatics. 23(5)
 #'
 #' @examples
-#' models <- methodsML(c("rf", "knn"), tuneLength = 20)
+#' models <- methodsML(c("rf", "knn"), tuneLength = 20,
+#'                     outcomeClass = "character")
 #' @export
-methodsML <- function(algorithms = c("rf", "knn", "nb"),
-    outcomeClass,
-    tuneLength = 20) {
+methodsML <- function(
+        algorithms = c("rf", "knn", "nb"),
+        outcomeClass,
+        tuneLength = 20) {
     if (is.null(outcomeClass)) {
         stop("outcomeClass is missing, please specify whether the variable to
             predict is character or numeric.")
@@ -55,20 +57,30 @@ methodsML <- function(algorithms = c("rf", "knn", "nb"),
     metric <- ifelse(outcomeClass == "character", "Kappa", "RMSE")
 
     methodList <- list(
-        lm = caretModelSpec(method = "lm", tuneLength = tuneLength,
-                            metric = metric),
-        glm = caretModelSpec(method = "glm", tuneLength = tuneLength,
-                            metric = metric),
-        lda = caretModelSpec(method = "lda", tuneLength = tuneLength,
-                            metric = metric),
+        lm = caretModelSpec(
+            method = "lm", tuneLength = tuneLength,
+            metric = metric
+        ),
+        glm = caretModelSpec(
+            method = "glm", tuneLength = tuneLength,
+            metric = metric
+        ),
+        lda = caretModelSpec(
+            method = "lda", tuneLength = tuneLength,
+            metric = metric
+        ),
         xgbTree = caretModelSpec(
             method = "xgbTree", tuneLength = tuneLength,
             metric = metric, nthread = 1
         ),
-        rf = caretModelSpec(method = "rf", tuneLength = tuneLength,
-                            metric = metric),
-        knn = caretModelSpec(method = "knn", tuneLength = tuneLength,
-                            metric = metric),
+        rf = caretModelSpec(
+            method = "rf", tuneLength = tuneLength,
+            metric = metric
+        ),
+        knn = caretModelSpec(
+            method = "knn", tuneLength = tuneLength,
+            metric = metric
+        ),
         svmLinear = caretModelSpec(
             method = "svmLinear", tuneLength = tuneLength,
             metric = metric
@@ -81,8 +93,10 @@ methodsML <- function(algorithms = c("rf", "knn", "nb"),
             method = "nnet", tuneLength = tuneLength,
             metric = metric
         ),
-        nb = caretModelSpec(method = "nb", tuneLength = tuneLength,
-                            metric = metric),
+        nb = caretModelSpec(
+            method = "nb", tuneLength = tuneLength,
+            metric = metric
+        ),
         lars = caretModelSpec(
             method = "lars", tuneLength = tuneLength,
             metric = metric
@@ -91,8 +105,10 @@ methodsML <- function(algorithms = c("rf", "knn", "nb"),
             method = "rpart", tuneLength = tuneLength,
             metric = metric
         ),
-        ada = caretModelSpec(method = "ada", tuneLength = tuneLength,
-                            metric = metric),
+        ada = caretModelSpec(
+            method = "ada", tuneLength = tuneLength,
+            metric = metric
+        ),
         gamboost = caretModelSpec(
             method = "gamboost", tuneLength = tuneLength,
             metric = metric
@@ -101,8 +117,10 @@ methodsML <- function(algorithms = c("rf", "knn", "nb"),
             method = "brnn", tuneLength = tuneLength,
             metric = metric
         ),
-        enet = caretModelSpec(method = "enet", tuneLength = tuneLength,
-                                metric = metric)
+        enet = caretModelSpec(
+            method = "enet", tuneLength = tuneLength,
+            metric = metric
+        )
     )
 
 

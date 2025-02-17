@@ -270,8 +270,6 @@ are:
 -   Plage (@tomfohr2005)
 -   Z-score (@lee2018)
 -   AUCell (@aibar2017)
--   ssGSEA (@barbie2009)
--   AUCell (@aibar2017)
 -   decoupleR methods (MDT, MLM, ORA, UDT, ULM, WMEAN, norm_WMEAN,
     corr_WMEAN, WSUM, norm_WSUM and corr_WSUM) (@badia2022)
 -   FGSEA and norm_FGSEA (@korotkevich2021)
@@ -304,7 +302,7 @@ To run this function with the example data:
 library(pathMED)
 data(exampleData)
 scoresExample <- getScores(exampleData, geneSets = "kegg", method = "Z-score")
-print(scoresExample[1:5,1:5])
+print(scoresExample[1:5, 1:5])
 ```
 
 The result is a matrix with gene set identifiers as rows and samples as
@@ -378,8 +376,10 @@ predictions on new data with the same features than the training data.
 ```{r, message=FALSE}
 data(refData)
 
-scoresExternal <- getScores(refData$dataset1, geneSets = "kegg", 
-                            method = "Z-score")
+scoresExternal <- getScores(refData$dataset1,
+    geneSets = "kegg",
+    method = "Z-score"
+)
 
 predictions <- predictExternal(scoresExternal, trainedModel)
 head(predictions)
@@ -431,10 +431,14 @@ require:
 data(refData)
 
 refObject <- buildRefObject(
-    data = list(refData$dataset1, refData$dataset2, 
-                refData$dataset3, refData$dataset4),
-    metadata = list(refData$metadata1, refData$metadata2, 
-                    refData$metadata3, refData$metadata4),
+    data = list(
+        refData$dataset1, refData$dataset2,
+        refData$dataset3, refData$dataset4
+    ),
+    metadata = list(
+        refData$metadata1, refData$metadata2,
+        refData$metadata3, refData$metadata4
+    ),
     groupVar = "group",
     controlGroup = "Healthy_sample"
 )
@@ -510,7 +514,7 @@ mScoresExample <- mScores_imputeFromReference(
 )
 
 print(mScoresExample$Mscores[1:5, 1:5])
-print(mScoresExample$Distances[1:5,])
+print(mScoresExample$Distances[1:5, ])
 ```
 
 # Session info

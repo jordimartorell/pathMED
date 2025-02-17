@@ -24,7 +24,8 @@ parameter in the trainModel function
 Prepare the models parameter for the trainModel function
 }
 \examples{
-models <- methodsML(c("rf", "knn"), tuneLength = 20)
+models <- methodsML(c("rf", "knn"), tuneLength = 20,
+                    outcomeClass = "character")
 }
 \references{
 Toro-Domínguez, D. et al (2022). \emph{Scoring personalized

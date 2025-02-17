@@ -56,11 +56,11 @@
 #' )
 #' @export
 mScores_imputeFromReference <- function(inputData,
-                                        geneSets,
-                                        externalReference,
-                                        nk = 5,
-                                        distance.threshold = 30,
-                                        cores = 1) {
+    geneSets,
+    externalReference,
+    nk = 5,
+    distance.threshold = 30,
+    cores = 1) {
     if (is(inputData, "data.frame")) {
         inputData <- as.matrix(inputData)
     }
@@ -85,19 +85,25 @@ mScores_imputeFromReference <- function(inputData,
         as.character(unlist(geneSets))
     )
 
-    ref.expression <- as.data.frame(do.call("cbind",
-                                            lapply(ref.expression, function(m) {
-        m[sharedGenes, , drop = FALSE]
-    })))
+    ref.expression <- as.data.frame(do.call(
+        "cbind",
+        lapply(ref.expression, function(m) {
+            m[sharedGenes, , drop = FALSE]
+        })
+    ))
     ## normalization by patient to minimize impact of magnitude
     ## differences across sets
     ref.expression <- apply(ref.expression, 2, .normSamples)
 
-    ref.mscores <- as.data.frame(do.call("cbind",
-                                        lapply(externalReference$mscores,
-                                                function(m) {
-        m[names(geneSets), , drop = FALSE]
-    })))
+    ref.mscores <- as.data.frame(do.call(
+        "cbind",
+        lapply(
+            externalReference$mscores,
+            function(m) {
+                m[names(geneSets), , drop = FALSE]
+            }
+        )
+    ))
 
     MscoresList <- pbapply::pbapply(Patient, 2, function(x) {
         names(x) <- rownames(Patient)
@@ -117,7 +123,7 @@ mScores_imputeFromReference <- function(inputData,
     })))
 
     if (!is.null(distance.threshold)) {
-        rem.paths <- unname(ifelse(Distances > distance.threshold, T, F))
+        rem.paths <- unname(ifelse(Distances > distance.threshold, TRUE, FALSE))
 
         if (sum(rem.paths) > 0) {
             message(

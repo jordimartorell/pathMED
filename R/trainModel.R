@@ -85,6 +85,94 @@ trainModel <- function(inputData,
     rerank = FALSE,
     continue_on_fail = TRUE,
     saveLogFile = NULL) {
+    # 1 Checking
+    filterSizes <- .trainModelChecking(
+        var2predict, metadata, filterFeatures,
+        filterSizes, saveLogFile, inputData
+    )
+    # 2 Filter
+    resFilter <- .trainModelFilterRaw(
+        inputData, metadata, var2predict,
+        positiveClass
+    )
+    inputData <- resFilter$inputData
+    metadata <- resFilter$metadata
+    positiveClass <- resFilter$positiveClass
+    # # 3 Outcome
+    resOutcome <- .trainModelOutcomeClass(
+        inputData, metadata, var2predict,
+        Koutter, Kinner
+    )
+    outcomeClass <- resOutcome$outcomeClass
+    prior <- resOutcome$prior
+    # # 4 Filtering models
+    models <- .trainModelMethodsFiltering(inputData, outcomeClass, models)
+    # # 5 Koutter
+    resKoutter <- .trainModelKoutter(
+        inputData, metadata, outcomeClass, Koutter,
+        pairingColumn
+    )
+    sampleSets <- resKoutter$sampleSets
+    ntest <- resKoutter$ntest
+    # # 6 Training models
+    resultNested <- .trainModelResultNested(
+        sampleSets, inputData, models,
+        pairingColumn, metadata, Kinner,
+        repeatsCV, outcomeClass,
+        positiveClass,
+        filterFeatures, continue_on_fail,
+        saveLogFile, rerank, filterSizes
+    )
+    # 7 Final Features
+    Finalfeatures <- .trainModelFinalFeatures(resultNested)
+    # 8 Valid Models
+    resModels <- .trainModelValidModels(resultNested)
+    resultNested <- resModels$resultNested
+    validModels <- resModels$validModels
+    nullmodels <- resModels$nullmodels
+    # 9 perc koutter
+    resKoutter <- .trainModelPercKoutter(
+        nullmodels, resultNested, validModels,
+        models
+    )
+    validModels <- resKoutter$validModels
+    models <- resKoutter$models
+    # 10 metrics
+    resMetrics <- .trainModelSelectMetrics(
+        inputData, outcomeClass,
+        positiveClass
+    )
+    metrics <- resMetrics$metrics
+    type <- resMetrics$type
+    levels <- resMetrics$levels
+    # 11 stats
+    stats <- .trainModelStats(
+        models, sampleSets, levels, type, metrics,
+        resultNested, continue_on_fail, saveLogFile,
+        outcomeClass
+    )
+    # 12 modify stats
+    stats <- .trainModelModifyStats(stats, models, prior)
+    # 13 parameters, prediction and loss
+    resStats <- .trainModelFinalStats(stats, resultNested, ntest)
+    stats <- resStats$stats
+    parameters <- resStats$parameters
+    predsTable <- resStats$predsTable
+    # 14 best tune
+    bestTune <- .trainModelBestTune(parameters)
+    # 15 final model
+    fit.model <- .trainModelFit(
+        inputData, Finalfeatures, stats, outcomeClass,
+        bestTune
+    )
+    return(list(
+        model = fit.model, stats = stats, bestTune = bestTune,
+        subsample.preds = predsTable
+    ))
+}
+
+.trainModelChecking <- function(var2predict, metadata, filterFeatures,
+    filterSizes, saveLogFile, inputData) {
     if (!is.null(saveLogFile)) {
         if (file.exists(saveLogFile)) {
             file.remove(saveLogFile) # reset log file
@@ -104,14 +192,15 @@ trainModel <- function(inputData,
             }
         }
     }
+    return(filterSizes)
+}
 
-    ## 1. Formatting data input
+.trainModelFilterRaw <- function(inputData, metadata, var2predict,
+    positiveClass) {
     samples <- intersect(rownames(metadata), colnames(inputData))
-
     if (length(samples) < 1) {
         stop("Row names of metadata and column names of inputData do not match")
     }
-
     if (is.character(metadata[, var2predict]) |
         is.factor(metadata[, var2predict])) {
         metadata[, var2predict] <- stringi::stri_replace_all_regex(
@@ -120,7 +209,6 @@ trainModel <- function(inputData,
             vectorize = FALSE
         )
     }
-
     if (!is.null(positiveClass)) {
         positiveClass <- stringi::stri_replace_all_regex(
             positiveClass,
@@ -132,30 +220,23 @@ trainModel <- function(inputData,
             decreasing = TRUE
         )[1]
     }
-
     inputData <- inputData[, samples]
     metadata <- metadata[samples, , drop = FALSE]
-
     # Remove features with all 0
     inputData <- inputData[rowSums(inputData) != 0, ]
-
     inputData <- data.frame(
         "group" = metadata[, var2predict],
         as.data.frame(t(inputData))
     )
-
     colnames(inputData) <- stringi::stri_replace_all_regex(
         colnames(inputData),
         pattern = c("/", " ", "-", ":"),
         replacement = c(".", ".", ".", "."), vectorize = FALSE
     )
-
     inputData <- inputData[!is.na(inputData$group), ]
-
     if (is.factor(inputData$group)) {
         inputData$group <- as.character(inputData$group)
     }
-
     if (inputData %>% dplyr::summarise(dplyr::across(
         dplyr::everything(),
         ~ any(is.na(.) |
@@ -164,7 +245,15 @@ trainModel <- function(inputData,
         stop("There are NA and/or Infinite values in your data, please replace
         or remove them before running trainModel")
     }
+    return(list(
+        "inputData" = inputData,
+        "metadata" = metadata,
+        "positiveClass" = positiveClass
+    ))
+}
 
+.trainModelOutcomeClass <- function(inputData, metadata, var2predict, Koutter,
+    Kinner) {
     outcomeClass <- class(inputData$group)
     if (methods::is(inputData$group, "character")) {
         prior <- "MCC"
@@ -205,9 +294,13 @@ trainModel <- function(inputData,
             )
         }
     }
+    return(list(
+        "outcomeClass" = outcomeClass,
+        "prior" = prior
+    ))
+}
 
-
-
+.trainModelMethodsFiltering <- function(inputData, outcomeClass, models) {
     if (length(unique(inputData$group)) > 2 &
         methods::is(outcomeClass, "character") &
         any(names(models) %in% c("glm", "ada", "gamboost"))) {
@@ -218,8 +311,12 @@ trainModel <- function(inputData,
     if (length(models) == 0) {
         stop("No algorithm suitable. Please, check the methodsML function")
     }
+    return(models)
+}
 
-    ## 2. Koutter
+
+.trainModelKoutter <- function(inputData, metadata, outcomeClass, Koutter,
+    pairingColumn) {
     if (!is.list(Koutter)) {
         if (!is.null(pairingColumn)) {
             isPaired <- metadata[rownames(inputData), pairingColumn]
@@ -238,11 +335,81 @@ trainModel <- function(inputData,
     ntest <- sum(unlist(lapply(sampleSets, function(n) {
         nrow(inputData[-as.numeric(unlist(n)), ])
     })))
+    return(list(
+        "sampleSets" = sampleSets,
+        "ntest" = ntest
+    ))
+}
 
+.trainModelFinalFeatures <- function(resultNested) {
+    Finalfeatures <- unique(c(unlist(lapply(resultNested, function(f.ns) {
+        tmp.ff <- colnames(f.ns$models[[1]]$trainingData)
+        return(tmp.ff[!tmp.ff %in% ".outcome"])
+    }))))
+}
+
+.trainModelEvaluateModel <- function(resultNested) {
+    for (s in seq_len(length(resultNested))) {
+        m_toremove <- c()
+        for (m in seq_len(length(resultNested[[s]][["models"]]))) {
+            if (is.null(resultNested[[s]][["models"]][[m]]) |
+                is.null(resultNested[[s]][["preds"]][[m]])) {
+                m_toremove <- append(m_toremove, m)
+            }
+        }
+        if (!is.null(m_toremove)) {
+            resultNested[[s]][["models"]][[m_toremove]] <- NULL
+            resultNested[[s]][["preds"]][[m_toremove]] <- NULL
+            resultNested[[s]][["cm"]][[m_toremove]] <- NULL
+        }
+    }
+    return(resultNested)
+}
+
+.trainModelNull <- function(resultNested, validModels) {
+    nullmodels <- do.call("cbind", lapply(
+        seq_len(length(resultNested)),
+        function(x) {
+            nullmodel <- data.frame(
+                row.names = validModels,
+                !validModels %in%
+                    names(resultNested[[x]][["models"]])
+            )
+            nullmodel[!nullmodel[, 1], ] <- 0
+            colnames(nullmodel) <- paste0("sampleset", x)
+            return(nullmodel)
+        }
+    ))
+    return(nullmodels)
+}
+
+.trainModelValidModels <- function(resultNested) {
+    Finalfeatures <- .trainModelFinalFeatures(resultNested)
+    resultNested <- .trainModelEvaluateModel(resultNested)
+    validModels <- list()
+    validModels <- lapply(resultNested, function(m) {
+        vm <- append(validModels, names(m$models))
+        return(vm)
+    })
+    validModels <- unique(unlist(validModels))
+    nullmodels <- .trainModelNull(resultNested, validModels)
+    return(list(
+        "resultNested" = resultNested,
+        "nullmodels" = nullmodels,
+        "validModels" = validModels
+    ))
+}
+
+
+.trainModelResultNested <- function(sampleSets, inputData, models,
+    pairingColumn, metadata, Kinner, repeatsCV,
+    outcomeClass, positiveClass, filterFeatures,
+    continue_on_fail, saveLogFile, rerank, filterSizes) {
     message("Training models...")
-    pb <- txtProgressBar(min = 0, max = length(sampleSets) * length(models),
-                        style = 3)
-
+    pb <- txtProgressBar(
+        min = 0, max = length(sampleSets) * length(models),
+        style = 3
+    )
     resultNested <- lapply(sampleSets, function(x) {
         training <- inputData[as.numeric(unlist(x)), ]
         testing <- inputData[-as.numeric(unlist(x)), ]
@@ -439,15 +606,19 @@ trainModel <- function(inputData,
         gc()
         return(list(models = modelResults, preds = predictionTable, cm = cm))
     })
-
     close(pb)
     message("Done")
+    return(resultNested)
+}
 
+.trainModelFinalFeatures <- function(resultNested) {
     Finalfeatures <- unique(c(unlist(lapply(resultNested, function(f.ns) {
         tmp.ff <- colnames(f.ns$models[[1]]$trainingData)
         return(tmp.ff[!tmp.ff %in% ".outcome"])
     }))))
+}
 
+.trainModelFilterModels <- function(resultNested) {
     for (s in seq_len(length(resultNested))) {
         m_toremove <- c()
         for (m in seq_len(length(resultNested[[s]][["models"]]))) {
@@ -482,10 +653,15 @@ trainModel <- function(inputData,
             return(nullmodel)
         }
     ))
+    return(list(
+        "resultNested" = resultNested,
+        "validModels" = validModels,
+        "nullmodels" = nullmodels
+    ))
+}
 
-    # percentage of Koutter sample sets with a valid model required to keep
-    # that model in results.
-    perc_Koutter_nullModel <- 50
+.trainModelPercKoutter <- function(nullmodels, resultNested, validModels,
+                                    models, perc_Koutter_nullModel = 50) {
     removeModel <- rowSums(nullmodels) > length(resultNested) *
         (1 - (perc_Koutter_nullModel / 100))
     removeModel <- names(removeModel[removeModel])
@@ -506,19 +682,37 @@ trainModel <- function(inputData,
         stop("All models failed. Please check your data.")
     }
     models <- models[validModels]
+    return(list(
+        "models" = models,
+        "validModels" = validModels
+    ))
+}
+
+.trainModelSelectMetrics <- function(inputData, outcomeClass, positiveClass) {
     if (outcomeClass == "character") {
         metrics <- c(
             "mcc", "balacc", "accuracy", "recall",
             "specificity", "npv", "precision", "fscore"
         )
         type <- "classification"
-        levels <- c(positiveClass, unique(unique(inputData$group))
-        [!unique(inputData$group) %in% positiveClass])
+        levels <- c(positiveClass, unique(unique(inputData$group))[
+            !unique(inputData$group) %in% positiveClass
+        ])
     } else {
         metrics <- c("r", "RMSE", "R2", "MAE", "RMAE", "RSE")
         type <- "regression"
         levels <- NULL
     }
+    return(list(
+        "metrics" = metrics,
+        "type" = type,
+        "levels" = levels
+    ))
+}
+
+.trainModelStats <- function(models, sampleSets, levels, type, metrics,
+    resultNested, continue_on_fail, saveLogFile,
+    outcomeClass) {
     message("Calculating performance metrics...")
     stats <- do.call("cbind", lapply(names(models), function(x) {
         sum.model.x <- do.call("cbind", lapply(
@@ -604,8 +798,10 @@ trainModel <- function(inputData,
     }))
 
     names(stats) <- names(models)
+    return(stats)
+}
 
-
+.trainModelModifyStats <- function(stats, models, prior) {
     if (sum(is.na(stats)) > 0) {
         message("Some metrics could not be calculated and are returned as 0.0")
         stats <- apply(stats, 2, function(x) {
@@ -618,7 +814,6 @@ trainModel <- function(inputData,
             }
         })
     }
-
     if (length(models) > 1) {
         switch(prior,
             "MCC" = {
@@ -633,27 +828,32 @@ trainModel <- function(inputData,
             }
         )
     }
+    return(stats)
+}
 
-    ## 4. Build model with all data, best algorithm and best parameters
+.trainModelFinalStats <- function(stats, resultNested, ntest) {
     parameters <- do.call("rbind", lapply(resultNested, function(x) {
         x$models[[colnames(stats)[1]]]$bestTune
     }))
-
-    ## Table of prediction from subsets
     predsTable <- do.call("rbind", lapply(resultNested, function(x) {
         x$preds[colnames(stats)[1]][[1]]
     }))
-
     lossSamples <- c(unlist(lapply(seq_len(ncol(stats)), function(n) {
         ls.mod <- sum(unlist(lapply(resultNested, function(m) {
             nrow(m$preds[colnames(stats)[n]][[1]])
         })))
     })))
-    stats <- rbind(stats,
-                    "perc.lossSamples" = 100 - ((lossSamples / ntest) * 100))
-
+    stats <- rbind(stats, "perc.lossSamples" = 100 - ((lossSamples / ntest) *
+        100))
     message("Done")
+    return(list(
+        "stats" = stats,
+        "parameters" = parameters,
+        "predsTable" = predsTable
+    ))
+}
 
+.trainModelBestTune <- function(parameters) {
     bestTune <- data.frame(lapply(seq_len(ncol(parameters)), function(x) {
         tmpValues <- data.frame(parameters[, x])
         if (!methods::is(tmpValues[, 1], "numeric")) {
@@ -666,14 +866,14 @@ trainModel <- function(inputData,
     }))
     colnames(bestTune) <- paste0(".", colnames(parameters))
     rownames(bestTune) <- NULL
-
     if (".max_depth" %in% colnames(bestTune)) {
         bestTune$.max_depth <- round(bestTune$.max_depth)
     }
+    return(bestTune)
+}
 
-    rm(resultNested)
-    gc()
-
+.trainModelFit <- function(inputData, Finalfeatures, stats, outcomeClass,
+    bestTune) {
     message("Training final model with all samples...")
     newData <- inputData[, colnames(inputData) %in% c("group", Finalfeatures)]
 
@@ -724,11 +924,6 @@ trainModel <- function(inputData,
             }
         ))
     }
-
     message("Done")
-
-    return(list(
-        model = fit.model, stats = stats, bestTune = bestTune,
-        subsample.preds = predsTable
-    ))
+    return(fit.model)
 }

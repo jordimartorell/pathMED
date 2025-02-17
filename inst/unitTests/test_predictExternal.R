@@ -1,14 +1,14 @@
 test_predictExternal <- function() {
-    data(reference_datasets)
-    commonGenes <- intersect(rownames(dataset1), rownames(dataset2))
-    dataset1 <- dataset1[commonGenes, ]
-    dataset2 <- dataset2[commonGenes, ]
+    data(refData)
+    commonGenes <- intersect(rownames(refData$dataset1), rownames(refData$dataset2))
+    dataset1 <- refData$dataset1[commonGenes, ]
+    dataset2 <- refData$dataset2[commonGenes, ]
     
     scoresExample <- getScores(dataset1, geneSets="tmod", method="Z-score")
    
     set.seed(123)
     trainedModel <- trainModel(inputData=scoresExample,
-                                metadata=metadata1,
+                                metadata=refData$metadata1,
                                 var2predict="group",
                                 models=methodsML("svmLinear",
                                                  outcomeClass="character"),
@@ -17,8 +17,8 @@ test_predictExternal <- function() {
                                 repeatsCV=1)
                                 
     externalScores <- getScores(dataset2, geneSets="tmod", method="Z-score")
-    realValues <- metadata2$group
-    names(realValues) <- rownames(metadata2)
+    realValues <- refData$metadata2$group
+    names(realValues) <- rownames(refData$metadata2)
     predictions <- predictExternal(externalScores, trainedModel, 
                                    realValues=realValues)
     

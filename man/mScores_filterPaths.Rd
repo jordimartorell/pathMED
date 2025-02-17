@@ -36,15 +36,19 @@ Filter pathways from the reference M-scores dataset
 data(refData)
 
 refObject <- buildRefObject(
-    data = list(refData$dataset1, refData$dataset2,
-                refData$dataset3, refData$dataset4),
-    metadata = list(refData$metadata1, refData$metadata2,
-                    refData$metadata3, refData$metadata4),
+    data = list(
+        refData$dataset1, refData$dataset2,
+        refData$dataset3, refData$dataset4
+    ),
+    metadata = list(
+        refData$metadata1, refData$metadata2,
+        refData$metadata3, refData$metadata4
+    ),
     groupVar = "group",
     controlGroup = "Healthy_sample"
 )
 
-exampleRefMScore <- mScores_createReference(refObject, genesets = "tmod")
+exampleRefMScore <- mScores_createReference(refObject, geneSets = "tmod")
 relevantPaths <- mScores_filterPaths(exampleRefMScore, min_datasets = 3)
 }
 \references{

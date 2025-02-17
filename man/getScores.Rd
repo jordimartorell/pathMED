@@ -9,9 +9,10 @@ getScores(inputData, geneSets, method = "GSVA", labels = NULL, cores = 1, ...)
 \arguments{
 \item{inputData}{Data matrix or data frame.}
 
-\item{geneSets}{A named list with each
-gene set or the name of one preloaded database (gobp, gomf, gocc,
-kegg, reactome, tmod).}
+\item{geneSets}{A named list with each gene set,
+or the name of one preloaded database (gobp, gomf, gocc,
+kegg, reactome, tmod), or a data.frame based network including columns:
+"source","target","weight" and "mor" (optional, if need it).}
 
 \item{method}{Scoring method: M-score, GSVA, ssGSEA, singscore, Plage,
 Z-score, AUCell, MDT, MLM, ORA, UDT, ULM, FGSEA, norm_FGSEA, WMEAN,
