@@ -14,7 +14,7 @@ Description:   PathMED is a collection of tools to facilitate precision medicine
   methods are evaluated in order to select the best method based on internal 
   validation and to tune the hyperparameters. Performance metrics and a 
   ready-to-use model to predict the outcomes for new patients are returned.
-Depends: R (>= 4.5.0)
+Depends: R (>= 4.2.0)
 Suggests: ada,
         AUCell,
         Biobase,
