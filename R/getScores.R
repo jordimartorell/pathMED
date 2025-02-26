@@ -420,6 +420,7 @@ getScores <- function(inputData,
         } else if ("Healthy" %in% labels) {
             HealthyData <- inputData[, labels == "Healthy"]
             PatientData <- inputData[, labels != "Healthy"]
+            PatientData <- cbind(PatientData, HealthyData)
         } else {
             stop("Reference samples in labels must be specified with 0
                 or 'Healthy'")
@@ -429,7 +430,7 @@ getScores <- function(inputData,
         message(
             "Healthy samples supplied. Calculating M-Scores using ",
             "healthy samples as reference for ", ncol(PatientData),
-            " patients"
+            " samples"
         )
 
         HealthyMean <- rowMeans(HealthyData, na.rm = TRUE)
