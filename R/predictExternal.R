@@ -1,8 +1,8 @@
 #' Predict conditions in external datasets
 #'
-#' @param testData Numerical matrix with the same features used
+#' @param testData Numerical matrix or data frame with the same features used
 #' for the model construction in rows, and the samples (new observations) in
-#' columns
+#' columns. An ExpressionSet may or SummarizedExperiment may also be used.
 #' @param model trainModel output or a caret-like model object
 #' @param realValues Optional, named vector (for numerical variables) or
 #' named factor (for categorical variables) with real values for each sample
@@ -62,6 +62,16 @@ predictExternal <- function(
         model,
         realValues = NULL,
         positiveClass = NULL) {
+
+    if (is(testData, "data.frame")) {
+        testData <- as.matrix(testData)
+    }
+    if (is(testData, "ExpressionSet")) {
+        testData <- Biobase::exprs(testData)
+    }
+    if (is(testData, "SummarizedExperiment")) {
+        testData <- as.matrix(SummarizedExperiment::assay(testData))
+    }
     ## CHeck if model is contained in a trainModel output object of not
     if ("model" %in% names(model)) {
         model <- model$model

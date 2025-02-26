@@ -7,12 +7,15 @@
 getScores(inputData, geneSets, method = "GSVA", labels = NULL, cores = 1, ...)
 }
 \arguments{
-\item{inputData}{Data matrix or data frame.}
+\item{inputData}{Matrix, data frame, ExpressionSet or SummarizedExperiment
+with omics data.}
 
 \item{geneSets}{A named list with each gene set,
-or the name of one preloaded database (gobp, gomf, gocc,
-kegg, reactome, tmod), or a data.frame based network including columns:
-"source","target","weight" and "mor" (optional, if need it).}
+or the name of one preloaded database (go_bp, go_cc, go_mf, kegg, reactome,
+pharmgkb, lincs, ctd, disgenet, hpo, wikipathways, tmod)
+or a GeneSetCollection. For using network methods,
+a data frame including columns:
+"source","target","weight" and "mor" (optional).}
 
 \item{method}{Scoring method: M-score, GSVA, ssGSEA, singscore, Plage,
 Z-score, AUCell, MDT, MLM, ORA, UDT, ULM, FGSEA, norm_FGSEA, WMEAN,

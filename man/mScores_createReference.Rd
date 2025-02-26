@@ -13,9 +13,10 @@ cases expression matrix and controls expression matrix
 (named as Disease and Healthy). It can be constructed with the buildRefObject
  function.}
 
-\item{geneSets}{A named list with each
-gene set or the name of one preloaded database (gobp, gomf, gocc,
-kegg, reactome, tmod)}
+\item{geneSets}{A named list with each gene set,
+or the name of one preloaded database (go_bp, go_cc, go_mf, kegg, reactome,
+pharmgkb, lincs, ctd, disgenet, hpo, wikipathways, tmod)
+or a GeneSetCollection.}
 
 \item{cores}{Number of cores to be used.}
 }

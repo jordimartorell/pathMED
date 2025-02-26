@@ -1,9 +1,12 @@
 #' Create a reference data object for input to the pathMED functions
 #'
-#' @param data A list of data frames or a single data frame with samples in
-#'  columns and features in rows.
+#' @param data A list of matrices, data frames, ExpressionSets or
+#' SummarizedExperiments with samples in columns and features in rows. A single
+#' matrix, dataframe, ExpressionSet or SummarizedExperiment may be also used.
 #' @param metadata A list of data frames or a single data frame with information
-#'  for each sample. Samples in rows and variables in columns.
+#'  for each sample. Samples in rows and variables in columns. If a list of
+#'  ExpressionSets or SummarizedExperiments are used as @data, it is not
+#'  necessary to provide @metadata.
 #' @param groupVar Character or list of characters indicating the column name of
 #'  @metadata classifying the samples in controls and cases. If several metadata
 #'  objects are provided a @groupVar can be specified for each metadata.
@@ -16,7 +19,7 @@
 #' @return A refObject that serves as input
 #'  for mScores_createReference and dissectDB functions.
 #'
-#' @author Iván Ellson, \email{ivan.ellson.l@@gmail.com }
+#' @author Iván Ellson, \email{ivan.ellson@@gmail.com }
 #' @author Jordi Martorell-Marugán, \email{jordi.martorell@@genyo.es}
 #' @author Daniel Toro-Dominguez, \email{danieltorodominguez@@gmail.com}
 #'
@@ -61,18 +64,43 @@
 #'
 #' @export
 buildRefObject <- function(data, metadata, groupVar, controlGroup) {
-    if (!methods::is(data, "list")) {
+    if (!is(data, "list")) {
         message("Input data is not a list, processing it as a single dataset.")
         data <- list(data)
     }
-    if (!methods::is(metadata, "list")) {
+    if (is.null(metadata) & !is(data[[1]], "ExpressionSet") &
+        !is(data[[1]], "SummarizedExperiment")) {
+        stop("If data do not contain ExpressionSets or SummarizedExperiments,
+                metadata must be provided.")
+    }
+    if (!is(metadata, "list")) {
         metadata <- list(metadata)
     }
-    if (!methods::is(groupVar, "list")) {
+    if (!is(groupVar, "list")) {
         groupVar <- list(groupVar)
     }
-    if (!methods::is(controlGroup, "list")) {
+    if (!is(controlGroup, "list")) {
         controlGroup <- list(controlGroup)
+    }
+
+    for (indData in seq_len(length(data))) {
+        if (is(indData, "ExpressionSet")) {
+            data[[indData]] <- Biobase::exprs(data[[indData]])
+        }
+        else if (is(indData, "SummarizedExperiment")) {
+            data[[indData]] <- as.matrix(SummarizedExperiment::assay(
+                data[[indData]]))
+        }
+    }
+
+    for (indMetadata in seq_len(length(metadata))) {
+        if (is(indMetadata, "ExpressionSet")) {
+            metadata[[indMetadata]] <- Biobase::pData(metadata[[indMetadata]])
+        }
+        else if (is(indMetadata, "SummarizedExperiment")) {
+            metadata[[indMetadata]] <- as.data.frame(
+                SummarizedExperiment::colData(metadata[[indMetadata]]))
+        }
     }
 
     notLogDataset <- list()

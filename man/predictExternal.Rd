@@ -7,9 +7,9 @@
 predictExternal(testData, model, realValues = NULL, positiveClass = NULL)
 }
 \arguments{
-\item{testData}{Numerical matrix with the same features used
+\item{testData}{Numerical matrix or data frame with the same features used
 for the model construction in rows, and the samples (new observations) in
-columns}
+columns. An ExpressionSet may or SummarizedExperiment may also be used.}
 
 \item{model}{trainModel output or a caret-like model object}
 

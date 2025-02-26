@@ -7,11 +7,14 @@
 buildRefObject(data, metadata, groupVar, controlGroup)
 }
 \arguments{
-\item{data}{A list of data frames or a single data frame with samples in
-columns and features in rows.}
+\item{data}{A list of matrices, data frames, ExpressionSets or
+SummarizedExperiments with samples in columns and features in rows. A single
+matrix, dataframe, ExpressionSet or SummarizedExperiment may be also used.}
 
 \item{metadata}{A list of data frames or a single data frame with information
-for each sample. Samples in rows and variables in columns.}
+for each sample. Samples in rows and variables in columns. If a list of
+ExpressionSets or SummarizedExperiments are used as @data, it is not
+necessary to provide @metadata.}
 
 \item{groupVar}{Character or list of characters indicating the column name of
 @metadata classifying the samples in controls and cases. If several metadata
@@ -73,7 +76,7 @@ disease progression}
 \code{\link{mScores_createReference}}, \code{\link{dissectDB}}
 }
 \author{
-Iván Ellson, \email{ivan.ellson.l@gmail.com }
+Iván Ellson, \email{ivan.ellson@gmail.com }
 
 Jordi Martorell-Marugán, \email{jordi.martorell@genyo.es}
 

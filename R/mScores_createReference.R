@@ -5,9 +5,10 @@
 #' cases expression matrix and controls expression matrix
 #' (named as Disease and Healthy). It can be constructed with the buildRefObject
 #'  function.
-#' @param geneSets A named list with each
-#' gene set or the name of one preloaded database (gobp, gomf, gocc,
-#' kegg, reactome, tmod)
+#' @param geneSets A named list with each gene set,
+#' or the name of one preloaded database (go_bp, go_cc, go_mf, kegg, reactome,
+#' pharmgkb, lincs, ctd, disgenet, hpo, wikipathways, tmod)
+#' or a GeneSetCollection.
 #' @param cores Number of cores to be used.
 #'
 #' @return A list with three elements. The first one is a list with the M-scores
@@ -48,7 +49,11 @@ mScores_createReference <- function(
         refObject,
         geneSets,
         cores = 1) {
-    if (!is(geneSets, "list")) {
+
+    if (is(geneSets, "GeneSetCollection")) {
+        geneSets <- .gsc_to_list(geneSets)
+    }
+    else if (!is(geneSets, "list")) {
         geneSets <- genesetsData[[geneSets]]
     }
 

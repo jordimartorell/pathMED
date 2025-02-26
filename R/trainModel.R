@@ -1,35 +1,36 @@
 #' Train ML models and perform internal validation
 #'
-#' @param inputData Feature matrix. Samples in columns and features in
-#' rows. inputData must be a numerical matrix
-#' @param metadata dataframe with information for each sample. Samples in rows
-#' and variables in columns
-#' @param models named list with the ML models generated with
+#' @param inputData Numerical matrix or data frame  with samples in columns and
+#' features in rows. An ExpressionSet or SummarizedExperiment may also be used.
+#' @param metadata Data frame with information for each sample. Samples in rows
+#' and variables in columns. If @inputData is an ExpressionSet or SummarizedExperiment,
+#' the metadata will be extracted from it.
+#' @param models Named list with the ML models generated with
 #' caret::caretModelSpec function. methodsML function may be used to prepare
 #' this list.
-#' @param var2predict character with the column name of the @metadata to predict
-#' @param positiveClass value that must be considered as positive
+#' @param var2predict Character with the column name of the @metadata to predict
+#' @param positiveClass Value that must be considered as positive
 #' class (only for categoric variables). If NULL, the last class by
 #' alphabetical order is considered as the positive class.
 #' @param pairingColumn Optional. Character with the column name of the
 #'  @metadata with pairing information (e.g. technical replicates). Paired
 #'  samples will always be assigned to the same set (training/test) to avoid
 #'  data leakage.
-#' @param Koutter number of outter cross-validation folds.
+#' @param Koutter Number of outter cross-validation folds.
 #' A list of integer with elements for each resampling iteration is admitted.
 #' Each list element is a vector of integers corresponding to the rows used for
 #' training on that iteration.
-#' @param Kinner number of innter cross-validation folds (for parameter tuning).
-#' @param repeatsCV number of repetitions of the parameter tuning process.
+#' @param Kinner Number of innter cross-validation folds (for parameter tuning).
+#' @param repeatsCV Number of repetitions of the parameter tuning process.
 #' @param filterFeatures "rfe" (Recursive Feature Elimination), "sbf" (Selection
 #' By Filtering) or NULL (no feature selection).
 #' @param filterSizes Only for filterFeatures = "rfe". A numeric vector of
 #' integers corresponding to the number of features that should be retained.
 #' @param rerank Only for filterFeatures = "rfe". A boolean indicating if the
 #' variable importance must be re-calculated each time features are removed.
-#' @param continue_on_fail whether or not to continue training the models if any
+#' @param continue_on_fail Whether or not to continue training the models if any
 #'  of them fail.
-#' @param saveLogFile path to a .txt file in which to save error and warning
+#' @param saveLogFile Path to a .txt file in which to save error and warning
 #' messages.
 #'
 #' @return A list with four elements. The first one is the model. The second one
@@ -72,7 +73,7 @@
 #'
 #' @export
 trainModel <- function(inputData,
-    metadata,
+    metadata = NULL,
     models = methodsML(outcomeClass = "character"),
     var2predict,
     positiveClass = NULL,
@@ -86,6 +87,26 @@ trainModel <- function(inputData,
     continue_on_fail = TRUE,
     saveLogFile = NULL) {
     # 1 Checking
+    if (is.null(metadata) & !is(inputData, "ExpressionSet") &
+        !is(inputData, "SummarizedExperiment")) {
+        stop("If inputData is not an ExpressionSet or SummarizedExperiment,
+                metadata must be provided.")
+    }
+
+    if (is(inputData, "data.frame")) {
+        inputData <- as.matrix(inputData)
+    }
+
+    if (is(inputData, "ExpressionSet")) {
+        inputData <- Biobase::exprs(inputData)
+        metadata <- Biobase::pData(inputData)
+    }
+
+    if (is(inputData, "SummarizedExperiment")) {
+        inputData <- as.matrix(SummarizedExperiment::assay(inputData))
+        metadata <- as.data.frame(SummarizedExperiment::colData(inputData))
+    }
+
     filterSizes <- .trainModelChecking(
         var2predict, metadata, filterFeatures,
         filterSizes, saveLogFile, inputData

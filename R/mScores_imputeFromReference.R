@@ -1,9 +1,11 @@
 #' Estimate M-scores for a dataset without healthy controls
 #'
-#' @param inputData Data matrix or data frame.
-#' @param geneSets A named list with each
-#' gene set or the name of one preloaded database (gobp, gomf, gocc,
-#' kegg, reactome, tmod).
+#' @param inputData Data matrix, data frame ExpressionSet or
+#' SummarizedExperiment.
+#' @param geneSets A named list with each gene set,
+#' or the name of one preloaded database (go_bp, go_cc, go_mf, kegg, reactome,
+#' pharmgkb, lincs, ctd, disgenet, hpo, wikipathways, tmod)
+#' or a GeneSetCollection.
 #' @param externalReference External reference created with
 #' the mScores_createReference function.
 #' @param nk Number of
@@ -65,7 +67,18 @@ mScores_imputeFromReference <- function(inputData,
         inputData <- as.matrix(inputData)
     }
 
-    if (!is(geneSets, "list")) {
+    if (is(inputData, "ExpressionSet")) {
+        inputData <- Biobase::exprs(inputData)
+    }
+
+    if (is(inputData, "SummarizedExperiment")) {
+        inputData <- as.matrix(SummarizedExperiment::assay(inputData))
+    }
+
+    if (is(geneSets, "GeneSetCollection")) {
+        geneSets <- .gsc_to_list(geneSets)
+    }
+    else if (!is(geneSets, "list")) {
         geneSets <- genesetsData[[geneSets]]
     }
 

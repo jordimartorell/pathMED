@@ -354,3 +354,10 @@
         }
     }
 }
+
+# Transform GeneSetsCollection to list
+.gsc_to_list <- function(gsc) {
+    gene_sets <- lapply(gsc, GSEABase::geneIds)  # Extract gene IDs
+    names(gene_sets) <- names(gsc)     # Assign names if available
+    return(gene_sets)
+}

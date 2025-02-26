@@ -6,17 +6,17 @@ author:
   - GENYO, Centre for Genomics and Oncological Research
   - Andalusian Foundation for Biomedical Research in Eastern Andalusia (FIBAO)
   email: jordi.martorell@genyo.es
-- name: Daniel Toro-Domínguez
-  affiliation:
-  - GENYO, Centre for Genomics and Oncological Research
-  - Karolinska Institutet
-  email: danieltorodominguez@gmail.com
 - name: Iván Ellson
   affiliation:
   - GENYO, Centre for Genomics and Oncological Research
 - name: Raúl López-Domínguez
   affiliation:
   - GENYO, Centre for Genomics and Oncological Research
+- name: Daniel Toro-Domínguez
+  affiliation:
+  - GENYO, Centre for Genomics and Oncological Research
+  - Karolinska Institutet
+  email: danieltorodominguez@gmail.com
 - name: Pedro Carmona-Sáez
   affiliation:
   - Department of Statistics and Operational Research. University of Granada
@@ -188,7 +188,47 @@ editor_options:
     wrap: 72
 ---
 
-# Install pathMED
+# Introduction
+
+Omics technologies have advanced precision medicine by enabling the
+prediction of clinically relevant outcomes based on individual molecular
+profiles. However, their diagnostic and prognostic applications remain
+limited due to variability introduced by different technological
+platforms, laboratory protocols, and data processing methods. These
+inconsistencies hinder the generalizability of machine learning (ML)
+models trained on individual datasets.
+
+Single-sample molecular scoring has emerged as a promising solution to
+improve interstudy reproducibility. By summarizing molecular features
+(e.g., gene expression) into pathway or gene set activity scores, these
+methods provide a more standardized and robust representation of
+biological processes. This enables the development of ML models that
+generalize across datasets, even when quantification methods differ.
+
+Several R packages implement molecular scoring methods, such as
+`decoupleR` (@badia2022) and `GSVA` (@hanzelman2013). `pathMED` unifies
+and simplifies these approaches, providing a common input format and
+allowing users to compute multiple scores efficiently. Additionally,
+`pathMED` includes our novel method, M-scores, which enhances disease
+characterization and prediction by leveraging reference datasets
+(@toroDominguez2022).
+
+A key limitation of pathway-based scoring is the heterogeneity within
+gene sets, where different genes may have opposing effects on biological
+processes. Direct scoring of such broad gene sets can obscure meaningful
+patterns. To address this, pathMED incorporates methods to refine gene
+sets by clustering features with coordinated activity, improving pathway
+granularity and revealing previously hidden subpathways.
+
+Many ML-based clinical prediction models also suffer from overfitting,
+unreliable performance metrics, and limited reproducibility in external
+datasets, restricting their clinical applicability. To overcome these
+challenges, pathMED provides a unified framework for ML model training,
+validation, and prediction. While it leverages the caret package,
+pathMED simplifies its usage and implements nested cross-validation by
+default to enhance model reliability.
+
+# Installation
 
 You can install pathMED from the GitHub repository:
 
@@ -212,7 +252,7 @@ pak::pkg_system_requirements(
 
 # Core pipeline
 
-(Add figure)
+![](CorePipeline.png)
 
 ## (Optional) Decomposing gene sets into coexpressed subsets
 
@@ -259,7 +299,7 @@ object.
 The `getScores()` function calculates a score for each gene set and
 sample. It takes as input a matrix or data frame with molecular features
 in rows and samples in columns, along with a gene set collection. The
-function supports 22 different scoring methods, which can be specified
+function supports 20 different scoring methods, which can be specified
 using the `method` parameter. The available methods and their references
 are:
 

@@ -1,10 +1,13 @@
 #' Calculate pathways scores for a dataset
 #'
-#' @param inputData Data matrix or data frame.
+#' @param inputData Matrix, data frame, ExpressionSet or SummarizedExperiment
+#' with omics data.
 #' @param geneSets A named list with each gene set,
-#' or the name of one preloaded database (gobp, gomf, gocc,
-#' kegg, reactome, tmod), or a data.frame based network including columns:
-#' "source","target","weight" and "mor" (optional, if need it).
+#' or the name of one preloaded database (go_bp, go_cc, go_mf, kegg, reactome,
+#' pharmgkb, lincs, ctd, disgenet, hpo, wikipathways, tmod)
+#' or a GeneSetCollection. For using network methods,
+#' a data frame including columns:
+#' "source","target","weight" and "mor" (optional).
 #' @param method Scoring method: M-score, GSVA, ssGSEA, singscore, Plage,
 #' Z-score, AUCell, MDT, MLM, ORA, UDT, ULM, FGSEA, norm_FGSEA, WMEAN,
 #' norm_WMEAN, corr_WMEAN, WSUM, norm_WSUM or corr_WSUM.
@@ -43,10 +46,18 @@ getScores <- function(inputData,
         inputData <- as.matrix(inputData)
     }
 
+    if (is(inputData, "ExpressionSet")) {
+        inputData <- Biobase::exprs(inputData)
+    }
+
+    if (is(inputData, "SummarizedExperiment")) {
+        inputData <- as.matrix(SummarizedExperiment::assay(inputData))
+    }
+
     if (is.data.frame(geneSets)) {
         if (method %in% c("GSVA", "ssGSEA", "singscore", "Z-score", "Plage",
                             "M-score")) {
-            stop("data.frame based network is not permitted for method
+            stop("data frame based network is not permitted for method
                     selected")
         } else {
             if (all(c("source", "target", "weight") %in% colnames(geneSets))) {
@@ -55,18 +66,22 @@ getScores <- function(inputData,
                 }
             } else {
                 stop(
-                    "If a data.frame based network is included in geneSets,
+                    "If a data frame based network is included in geneSets,
                     columns",
                     "source, target and weight are required"
                 )
             }
         }
-    } else {
+    }
+    else if (is(geneSets, "GeneSetCollection")) {
+        geneSets <- .gsc_to_list(geneSets)
+    }
+    else {
         if (!is.list(geneSets)) {
             if (geneSets %in% names(genesetsData)) {
                 geneSets <- genesetsData[[geneSets]]
             } else {
-                stop("geneSets must be a list of genesets, a data.frame based
+                stop("geneSets must be a list of genesets, a data frame based
                         network or a database name: ",
                     paste(names(genesetsData), collapse = ", ")
                 )

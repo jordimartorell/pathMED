@@ -19,12 +19,13 @@ dissectDB(
 with a
 cases expression matrix and controls expression matrix
 (named as Disease and Healthy). It can be constructed with the buildRefObject
- function. A list with one or more expression matrices, without controls, can
- also be used.}
+ function. A list with one or more expression matrices, ExpressionSets or
+ SummarizedExperiments without controls, can also be used.}
 
-\item{geneSets}{A named list with each
-gene set or the name of one preloaded database (gobp, gomf, gocc,
-kegg, reactome, tmod).}
+\item{geneSets}{A named list with each gene set,
+or the name of one preloaded database (go_bp, go_cc, go_mf, kegg, reactome,
+pharmgkb, lincs, ctd, disgenet, hpo, wikipathways, tmod)
+or a GeneSetCollection.}
 
 \item{minPathSize}{numeric, minimum number of genes in a pathway to consider
 splitting it.}

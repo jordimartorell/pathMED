@@ -14,11 +14,13 @@ mScores_imputeFromReference(
 )
 }
 \arguments{
-\item{inputData}{Data matrix or data frame.}
+\item{inputData}{Data matrix, data frame ExpressionSet or
+SummarizedExperiment.}
 
-\item{geneSets}{A named list with each
-gene set or the name of one preloaded database (gobp, gomf, gocc,
-kegg, reactome, tmod).}
+\item{geneSets}{A named list with each gene set,
+or the name of one preloaded database (go_bp, go_cc, go_mf, kegg, reactome,
+pharmgkb, lincs, ctd, disgenet, hpo, wikipathways, tmod)
+or a GeneSetCollection.}
 
 \item{externalReference}{External reference created with
 the mScores_createReference function.}

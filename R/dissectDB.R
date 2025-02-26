@@ -4,11 +4,12 @@
 #' with a
 #' cases expression matrix and controls expression matrix
 #' (named as Disease and Healthy). It can be constructed with the buildRefObject
-#'  function. A list with one or more expression matrices, without controls, can
-#'  also be used.
-#' @param geneSets A named list with each
-#' gene set or the name of one preloaded database (gobp, gomf, gocc,
-#' kegg, reactome, tmod).
+#'  function. A list with one or more expression matrices, ExpressionSets or
+#'  SummarizedExperiments without controls, can also be used.
+#' @param geneSets A named list with each gene set,
+#' or the name of one preloaded database (go_bp, go_cc, go_mf, kegg, reactome,
+#' pharmgkb, lincs, ctd, disgenet, hpo, wikipathways, tmod)
+#' or a GeneSetCollection.
 #' @param minSplitSize numeric, minimum number of genes in a subpathway.
 #' Smaller splits will be merged with the closest coexpressed subpathway.
 #' @param minPathSize numeric, minimum number of genes in a pathway to consider
@@ -100,6 +101,12 @@ dissectDB <- function(
         })
     } else {
         z.data <- lapply(refObject, function(x) {
+            if (is(x, "ExpressionSet")) {
+                x <- Biobase::exprs(x)
+            }
+            else if (is(x, "SummarizedExperiment")) {
+                x <- as.matrix(SummarizedExperiment::assay(x))
+            }
             x.zscore <- t(scale(t(x)))
             x.zscore <- x.zscore[apply(x.zscore, 1, function(xi) {
                 sum(is.na(xi))
@@ -110,7 +117,10 @@ dissectDB <- function(
 
 
     ## 2. Getpathway database
-    if (!is.list(geneSets)) {
+    if (is(geneSets, "GeneSetCollection")) {
+        geneSets <- .gsc_to_list(geneSets)
+    }
+    else if (!is.list(geneSets)) {
         if (geneSets %in% names(genesetsData)) {
             geneSets <- genesetsData[[geneSets]]
         } else {
