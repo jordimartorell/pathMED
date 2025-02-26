@@ -417,6 +417,7 @@ getScores <- function(inputData,
         if (0 %in% labels) {
             HealthyData <- inputData[, labels == 0]
             PatientData <- inputData[, labels != 0]
+            PatientData <- cbind(PatientData, HealthyData)
         } else if ("Healthy" %in% labels) {
             HealthyData <- inputData[, labels == "Healthy"]
             PatientData <- inputData[, labels != "Healthy"]
