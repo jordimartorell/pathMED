@@ -608,7 +608,7 @@ trainModel <- function(inputData,
                     cm <- append(cm, list(cmModel))
                     names(cm)[m] <- names(modelResults)[m]
                     predTest <- data.frame(predTest, obs = y)
-                    rownames(predTest) <- rownames(testing)
+                    rownames(predTest) <- rownames(testing[sel,])
                 }
             } else { ## Continuous variable
                 predTest <- stats::predict(modelResults[[m]], newdata = testing)
