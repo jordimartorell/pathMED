@@ -3,8 +3,8 @@
 #' @param inputData Numerical matrix or data frame  with samples in columns and
 #' features in rows. An ExpressionSet or SummarizedExperiment may also be used.
 #' @param metadata Data frame with information for each sample. Samples in rows
-#' and variables in columns. If @inputData is an ExpressionSet or SummarizedExperiment,
-#' the metadata will be extracted from it.
+#' and variables in columns. If @inputData is an ExpressionSet or
+#' SummarizedExperiment, the metadata will be extracted from it.
 #' @param models Named list with the ML models generated with
 #' caret::caretModelSpec function. methodsML function may be used to prepare
 #' this list.

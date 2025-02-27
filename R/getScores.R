@@ -8,10 +8,10 @@
 #' or a GeneSetCollection. For using network methods,
 #' a data frame including columns:
 #' "source","target","weight" and "mor" (optional).
-#' @param method Scoring method: M-score, GSVA, ssGSEA, singscore, Plage,
+#' @param method Scoring method: M-Scores, GSVA, ssGSEA, singscore, Plage,
 #' Z-score, AUCell, MDT, MLM, ORA, UDT, ULM, FGSEA, norm_FGSEA, WMEAN,
 #' norm_WMEAN, corr_WMEAN, WSUM, norm_WSUM or corr_WSUM.
-#' @param labels (Only for M-Score) Vector with the samples class labels (0 or
+#' @param labels (Only for M-Scores) Vector with the samples class labels (0 or
 #' "Healthy" for control samples). Optional.
 #' @param cores Number of cores to be used.
 #' @param ... Additional parameters for the scoring functions.
@@ -56,7 +56,7 @@ getScores <- function(inputData,
 
     if (is.data.frame(geneSets)) {
         if (method %in% c("GSVA", "ssGSEA", "singscore", "Z-score", "Plage",
-                            "M-score")) {
+                            "M-scores")) {
             stop("data frame based network is not permitted for method
                     selected")
         } else {
@@ -408,11 +408,10 @@ getScores <- function(inputData,
         rownames(scoreMatrix) <- scoreMatrix$source
         scoreMatrix <- scoreMatrix[, -1]
         res <- scoreMatrix
-    } else if (method == "M-score") {
+    } else if (method == "M-Scores") {
         if (is.null(labels)) {
             stop("Labels parameter must be used for M-Scores method")
         }
-
 
         if (0 %in% labels) {
             HealthyData <- inputData[, labels == 0]
@@ -426,7 +425,6 @@ getScores <- function(inputData,
             stop("Reference samples in labels must be specified with 0
                 or 'Healthy'")
         }
-
 
         message(
             "Healthy samples supplied. Calculating M-Scores using ",

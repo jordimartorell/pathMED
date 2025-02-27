@@ -17,11 +17,11 @@ or a GeneSetCollection. For using network methods,
 a data frame including columns:
 "source","target","weight" and "mor" (optional).}
 
-\item{method}{Scoring method: M-score, GSVA, ssGSEA, singscore, Plage,
+\item{method}{Scoring method: M-Scores, GSVA, ssGSEA, singscore, Plage,
 Z-score, AUCell, MDT, MLM, ORA, UDT, ULM, FGSEA, norm_FGSEA, WMEAN,
 norm_WMEAN, corr_WMEAN, WSUM, norm_WSUM or corr_WSUM.}
 
-\item{labels}{(Only for M-Score) Vector with the samples class labels (0 or
+\item{labels}{(Only for M-Scores) Vector with the samples class labels (0 or
 "Healthy" for control samples). Optional.}
 
 \item{cores}{Number of cores to be used.}
