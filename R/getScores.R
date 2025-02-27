@@ -13,8 +13,6 @@
 #' norm_WMEAN, corr_WMEAN, WSUM, norm_WSUM or corr_WSUM.
 #' @param labels (Only for M-Scores) Vector with the samples class labels (0 or
 #' "Healthy" for control samples). Optional.
-#' @param returnHC (Only for M-Scores) TRUE / FALSE. Should M-scores also be
-#' calculated for control samples?
 #' @param cores Number of cores to be used.
 #' @param ... Additional parameters for the scoring functions.
 #'
@@ -42,7 +40,6 @@ getScores <- function(inputData,
     geneSets,
     method = "GSVA",
     labels = NULL,
-    returnHC = FALSE,
     cores = 1,
     ...) {
     if (is(inputData, "data.frame")) {
@@ -419,15 +416,11 @@ getScores <- function(inputData,
         if (0 %in% labels) {
             HealthyData <- inputData[, labels == 0]
             PatientData <- inputData[, labels != 0]
-            if(returnHC){
-                PatientData <- cbind(PatientData, HealthyData)
-            } 
+            PatientData <- cbind(PatientData, HealthyData)
         } else if ("Healthy" %in% labels) {
             HealthyData <- inputData[, labels == "Healthy"]
             PatientData <- inputData[, labels != "Healthy"]
-            if(returnHC){
-                PatientData <- cbind(PatientData, HealthyData)
-            } 
+            PatientData <- cbind(PatientData, HealthyData)
         } else {
             stop("Reference samples in labels must be specified with 0
                 or 'Healthy'")
