@@ -56,7 +56,7 @@ getScores <- function(inputData,
 
     if (is.data.frame(geneSets)) {
         if (method %in% c("GSVA", "ssGSEA", "singscore", "Z-score", "Plage",
-                            "M-scores")) {
+                            "M-Scores")) {
             stop("data frame based network is not permitted for method
                     selected")
         } else {
