@@ -15,7 +15,9 @@
 #'  All other samples will be considered as cases, usually disease samples. If
 #'  several @groupVar are provided a @controlGroup can be specified
 #'  for each @groupVar
-#'
+#' @param use.assay If SummarizedExperiments are used, the number of the assay 
+#' to extract the data.
+#' 
 #' @return A refObject that serves as input
 #'  for mScores_createReference and dissectDB functions.
 #'
@@ -63,7 +65,8 @@
 #' )
 #'
 #' @export
-buildRefObject <- function(data, metadata, groupVar, controlGroup) {
+buildRefObject <- function(data, metadata = NULL, groupVar, controlGroup, 
+                            use.assay = 1) {
     if (!is(data, "list")) {
         message("Input data is not a list, processing it as a single dataset.")
         data <- list(data)
@@ -83,26 +86,24 @@ buildRefObject <- function(data, metadata, groupVar, controlGroup) {
         controlGroup <- list(controlGroup)
     }
 
-    for (indData in seq_len(length(data))) {
-        if (is(indData, "ExpressionSet")) {
+    if (is(data[[1]], "ExpressionSet")) {
+        metadata <- list()
+        for (indData in seq_len(length(data))) {
             data[[indData]] <- Biobase::exprs(data[[indData]])
+            metadata[[indData]] <- Biobase::pData(metadata[[indData]])
         }
-        else if (is(indData, "SummarizedExperiment")) {
+    }
+        
+    if(is(data[[1]], "SummarizedExperiment")) {
+        metadata <- list()
+        for (indData in seq_len(length(data))) {
             data[[indData]] <- as.matrix(SummarizedExperiment::assay(
-                data[[indData]]))
+                data[[indData]], use.assay))
+            metadata[[indData]] <- as.data.frame(
+                SummarizedExperiment::colData(metadata[[indData]])) 
         }
     }
-
-    for (indMetadata in seq_len(length(metadata))) {
-        if (is(indMetadata, "ExpressionSet")) {
-            metadata[[indMetadata]] <- Biobase::pData(metadata[[indMetadata]])
-        }
-        else if (is(indMetadata, "SummarizedExperiment")) {
-            metadata[[indMetadata]] <- as.data.frame(
-                SummarizedExperiment::colData(metadata[[indMetadata]]))
-        }
-    }
-
+        
     notLogDataset <- list()
     for (i in seq_len(length(data))) { # check log transformation
         qx <- as.numeric(quantile(data[[i]], c(0., 0.25, 0.5, 0.75, 0.99, 1.0),

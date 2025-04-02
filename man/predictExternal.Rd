@@ -4,7 +4,13 @@
 \alias{predictExternal}
 \title{Predict conditions in external datasets}
 \usage{
-predictExternal(testData, model, realValues = NULL, positiveClass = NULL)
+predictExternal(
+  testData,
+  model,
+  realValues = NULL,
+  positiveClass = NULL,
+  use.assay = 1
+)
 }
 \arguments{
 \item{testData}{Numerical matrix or data frame with the same features used
@@ -18,6 +24,9 @@ named factor (for categorical variables) with real values for each sample}
 
 \item{positiveClass}{Optional, positive class to get confusion matrix.
 Only needed when realValues = TRUE and for categorical variables}
+
+\item{use.assay}{If SummarizedExperiments are used, the number of the assay 
+to extract the data.}
 }
 \value{
 A dataframe with predictions (if realValues

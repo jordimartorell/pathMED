@@ -16,8 +16,9 @@ A data frame with the input IDs and their corresponding terms
 Annotate the pathways from a scores matrix
 }
 \examples{
-data(exampleData)
-scoresExample <- getScores(exampleData, geneSets = "tmod", method = "GSVA")
+data(pathMEDExampleData)
+scoresExample <- getScores(pathMEDExampleData, geneSets = "tmod", 
+                             method = "GSVA")
 annotatedTerms <- ann2term(scoresExample)
 }
 \references{

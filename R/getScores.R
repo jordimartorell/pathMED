@@ -1,7 +1,8 @@
 #' Calculate pathways scores for a dataset
 #'
 #' @param inputData Matrix, data frame, ExpressionSet or SummarizedExperiment
-#' with omics data.
+#' with omics data. Feature names must match the gene sets nomenclature. To use
+#' preloaded databases, they must be gene symbols.
 #' @param geneSets A named list with each gene set,
 #' or the name of one preloaded database (go_bp, go_cc, go_mf, kegg, reactome,
 #' pharmgkb, lincs, ctd, disgenet, hpo, wikipathways, tmod)
@@ -14,6 +15,8 @@
 #' @param labels (Only for M-Scores) Vector with the samples class labels (0 or
 #' "Healthy" for control samples). Optional.
 #' @param cores Number of cores to be used.
+#' @param use.assay If SummarizedExperiments are used, the number of the assay 
+#' to extract the data.
 #' @param ... Additional parameters for the scoring functions.
 #'
 #' @return A list with the results of each of the analyzed regions. For each
@@ -33,14 +36,16 @@
 #'  . Briefings in Bioinformatics. 23(5)
 #'
 #' @examples
-#' data(exampleData)
-#' scoresExample <- getScores(exampleData, geneSets = "tmod", method = "GSVA")
+#' data(pathMEDExampleData)
+#' scoresExample <- getScores(pathMEDExampleData, geneSets = "tmod", 
+#'                              method = "GSVA")
 #' @export
 getScores <- function(inputData,
     geneSets,
     method = "GSVA",
     labels = NULL,
     cores = 1,
+    use.assay = 1,
     ...) {
     if (is(inputData, "data.frame")) {
         inputData <- as.matrix(inputData)
@@ -51,7 +56,8 @@ getScores <- function(inputData,
     }
 
     if (is(inputData, "SummarizedExperiment")) {
-        inputData <- as.matrix(SummarizedExperiment::assay(inputData))
+        inputData <- as.matrix(SummarizedExperiment::assay(inputData, 
+                                                            use.assay))
     }
 
     if (is.data.frame(geneSets)) {
@@ -78,6 +84,9 @@ getScores <- function(inputData,
     }
     else {
         if (!is.list(geneSets)) {
+            data_env <- new.env(parent = emptyenv())
+            data("genesetsData", envir = data_env, package = "pathMED")
+            genesetsData <- data_env[["genesetsData"]]
             if (geneSets %in% names(genesetsData)) {
                 geneSets <- genesetsData[[geneSets]]
             } else {
@@ -190,6 +199,10 @@ getScores <- function(inputData,
 
         if (method %in% c("AUCell", "MDT", "MLM", "ORA", "UDT", "ULM")) {
             if (method == "AUCell") {
+                if (!requireNamespace("AUCell")) {
+                    message("Install the AUCell package to run the AUCell
+                            method")
+                }
                 params <- params[names(params) %in% c(
                     "aucMaxRank", "seed",
                     "minsize"
@@ -297,6 +310,10 @@ getScores <- function(inputData,
                 "score"
             )])
         } else if (method %in% c("FGSEA", "norm_FGSEA")) {
+            if (!requireNamespace("fgsea")) {
+                message("Install the fgsea package to run the FGSEA or the 
+                            norm_FGSEA method")
+            }
             params <- params[names(params) %in% c("seed", "minsize", "times")]
             scoreMatrix <- do.call(decoupleR::run_fgsea, c(
                 list(

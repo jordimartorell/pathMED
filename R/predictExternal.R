@@ -8,7 +8,9 @@
 #' named factor (for categorical variables) with real values for each sample
 #' @param positiveClass Optional, positive class to get confusion matrix.
 #' Only needed when realValues = TRUE and for categorical variables
-
+#' @param use.assay If SummarizedExperiments are used, the number of the assay 
+#' to extract the data.
+#' 
 #' @return A dataframe with predictions (if realValues
 #' is not provided) or a list with the dataframe with predictions and a
 #' dataframe with the performance metrics (if realValues is provided)
@@ -61,7 +63,8 @@ predictExternal <- function(
         testData,
         model,
         realValues = NULL,
-        positiveClass = NULL) {
+        positiveClass = NULL,
+        use.assay = 1) {
 
     if (is(testData, "data.frame")) {
         testData <- as.matrix(testData)
@@ -70,7 +73,7 @@ predictExternal <- function(
         testData <- Biobase::exprs(testData)
     }
     if (is(testData, "SummarizedExperiment")) {
-        testData <- as.matrix(SummarizedExperiment::assay(testData))
+        testData <- as.matrix(SummarizedExperiment::assay(testData, use.assay))
     }
     ## CHeck if model is contained in a trainModel output object of not
     if ("model" %in% names(model)) {
@@ -162,6 +165,18 @@ predictExternal <- function(
             pos_level = 1,
             metrics_list = metrics
         )
+        if (sum(is.na(stats)) > 0) {
+            message("Some metrics could not be calculated and are returned as 0.0")
+            stats <- apply(stats, 2, function(x) {
+                if (sum(is.na(x)) > 0) {
+                    corrCol <- x
+                    corrCol[is.na(corrCol)] <- 0.0
+                    return(corrCol)
+                } else {
+                    return(x)
+                }
+            })
+        }
 
         test.predictions <- data.frame(
             "Obs" = names(test.predictions),

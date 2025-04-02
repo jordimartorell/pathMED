@@ -2,10 +2,13 @@
 #'
 #' @param refObject A refObject object structure: a list of lists, each one
 #' with a
-#' cases expression matrix and controls expression matrix
+#' cases omic matrix and controls omic matrix
 #' (named as Disease and Healthy). It can be constructed with the buildRefObject
 #'  function. A list with one or more expression matrices, ExpressionSets or
-#'  SummarizedExperiments without controls, can also be used.
+#'  SummarizedExperiments without controls, can also be used. Data should be
+#'  normalized and log2-transformed. Feature names must match the gene sets 
+#'  nomenclature. To use
+#' preloaded databases, they must be gene symbols.
 #' @param geneSets A named list with each gene set,
 #' or the name of one preloaded database (go_bp, go_cc, go_mf, kegg, reactome,
 #' pharmgkb, lincs, ctd, disgenet, hpo, wikipathways, tmod)
@@ -24,7 +27,9 @@
 #' datasets to merge them before clustering. If NULL or this percentage is not
 #' reached, clustering is performed for each dataset independently and
 #' consensus subpathways are obtained from co-occurrence across datasets.
-#'
+#' @param use.assay If SummarizedExperiments are used, the number of the assay 
+#' to extract the data.
+#' 
 #' @return A list with the subpathways.
 #'
 #' @author Jordi Martorell-Marugán, \email{jordi.martorell@@genyo.es}
@@ -66,7 +71,8 @@ dissectDB <- function(
         minSplitSize = 3,
         maxSplits = NULL,
         explainedVariance = 60,
-        percSharedGenes = 90) {
+        percSharedGenes = 90,
+        use.assay = 1) {
     ## 1. Get Z-scores by gene
     if (is(refObject[[1]], "list")) {
         z.data <- lapply(refObject, function(x) {
@@ -105,7 +111,7 @@ dissectDB <- function(
                 x <- Biobase::exprs(x)
             }
             else if (is(x, "SummarizedExperiment")) {
-                x <- as.matrix(SummarizedExperiment::assay(x))
+                x <- as.matrix(SummarizedExperiment::assay(x, use.assay))
             }
             x.zscore <- t(scale(t(x)))
             x.zscore <- x.zscore[apply(x.zscore, 1, function(xi) {
@@ -121,6 +127,9 @@ dissectDB <- function(
         geneSets <- .gsc_to_list(geneSets)
     }
     else if (!is.list(geneSets)) {
+        data_env <- new.env(parent = emptyenv())
+        data("genesetsData", envir = data_env, package = "pathMED")
+        genesetsData <- data_env[["genesetsData"]]
         if (geneSets %in% names(genesetsData)) {
             geneSets <- genesetsData[[geneSets]]
         } else {

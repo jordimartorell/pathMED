@@ -2,9 +2,10 @@
 #'
 #' @param refObject A refObject object structure: a list of lists, each one
 #' with a
-#' cases expression matrix and controls expression matrix
+#' cases omic matrix and controls omic matrix
 #' (named as Disease and Healthy). It can be constructed with the buildRefObject
-#'  function.
+#'  function. Feature names must match the gene sets nomenclature. To use
+#' preloaded databases, they must be gene symbols.
 #' @param geneSets A named list with each gene set,
 #' or the name of one preloaded database (go_bp, go_cc, go_mf, kegg, reactome,
 #' pharmgkb, lincs, ctd, disgenet, hpo, wikipathways, tmod)
@@ -54,6 +55,9 @@ mScores_createReference <- function(
         geneSets <- .gsc_to_list(geneSets)
     }
     else if (!is(geneSets, "list")) {
+        data_env <- new.env(parent = emptyenv())
+        data("genesetsData", envir = data_env, package = "pathMED")
+        genesetsData <- data_env[["genesetsData"]]
         geneSets <- genesetsData[[geneSets]]
     }
 

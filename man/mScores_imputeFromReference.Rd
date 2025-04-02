@@ -10,12 +10,14 @@ mScores_imputeFromReference(
   externalReference,
   nk = 5,
   distance.threshold = 30,
-  cores = 1
+  cores = 1,
+  use.assay = 1
 )
 }
 \arguments{
 \item{inputData}{Data matrix, data frame ExpressionSet or
-SummarizedExperiment.}
+SummarizedExperiment. Feature names must match the gene sets nomenclature. 
+To use preloaded databases, they must be gene symbols.}
 
 \item{geneSets}{A named list with each gene set,
 or the name of one preloaded database (go_bp, go_cc, go_mf, kegg, reactome,
@@ -33,6 +35,9 @@ surpass the mean Euclidean distance of distance.threshold (by default = 30)
 with the external reference are imputed. If NULL,impute all samples.}
 
 \item{cores}{Number of cores to be used.}
+
+\item{use.assay}{If SummarizedExperiments are used, the number of the assay 
+to extract the data.}
 }
 \value{
 A list with the results of each of the analyzed regions. For each
@@ -44,7 +49,7 @@ the input methData, pheno and platform objects
 Estimate M-scores for a dataset without healthy controls
 }
 \examples{
-data(refData, exampleData)
+data(refData, pathMEDExampleData)
 
 refObject <- buildRefObject(
     data = list(
@@ -63,7 +68,7 @@ refMScores <- mScores_createReference(refObject,
     geneSets = "tmod", cores = 1
 )
 
-exampleMScores <- mScores_imputeFromReference(exampleData,
+exampleMScores <- mScores_imputeFromReference(pathMEDExampleData,
     geneSets = "tmod",
     externalReference = refMScores,
     distance.threshold = 50

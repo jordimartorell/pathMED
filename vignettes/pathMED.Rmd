@@ -244,7 +244,10 @@ the following code (adapted to Ubuntu 20.04) and installed by running
 the output in a terminal as administrator:
 
 ```{r, eval=FALSE}
-pak::pkg_system_requirements(
+if (!require("pak")) {
+    install.packages("pak"))
+}
+pak::pkg_sysreqs(
     c("metrica", "factoextra", "FactoMineR"),
     "ubuntu", "20.04"
 )
@@ -267,31 +270,27 @@ can also be used for this purpose. Both preloaded and custom gene sets
 can be used (see the next section for details). The following code
 splits KEGG pathways into subpathways using the example dataset:
 
-The output is a gene set that can be used with the `getScores()`
-function. In the new gene set, subpathways are labeled with the suffix
-\_splitx. For example, for the pathway hsa04714, the resulting
-subpathways will include this suffix.
-
 ```{r, message = FALSE, results='hide', warning=FALSE}
 library(pathMED)
-data(exampleData)
+data(pathMEDExampleData)
 
-customKEGG <- dissectDB(list(exampleData), geneSets = "kegg")
+customKEGG <- dissectDB(list(pathMEDExampleData), geneSets = "kegg")
 ```
 
-The output is a gene set that can be used with the getScores function.
-In the new gene set, subpathways are labeled with the suffix splitx. For
-example, for the pathway hsa04714:
+The output is a gene set that can be used with the `getScores()`
+function. In the new gene set, subpathways are labeled with the suffix
+\_splitx. For example, for the pathway hsa04714:
 
 ```{r, message = FALSE, warning=FALSE}
 # Before splitting
-print(head(pathMED:::genesetsData[["kegg"]][["hsa04714"]]))
+data(genesetsData)
+print(head(genesetsData[["kegg"]][["hsa04714"]]))
 
 # After splitting
 print(customKEGG[grep("hsa04714", names(customKEGG))])
 ```
 
-Only the genes available in the input dataset are included in this
+Only the features available in the input dataset are included in this
 object.
 
 ## Scoring
@@ -317,7 +316,7 @@ are:
 Gene sets can be provided as a named list, where each entry contains the
 genes associated with a specific gene set, using the `geneSets`
 parameter. Alternatively, preloaded databases can be used by specifying
-their name in the `geneSets` parameter:
+their name in the `geneSets` parameter.
 
 -   Reactome ("reactome")
 -   KEGG ("kegg")
@@ -330,6 +329,10 @@ their name in the `geneSets` parameter:
 -   LINCS ("lincs")
 -   Comparative Toxicogenomics Database ("ctd")
 
+Note that these preloaded gene sets are
+built with gene symbols. Therefore, the row names of the input data should be 
+gene symbols to use them.
+
 If running the script on a multi-core processor, you can use the `cores`
 parameter to specify the number of workers (most `pathMED` functions
 include this parameter). Additionally, specific parameters for the
@@ -340,8 +343,9 @@ To run this function with the example data:
 
 ```{r, message = FALSE, warning = FALSE}
 library(pathMED)
-data(exampleData)
-scoresExample <- getScores(exampleData, geneSets = "kegg", method = "Z-score")
+data(pathMEDExampleData)
+scoresExample <- getScores(pathMEDExampleData, geneSets = "kegg", 
+                            method = "Z-score")
 print(scoresExample[1:5, 1:5])
 ```
 
@@ -383,13 +387,13 @@ indicating whether patients responded to a treatment. The
 metrics based on the chosen positive class (e.g., diseased).
 
 ```{r, message=FALSE}
-data(exampleMetadata)
+data(pathMEDExampleMetadata)
 
 modelsList <- methodsML(algorithms = c("rf", "knn"), outcomeClass = "character")
 
 set.seed(123)
 trainedModel <- trainModel(scoresExample,
-    metadata = exampleMetadata,
+    metadata = pathMEDExampleMetadata,
     var2predict = "Response",
     positiveClass = "YES",
     models = modelsList,
@@ -547,7 +551,7 @@ distances between each sample and the reference.
 
 ```{r, warning=FALSE}
 mScoresExample <- mScores_imputeFromReference(
-    inputData = exampleData,
+    inputData = pathMEDExampleData,
     geneSets = relevantPaths,
     externalReference = refMscores,
     distance.threshold = 50

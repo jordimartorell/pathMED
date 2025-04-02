@@ -1,7 +1,8 @@
 #' Estimate M-scores for a dataset without healthy controls
 #'
 #' @param inputData Data matrix, data frame ExpressionSet or
-#' SummarizedExperiment.
+#' SummarizedExperiment. Feature names must match the gene sets nomenclature. 
+#' To use preloaded databases, they must be gene symbols.
 #' @param geneSets A named list with each gene set,
 #' or the name of one preloaded database (go_bp, go_cc, go_mf, kegg, reactome,
 #' pharmgkb, lincs, ctd, disgenet, hpo, wikipathways, tmod)
@@ -14,7 +15,9 @@
 #' surpass the mean Euclidean distance of distance.threshold (by default = 30)
 #' with the external reference are imputed. If NULL,impute all samples.
 #' @param cores Number of cores to be used.
-#'
+#' @param use.assay If SummarizedExperiments are used, the number of the assay 
+#' to extract the data.
+#' 
 #' @return A list with the results of each of the analyzed regions. For each
 #' region type, a data frame with the results and a list with the probes
 #' associated to each region are generated. In addition, this list also contains
@@ -32,7 +35,7 @@
 #'  . Briefings in Bioinformatics. 23(5)
 #'
 #' @examples
-#' data(refData, exampleData)
+#' data(refData, pathMEDExampleData)
 #'
 #' refObject <- buildRefObject(
 #'     data = list(
@@ -51,7 +54,7 @@
 #'     geneSets = "tmod", cores = 1
 #' )
 #'
-#' exampleMScores <- mScores_imputeFromReference(exampleData,
+#' exampleMScores <- mScores_imputeFromReference(pathMEDExampleData,
 #'     geneSets = "tmod",
 #'     externalReference = refMScores,
 #'     distance.threshold = 50
@@ -62,7 +65,8 @@ mScores_imputeFromReference <- function(inputData,
     externalReference,
     nk = 5,
     distance.threshold = 30,
-    cores = 1) {
+    cores = 1,
+    use.assay = 1) {
     if (is(inputData, "data.frame")) {
         inputData <- as.matrix(inputData)
     }
@@ -72,13 +76,17 @@ mScores_imputeFromReference <- function(inputData,
     }
 
     if (is(inputData, "SummarizedExperiment")) {
-        inputData <- as.matrix(SummarizedExperiment::assay(inputData))
+        inputData <- as.matrix(SummarizedExperiment::assay(inputData, 
+                                                            use.assay))
     }
 
     if (is(geneSets, "GeneSetCollection")) {
         geneSets <- .gsc_to_list(geneSets)
     }
     else if (!is(geneSets, "list")) {
+        data_env <- new.env(parent = emptyenv())
+        data("genesetsData", envir = data_env, package = "pathMED")
+        genesetsData <- data_env[["genesetsData"]]
         geneSets <- genesetsData[[geneSets]]
     }
 

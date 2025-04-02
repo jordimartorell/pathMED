@@ -32,7 +32,9 @@
 #'  of them fail.
 #' @param saveLogFile Path to a .txt file in which to save error and warning
 #' messages.
-#'
+#' @param use.assay If SummarizedExperiments are used, the number of the assay 
+#' to extract the data.
+#' 
 #' @return A list with four elements. The first one is the model. The second one
 #' is a table with different metrics obtained. The third one is a list with the
 #' best parameters selected in tuning process. The last element contains data
@@ -54,16 +56,17 @@
 #'  . Briefings in Bioinformatics. 23(5)
 #'
 #' @examples
-#' data(exampleData, exampleMetadata)
+#' data(pathMEDExampleData, pathMEDExampleMetadata)
 #'
-#' scoresExample <- getScores(exampleData, geneSets = "tmod", method = "GSVA")
+#' scoresExample <- getScores(pathMEDExampleData, geneSets = "tmod", 
+#'                              method = "GSVA")
 #'
 #' modelsList <- methodsML("svmLinear", outcomeClass = "character")
 #'
 #' set.seed(123)
 #' trainedModel <- trainModel(
 #'     inputData = scoresExample,
-#'     metadata = exampleMetadata,
+#'     metadata = pathMEDExampleMetadata,
 #'     var2predict = "Response",
 #'     models = modelsList,
 #'     Koutter = 2,
@@ -85,7 +88,8 @@ trainModel <- function(inputData,
     filterSizes = seq(2, 100, by = 2),
     rerank = FALSE,
     continue_on_fail = TRUE,
-    saveLogFile = NULL) {
+    saveLogFile = NULL,
+    use.assay = 1) {
     # 1 Checking
     if (is.null(metadata) & !is(inputData, "ExpressionSet") &
         !is(inputData, "SummarizedExperiment")) {
@@ -103,7 +107,8 @@ trainModel <- function(inputData,
     }
 
     if (is(inputData, "SummarizedExperiment")) {
-        inputData <- as.matrix(SummarizedExperiment::assay(inputData))
+        inputData <- as.matrix(SummarizedExperiment::assay(inputData, 
+                                                            use.assay))
         metadata <- as.data.frame(SummarizedExperiment::colData(inputData))
     }
 

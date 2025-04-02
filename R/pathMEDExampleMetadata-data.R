@@ -5,8 +5,8 @@
 #'
 #' @docType data
 #'
-#' @usage data(exampleMetadata)
+#' @usage data(pathMEDExampleMetadata)
 #'
 #' @format An object of class \code{"data.frame"} with samples in rows and
 #' variables in columns.
-"exampleMetadata"
+"pathMEDExampleMetadata"

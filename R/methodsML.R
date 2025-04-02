@@ -30,6 +30,27 @@ methodsML <- function(
         algorithms = c("rf", "knn", "nb"),
         outcomeClass,
         tuneLength = 20) {
+    
+    if ("rf" %in% algorithms & !requireNamespace("randomForest")) {
+        message("Install the randomForest package to run the Random Forest
+                    algorithm")
+    }
+    
+    if ("gam" %in% algorithms & !requireNamespace("gam")) {
+        message("Install the gam package to run the Generalized Additive Models
+                    algorithm")
+    }
+    
+    if ("xgbTree" %in% algorithms & !requireNamespace("xgboost")) {
+        message("Install the xgboost package to run the XGBoost
+                    algorithm")
+    }
+    
+    if ("ada" %in% algorithms & !requireNamespace("ada")) {
+        message("Install the ada package to run the AdaBoost
+                    algorithm")
+    }
+    
     if (is.null(outcomeClass)) {
         stop("outcomeClass is missing, please specify whether the variable to
             predict is character or numeric.")

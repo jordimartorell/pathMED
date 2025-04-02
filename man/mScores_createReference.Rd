@@ -9,9 +9,10 @@ mScores_createReference(refObject, geneSets, cores = 1)
 \arguments{
 \item{refObject}{A refObject object structure: a list of lists, each one
 with a
-cases expression matrix and controls expression matrix
+cases omic matrix and controls omic matrix
 (named as Disease and Healthy). It can be constructed with the buildRefObject
- function.}
+ function. Feature names must match the gene sets nomenclature. To use
+preloaded databases, they must be gene symbols.}
 
 \item{geneSets}{A named list with each gene set,
 or the name of one preloaded database (go_bp, go_cc, go_mf, kegg, reactome,

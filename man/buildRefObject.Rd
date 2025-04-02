@@ -4,7 +4,7 @@
 \alias{buildRefObject}
 \title{Create a reference data object for input to the pathMED functions}
 \usage{
-buildRefObject(data, metadata, groupVar, controlGroup)
+buildRefObject(data, metadata = NULL, groupVar, controlGroup, use.assay = 1)
 }
 \arguments{
 \item{data}{A list of matrices, data frames, ExpressionSets or
@@ -25,6 +25,9 @@ objects are provided a @groupVar can be specified for each metadata.}
 All other samples will be considered as cases, usually disease samples. If
 several @groupVar are provided a @controlGroup can be specified
 for each @groupVar}
+
+\item{use.assay}{If SummarizedExperiments are used, the number of the assay 
+to extract the data.}
 }
 \value{
 A refObject that serves as input

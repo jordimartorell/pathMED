@@ -17,8 +17,9 @@
 #'  . Briefings in Bioinformatics. 23(5)
 #'
 #' @examples
-#' data(exampleData)
-#' scoresExample <- getScores(exampleData, geneSets = "tmod", method = "GSVA")
+#' data(pathMEDExampleData)
+#' scoresExample <- getScores(pathMEDExampleData, geneSets = "tmod", 
+#'                              method = "GSVA")
 #' annotatedTerms <- ann2term(scoresExample)
 #' @export
 ann2term <- function(scoresMatrix) {

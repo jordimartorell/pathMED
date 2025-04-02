@@ -11,16 +11,20 @@ dissectDB(
   minSplitSize = 3,
   maxSplits = NULL,
   explainedVariance = 60,
-  percSharedGenes = 90
+  percSharedGenes = 90,
+  use.assay = 1
 )
 }
 \arguments{
 \item{refObject}{A refObject object structure: a list of lists, each one
 with a
-cases expression matrix and controls expression matrix
+cases omic matrix and controls omic matrix
 (named as Disease and Healthy). It can be constructed with the buildRefObject
  function. A list with one or more expression matrices, ExpressionSets or
- SummarizedExperiments without controls, can also be used.}
+ SummarizedExperiments without controls, can also be used. Data should be
+ normalized and log2-transformed. Feature names must match the gene sets 
+ nomenclature. To use
+preloaded databases, they must be gene symbols.}
 
 \item{geneSets}{A named list with each gene set,
 or the name of one preloaded database (go_bp, go_cc, go_mf, kegg, reactome,
@@ -45,6 +49,9 @@ defined by explainedVariance.}
 datasets to merge them before clustering. If NULL or this percentage is not
 reached, clustering is performed for each dataset independently and
 consensus subpathways are obtained from co-occurrence across datasets.}
+
+\item{use.assay}{If SummarizedExperiments are used, the number of the assay 
+to extract the data.}
 }
 \value{
 A list with the subpathways.

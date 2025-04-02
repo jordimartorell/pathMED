@@ -1,10 +1,11 @@
 test_trainModel <- function() {
-    data(exampleData, exampleMetadata)
+    data(pathMEDExampleData, pathMEDExampleMetadata)
     set.seed(123)
-    scoresExample <- getScores(exampleData, geneSets="tmod", method="Z-score")
+    scoresExample <- getScores(pathMEDExampleData, geneSets="tmod", 
+                                method="Z-score")
     modelsList <- methodsML("svmLinear", outcomeClass="character")
     trainedModel <- trainModel(inputData=scoresExample,
-                               metadata=exampleMetadata,
+                               metadata=pathMEDExampleMetadata,
                                var2predict="Response",
                                models=modelsList,
                                Koutter = 2,

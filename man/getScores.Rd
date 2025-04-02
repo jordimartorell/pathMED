@@ -4,11 +4,20 @@
 \alias{getScores}
 \title{Calculate pathways scores for a dataset}
 \usage{
-getScores(inputData, geneSets, method = "GSVA", labels = NULL, cores = 1, ...)
+getScores(
+  inputData,
+  geneSets,
+  method = "GSVA",
+  labels = NULL,
+  cores = 1,
+  use.assay = 1,
+  ...
+)
 }
 \arguments{
 \item{inputData}{Matrix, data frame, ExpressionSet or SummarizedExperiment
-with omics data.}
+with omics data. Feature names must match the gene sets nomenclature. To use
+preloaded databases, they must be gene symbols.}
 
 \item{geneSets}{A named list with each gene set,
 or the name of one preloaded database (go_bp, go_cc, go_mf, kegg, reactome,
@@ -26,6 +35,9 @@ norm_WMEAN, corr_WMEAN, WSUM, norm_WSUM or corr_WSUM.}
 
 \item{cores}{Number of cores to be used.}
 
+\item{use.assay}{If SummarizedExperiments are used, the number of the assay 
+to extract the data.}
+
 \item{...}{Additional parameters for the scoring functions.}
 }
 \value{
@@ -38,8 +50,9 @@ the input methData, pheno and platform objects
 Calculate pathways scores for a dataset
 }
 \examples{
-data(exampleData)
-scoresExample <- getScores(exampleData, geneSets = "tmod", method = "GSVA")
+data(pathMEDExampleData)
+scoresExample <- getScores(pathMEDExampleData, geneSets = "tmod", 
+                             method = "GSVA")
 }
 \references{
 Toro-Domínguez, D. et al (2022). \emph{Scoring personalized

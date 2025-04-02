@@ -18,7 +18,8 @@ trainModel(
   filterSizes = seq(2, 100, by = 2),
   rerank = FALSE,
   continue_on_fail = TRUE,
-  saveLogFile = NULL
+  saveLogFile = NULL,
+  use.assay = 1
 )
 }
 \arguments{
@@ -26,8 +27,8 @@ trainModel(
 features in rows. An ExpressionSet or SummarizedExperiment may also be used.}
 
 \item{metadata}{Data frame with information for each sample. Samples in rows
-and variables in columns. If @inputData is an ExpressionSet or SummarizedExperiment,
-the metadata will be extracted from it.}
+and variables in columns. If @inputData is an ExpressionSet or
+SummarizedExperiment, the metadata will be extracted from it.}
 
 \item{models}{Named list with the ML models generated with
 caret::caretModelSpec function. methodsML function may be used to prepare
@@ -67,6 +68,9 @@ of them fail.}
 
 \item{saveLogFile}{Path to a .txt file in which to save error and warning
 messages.}
+
+\item{use.assay}{If SummarizedExperiments are used, the number of the assay 
+to extract the data.}
 }
 \value{
 A list with four elements. The first one is the model. The second one
@@ -78,16 +82,17 @@ for AUC plots
 Train ML models and perform internal validation
 }
 \examples{
-data(exampleData, exampleMetadata)
+data(pathMEDExampleData, pathMEDExampleMetadata)
 
-scoresExample <- getScores(exampleData, geneSets = "tmod", method = "GSVA")
+scoresExample <- getScores(pathMEDExampleData, geneSets = "tmod", 
+                             method = "GSVA")
 
 modelsList <- methodsML("svmLinear", outcomeClass = "character")
 
 set.seed(123)
 trainedModel <- trainModel(
     inputData = scoresExample,
-    metadata = exampleMetadata,
+    metadata = pathMEDExampleMetadata,
     var2predict = "Response",
     models = modelsList,
     Koutter = 2,
