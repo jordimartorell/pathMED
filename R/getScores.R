@@ -239,7 +239,7 @@ getScores <- function(inputData,
                     .mor = "mor"
                 ))
                 net <- net[!net$source %in% as.character(co.lin[
-                    co.lin$correlation > 0.75, "source"
+                    co.lin$correlation > 0.7, "source"
                 ]), ]
 
                 params <- params[names(params) %in% c(

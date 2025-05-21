@@ -328,7 +328,7 @@ trainModel <- function(inputData,
 
 .trainModelMethodsFiltering <- function(inputData, outcomeClass, models) {
     if (length(unique(inputData$group)) > 2 &
-        methods::is(outcomeClass, "character") &
+        outcomeClass == "character" &
         any(names(models) %in% c("glm", "ada", "gamboost"))) {
         message("glm, ada and gamboost models are not available for
             multi-class models")
@@ -579,7 +579,7 @@ trainModel <- function(inputData,
         predictionTable <- list()
         cm <- list()
         for (m in seq_len(length(modelResults))) {
-            if (methods::is(outcomeClass, "character")) {
+            if (outcomeClass == "character") {
                 classLabels <- levels(as.factor(training$group))
                 predTest <- stats::predict(modelResults[[m]],
                     newdata = testing,
