@@ -1,6 +1,6 @@
 Package: pathMED
 Title: Scoring Personalized Molecular Portraits
-Version: 1.1.0
+Version: 1.1.1
 Authors@R: c(person("Jordi", "Martorell-Marugán", email="jmartorellm@gmail.com", role=c("cre", "aut"), comment = c(ORCID = "0000-0002-5186-0735")),
   person("Daniel", "Toro-Domínguez", email="danieltorodominguez@gmail.com", role=c("aut"), comment = c(ORCID = "0000-0001-8440-312X")),
   person("Raúl", "López-Domínguez", email="raul.lopez@genyo.es", role=c("aut"), comment = c(ORCID = "0000-0001-8634-117X")),
