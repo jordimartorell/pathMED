@@ -745,7 +745,7 @@ trainModel <- function(inputData,
             seq_len(length(sampleSets)),
             function(it) {
                 tmp <- resultNested[[it]]$preds[[x]]
-                if (methods::is(outcomeClass, "character") & !is.null(tmp)) {
+                if (outcomeClass == "character" & !is.null(tmp)) {
                     obs <- factor(tmp$obs, levels = levels)
                     lab.pred <- unlist(lapply(
                         seq_len(nrow(tmp)),
