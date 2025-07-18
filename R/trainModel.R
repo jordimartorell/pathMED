@@ -32,9 +32,7 @@
 #'  of them fail.
 #' @param saveLogFile Path to a .txt file in which to save error and warning
 #' messages.
-#' @param use.assay If SummarizedExperiments are used, the number of the assay 
-#' to extract the data.
-#' 
+#'
 #' @return A list with four elements. The first one is the model. The second one
 #' is a table with different metrics obtained. The third one is a list with the
 #' best parameters selected in tuning process. The last element contains data
@@ -56,17 +54,16 @@
 #'  . Briefings in Bioinformatics. 23(5)
 #'
 #' @examples
-#' data(pathMEDExampleData, pathMEDExampleMetadata)
+#' data(exampleData, exampleMetadata)
 #'
-#' scoresExample <- getScores(pathMEDExampleData, geneSets = "tmod", 
-#'                              method = "GSVA")
+#' scoresExample <- getScores(exampleData, geneSets = "tmod", method = "GSVA")
 #'
 #' modelsList <- methodsML("svmLinear", outcomeClass = "character")
 #'
 #' set.seed(123)
 #' trainedModel <- trainModel(
 #'     inputData = scoresExample,
-#'     metadata = pathMEDExampleMetadata,
+#'     metadata = exampleMetadata,
 #'     var2predict = "Response",
 #'     models = modelsList,
 #'     Koutter = 2,
@@ -76,42 +73,40 @@
 #'
 #' @export
 trainModel <- function(inputData,
-    metadata = NULL,
-    models = methodsML(outcomeClass = "character"),
-    var2predict,
-    positiveClass = NULL,
-    pairingColumn = NULL,
-    Koutter = 5,
-    Kinner = 4,
-    repeatsCV = 5,
-    filterFeatures = NULL,
-    filterSizes = seq(2, 100, by = 2),
-    rerank = FALSE,
-    continue_on_fail = TRUE,
-    saveLogFile = NULL,
-    use.assay = 1) {
+                       metadata = NULL,
+                       models = methodsML(outcomeClass = "character"),
+                       var2predict,
+                       positiveClass = NULL,
+                       pairingColumn = NULL,
+                       Koutter = 5,
+                       Kinner = 4,
+                       repeatsCV = 5,
+                       filterFeatures = NULL,
+                       filterSizes = seq(2, 100, by = 2),
+                       rerank = FALSE,
+                       continue_on_fail = TRUE,
+                       saveLogFile = NULL) {
     # 1 Checking
     if (is.null(metadata) & !is(inputData, "ExpressionSet") &
         !is(inputData, "SummarizedExperiment")) {
         stop("If inputData is not an ExpressionSet or SummarizedExperiment,
                 metadata must be provided.")
     }
-
+    
     if (is(inputData, "data.frame")) {
         inputData <- as.matrix(inputData)
     }
-
+    
     if (is(inputData, "ExpressionSet")) {
         inputData <- Biobase::exprs(inputData)
         metadata <- Biobase::pData(inputData)
     }
-
+    
     if (is(inputData, "SummarizedExperiment")) {
-        inputData <- as.matrix(SummarizedExperiment::assay(inputData, 
-                                                            use.assay))
+        inputData <- as.matrix(SummarizedExperiment::assay(inputData))
         metadata <- as.data.frame(SummarizedExperiment::colData(inputData))
     }
-
+    
     filterSizes <- .trainModelChecking(
         var2predict, metadata, filterFeatures,
         filterSizes, saveLogFile, inputData
@@ -198,17 +193,17 @@ trainModel <- function(inputData,
 }
 
 .trainModelChecking <- function(var2predict, metadata, filterFeatures,
-    filterSizes, saveLogFile, inputData) {
+                                filterSizes, saveLogFile, inputData) {
     if (!is.null(saveLogFile)) {
         if (file.exists(saveLogFile)) {
             file.remove(saveLogFile) # reset log file
         }
     }
-
+    
     if (!var2predict %in% colnames(metadata)) {
         stop("var2predict must be a column of metadata")
     }
-
+    
     if (!is.null(filterFeatures)) {
         if (!filterFeatures %in% c("sbf", "rfe")) {
             stop("filterFeatures must be 'sbf', 'rfe', or NULL")
@@ -222,18 +217,18 @@ trainModel <- function(inputData,
 }
 
 .trainModelFilterRaw <- function(inputData, metadata, var2predict,
-    positiveClass) {
+                                 positiveClass) {
     samples <- intersect(rownames(metadata), colnames(inputData))
     if (length(samples) < 1) {
         stop("Row names of metadata and column names of inputData do not match")
     }
     if (is.character(metadata[, var2predict]) |
         is.factor(metadata[, var2predict])) {
-        metadata[, var2predict] <- stringi::stri_replace_all_regex(
+        metadata[, var2predict] <- factor(stringi::stri_replace_all_regex(
             metadata[, var2predict],
             pattern = c("/", " ", "-"), replacement = c(".", ".", "."),
             vectorize = FALSE
-        )
+        ))
     }
     if (!is.null(positiveClass)) {
         positiveClass <- stringi::stri_replace_all_regex(
@@ -243,7 +238,7 @@ trainModel <- function(inputData,
         )
     } else {
         positiveClass <- sort(unique(metadata[, var2predict]),
-            decreasing = TRUE
+                              decreasing = TRUE
         )[1]
     }
     inputData <- inputData[, samples]
@@ -260,13 +255,10 @@ trainModel <- function(inputData,
         replacement = c(".", ".", ".", "."), vectorize = FALSE
     )
     inputData <- inputData[!is.na(inputData$group), ]
-    if (is.factor(inputData$group)) {
-        inputData$group <- as.character(inputData$group)
-    }
     if (inputData %>% dplyr::summarise(dplyr::across(
         dplyr::everything(),
         ~ any(is.na(.) |
-            is.infinite(.))
+              is.infinite(.))
     )) %>% any()) {
         stop("There are NA and/or Infinite values in your data, please replace
         or remove them before running trainModel")
@@ -279,14 +271,16 @@ trainModel <- function(inputData,
 }
 
 .trainModelOutcomeClass <- function(inputData, metadata, var2predict, Koutter,
-    Kinner) {
+                                    Kinner) {
     outcomeClass <- class(inputData$group)
-    if (methods::is(inputData$group, "character")) {
+    if (outcomeClass == "factor") {
+        outcomeClass <- "character"
+    }
+    if (outcomeClass == "character") {
         prior <- "MCC"
     } else {
         prior <- "Corr"
     }
-
     if (outcomeClass == "character" & !is.list(Koutter)) {
         size.m <- min(table(metadata[, var2predict]))
         Kint.m <- as.integer(size.m - (size.m / Koutter))
@@ -342,7 +336,7 @@ trainModel <- function(inputData,
 
 
 .trainModelKoutter <- function(inputData, metadata, outcomeClass, Koutter,
-    pairingColumn) {
+                               pairingColumn) {
     if (!is.list(Koutter)) {
         if (!is.null(pairingColumn)) {
             isPaired <- metadata[rownames(inputData), pairingColumn]
@@ -357,7 +351,7 @@ trainModel <- function(inputData,
     } else {
         sampleSets <- Koutter
     }
-
+    
     ntest <- sum(unlist(lapply(sampleSets, function(n) {
         nrow(inputData[-as.numeric(unlist(n)), ])
     })))
@@ -428,9 +422,9 @@ trainModel <- function(inputData,
 
 
 .trainModelResultNested <- function(sampleSets, inputData, models,
-    pairingColumn, metadata, Kinner, repeatsCV,
-    outcomeClass, positiveClass, filterFeatures,
-    continue_on_fail, saveLogFile, rerank, filterSizes) {
+                                    pairingColumn, metadata, Kinner, repeatsCV,
+                                    outcomeClass, positiveClass, filterFeatures,
+                                    continue_on_fail, saveLogFile, rerank, filterSizes) {
     message("Training models...")
     pb <- txtProgressBar(
         min = 0, max = length(sampleSets) * length(models),
@@ -439,20 +433,20 @@ trainModel <- function(inputData,
     resultNested <- lapply(sampleSets, function(x) {
         training <- inputData[as.numeric(unlist(x)), ]
         testing <- inputData[-as.numeric(unlist(x)), ]
-
+        
         if (!is.null(pairingColumn)) {
             isPaired <- metadata[rownames(training), pairingColumn]
         } else {
             isPaired <- NULL
         }
-
+        
         folds <- .makeClassBalancedFolds(
             y = training$group, kfold = Kinner,
             repeats = repeatsCV,
             varType = outcomeClass,
             paired = isPaired
         )
-
+        
         if (!is.null(filterFeatures)) {
             if (filterFeatures == "sbf") {
                 filterCtrl <- caret::sbfControl(
@@ -471,9 +465,9 @@ trainModel <- function(inputData,
                     rerank = rerank
                 )
             }
-
+            
             tmp <- as.data.frame(training[, 2:ncol(training)])
-
+            
             if (outcomeClass == "character") {
                 y <- factor(training$group)
                 if (filterFeatures == "sbf") {
@@ -505,14 +499,14 @@ trainModel <- function(inputData,
                     )
                 }
             }
-
-
+            
+            
             if (length(filters$optVariables) > 0) {
                 training <- training[, c("group", filters$optVariables)]
                 testing <- testing[, c("group", filters$optVariables)]
             }
         }
-
+        
         my_control <- caret::trainControl(
             method = "cv", number = Kinner,
             savePredictions = "final",
@@ -525,7 +519,7 @@ trainModel <- function(inputData,
         )
         global_args <- list(group ~ ., training)
         global_args[["trControl"]] <- my_control
-
+        
         modelList <- lapply(models, function(m) {
             model_args <- c(global_args, m)
             if (continue_on_fail == TRUE) {
@@ -533,18 +527,18 @@ trainModel <- function(inputData,
                 model <- .removeOutText(
                     withCallingHandlers(
                         tryCatch(do.call(caret::train, model_args),
-                            error = function(e) {
-                                err <- conditionMessage(e)
-                                NULL
-                            },
-                            warning <- function(w) {
-                                warn <<- append(warn, conditionMessage(w))
-                                invokeRestart("muffleWarning")
-                            }
+                                 error = function(e) {
+                                     err <- conditionMessage(e)
+                                     NULL
+                                 },
+                                 warning <- function(w) {
+                                     warn <<- append(warn, conditionMessage(w))
+                                     invokeRestart("muffleWarning")
+                                 }
                         )
                     )
                 )
-
+                
                 if (!is.null(saveLogFile) & (!is.null(warn) | !is.null(err))) {
                     write.table(
                         paste0(
@@ -563,18 +557,18 @@ trainModel <- function(inputData,
             setTxtProgressBar(pb, getTxtProgressBar(pb) + 1)
             return(model)
         })
-
+        
         names(modelList) <- names(models)
         nulls <- vapply(modelList, is.null, FUN.VALUE = logical(1))
         modelList <- modelList[!nulls]
-
+        
         if (length(modelList) == 0) {
             stop("caret:train failed for all models. Please check your data.")
         }
-
+        
         class(modelList) <- c("caretList")
         modelResults <- .removeOutText(modelList)
-
+        
         ## Get model stats for Koutter
         predictionTable <- list()
         cm <- list()
@@ -582,12 +576,12 @@ trainModel <- function(inputData,
             if (outcomeClass == "character") {
                 classLabels <- levels(as.factor(training$group))
                 predTest <- stats::predict(modelResults[[m]],
-                    newdata = testing,
-                    type = "prob"
+                                           newdata = testing,
+                                           type = "prob"
                 )[, classLabels]
                 sel <- unlist(lapply(seq_len(nrow(predTest)), function(n) {
                     ifelse(sum(!is.na(predTest[n, ])) == 0, FALSE,
-                        TRUE
+                           TRUE
                     )
                 }))
                 if (!any(sel)) {
@@ -596,7 +590,7 @@ trainModel <- function(inputData,
                     names(cm)[m] <- names(modelResults)[m]
                 } else {
                     y <- factor(testing$group[sel],
-                        levels = unique(testing$group)
+                                levels = unique(testing$group)
                     )
                     predTest <- predTest[sel, ]
                     x <- factor(unlist(lapply(
@@ -608,7 +602,7 @@ trainModel <- function(inputData,
                         }
                     )), levels = unique(testing$group))
                     cmModel <- caret::confusionMatrix(x, y,
-                        positive = positiveClass
+                                                      positive = positiveClass
                     )
                     cm <- append(cm, list(cmModel))
                     names(cm)[m] <- names(modelResults)[m]
@@ -659,7 +653,7 @@ trainModel <- function(inputData,
             resultNested[[s]][["cm"]][[m_toremove]] <- NULL
         }
     }
-
+    
     validModels <- list()
     validModels <- lapply(resultNested, function(m) {
         vm <- append(validModels, names(m$models))
@@ -687,21 +681,21 @@ trainModel <- function(inputData,
 }
 
 .trainModelPercKoutter <- function(nullmodels, resultNested, validModels,
-                                    models, perc_Koutter_nullModel = 50) {
+                                   models, perc_Koutter_nullModel = 50) {
     removeModel <- rowSums(nullmodels) > length(resultNested) *
         (1 - (perc_Koutter_nullModel / 100))
     removeModel <- names(removeModel[removeModel])
     for (i in seq_len(length(resultNested))) {
         resultNested[[i]][["models"]][names(resultNested[[i]][["models"]])
-        %in% removeModel] <- NULL
+                                      %in% removeModel] <- NULL
         resultNested[[i]][["preds"]][names(resultNested[[i]][["preds"]])
-        %in% removeModel] <- NULL
+                                     %in% removeModel] <- NULL
     }
     validModels <- validModels[!validModels %in% removeModel]
     failedModels <- names(models)[!names(models) %in% validModels]
     if (length(failedModels) > 0) {
         message(paste0("The following models failed: ", paste0(failedModels,
-            collapse = ", "
+                                                               collapse = ", "
         )))
     }
     if (is.null(validModels)) {
@@ -721,8 +715,8 @@ trainModel <- function(inputData,
             "specificity", "npv", "precision", "fscore"
         )
         type <- "classification"
-        levels <- c(positiveClass, unique(unique(inputData$group))[
-            !unique(inputData$group) %in% positiveClass
+        levels <- c(positiveClass, levels(inputData$group)[
+            !levels(inputData$group) %in% positiveClass
         ])
     } else {
         metrics <- c("r", "RMSE", "R2", "MAE", "RMAE", "RSE")
@@ -737,8 +731,8 @@ trainModel <- function(inputData,
 }
 
 .trainModelStats <- function(models, sampleSets, levels, type, metrics,
-    resultNested, continue_on_fail, saveLogFile,
-    outcomeClass) {
+                             resultNested, continue_on_fail, saveLogFile,
+                             outcomeClass) {
     message("Calculating performance metrics...")
     stats <- do.call("cbind", lapply(names(models), function(x) {
         sum.model.x <- do.call("cbind", lapply(
@@ -751,7 +745,7 @@ trainModel <- function(inputData,
                         seq_len(nrow(tmp)),
                         function(n) {
                             names(which.max(tmp[n, !colnames(tmp) %in%
-                                "obs"]))
+                                                    "obs"]))
                         }
                     ))
                     lab.pred <- factor(lab.pred, levels = levels)
@@ -759,8 +753,8 @@ trainModel <- function(inputData,
                     obs <- tmp$obs
                     lab.pred <- tmp$pred
                 }
-
-
+                
+                
                 if (continue_on_fail == TRUE) {
                     warn <- err <- NULL
                     resultsTable <- withCallingHandlers(
@@ -822,7 +816,7 @@ trainModel <- function(inputData,
         ))
         return(sum.model.all)
     }))
-
+    
     names(stats) <- names(models)
     return(stats)
 }
@@ -842,16 +836,16 @@ trainModel <- function(inputData,
     }
     if (length(models) > 1) {
         switch(prior,
-            "MCC" = {
-                stats <- stats[, order(as.numeric(stats["mcc", ]),
-                    decreasing = TRUE
-                )]
-            },
-            "Corr" = {
-                stats <- stats[, order(as.numeric(stats["r", ]),
-                    decreasing = TRUE
-                )]
-            }
+               "MCC" = {
+                   stats <- stats[, order(as.numeric(stats["mcc", ]),
+                                          decreasing = TRUE
+                   )]
+               },
+               "Corr" = {
+                   stats <- stats[, order(as.numeric(stats["r", ]),
+                                          decreasing = TRUE
+                   )]
+               }
         )
     }
     return(stats)
@@ -870,7 +864,7 @@ trainModel <- function(inputData,
         })))
     })))
     stats <- rbind(stats, "perc.lossSamples" = 100 - ((lossSamples / ntest) *
-        100))
+                                                          100))
     message("Done")
     return(list(
         "stats" = stats,
@@ -884,7 +878,7 @@ trainModel <- function(inputData,
         tmpValues <- data.frame(parameters[, x])
         if (!methods::is(tmpValues[, 1], "numeric")) {
             tmpValues <- names(table(tmpValues))[order(table(tmpValues),
-                decreasing = TRUE
+                                                       decreasing = TRUE
             )][1]
         } else {
             tmpValues <- apply(tmpValues, 2, median)
@@ -899,22 +893,22 @@ trainModel <- function(inputData,
 }
 
 .trainModelFit <- function(inputData, Finalfeatures, stats, outcomeClass,
-    bestTune) {
+                           bestTune) {
     message("Training final model with all samples...")
     newData <- inputData[, colnames(inputData) %in% c("group", Finalfeatures)]
-
+    
     ## Add aditional parameters for nnet
     if (colnames(stats)[1] == "nnet" & outcomeClass == "character") {
         maxNW <- ((length(Finalfeatures) + 1) * bestTune$.size[1]) +
             ((bestTune$.size[1] + 1) * length(unique(newData$group)))
-
+        
         fit.model <- withCallingHandlers(tryCatch(
             .removeOutText(
                 caret::train(group ~ .,
-                    data = newData,
-                    method = colnames(stats)[1],
-                    tuneGrid = bestTune,
-                    MaxNWts = round(maxNW * 10, digits = 0)
+                             data = newData,
+                             method = colnames(stats)[1],
+                             tuneGrid = bestTune,
+                             MaxNWts = round(maxNW * 10, digits = 0)
                 )
             ),
             error = function(e) {
@@ -932,10 +926,10 @@ trainModel <- function(inputData,
         fit.model <- withCallingHandlers(tryCatch(
             .removeOutText(
                 caret::train(group ~ .,
-                    data = newData,
-                    method = colnames(stats)[1],
-                    trControl = caret::trainControl(method = "none"),
-                    tuneGrid = bestTune
+                             data = newData,
+                             method = colnames(stats)[1],
+                             trControl = caret::trainControl(method = "none"),
+                             tuneGrid = bestTune
                 )
             ),
             error = function(e) {
